@@ -1,0 +1,86 @@
+### 通用系统文件 ###
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.fuse_hidden*
+.nfs*
+*.swp
+*.swo
+*.bak
+
+
+### 前端 (Vue) 需要忽略的文件 ###
+client/node_modules/
+client/dist/
+client/.env.local
+client/.env.*.local
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/.vscode/
+client/.idea/
+
+
+### 后端 (FastAPI) 需要忽略的文件 ###
+# Python 虚拟环境
+server/venv/
+
+# Python 编译文件
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# 开发/测试生成文件
+server/.env
+server/.env.local
+server/*.log
+server/coverage.xml
+server/htmlcov/
+
+# 数据库文件（如 SQLite）
+*.db
+*.sqlite3
+
+# 单元测试缓存
+server/.pytest_cache/
+
+
+### IDE/编辑器配置 ###
+# VS Code
+.vscode/
+!.vscode/settings.json.example  # 可提交示例配置（如果需要）
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*.swp
+*.swo
+
+
+### 其他通用忽略 ###
+# 本地环境变量文件
+*.env
+*.env.local
+*.env.*.local
+
+# 调试文件
+debug.log
+
+# 构建输出目录
+client/dist/
+server/build/
