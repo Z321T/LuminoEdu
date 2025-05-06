@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# 将项目根目录添加到 Python 路径
+BASE_DIR = Path(__file__).parent
+sys.path.append(str(BASE_DIR))
+
+# 其余代码...
 from fastapi import FastAPI
 
 app = FastAPI()
