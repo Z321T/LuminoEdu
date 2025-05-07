@@ -4,11 +4,6 @@ from fastapi.security import OAuth2PasswordBearer
 from app.core.security import verify_token
 from app.services.login import get_user_by_role_and_id
 
-# JWT相关配置
-SECRET_KEY = "your_secret_key_here"  # 实际应用中应使用环境变量或配置文件
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 0.5小时过期
-
 # 创建OAuth2认证方案
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 

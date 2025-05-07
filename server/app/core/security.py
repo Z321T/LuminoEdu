@@ -3,11 +3,7 @@ from typing import Optional
 import jwt
 from app.schemas.auth import TokenPayload
 from pydantic import ValidationError
-
-# JWT相关配置
-SECRET_KEY = "your_secret_key_here"  # 实际应用中应使用环境变量或配置文件
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 0.5小时过期
+from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

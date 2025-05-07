@@ -13,8 +13,8 @@ sys.path.append(str(BASE_DIR))
 
 # FastAPI 应用实例
 app = FastAPI(
-    title="基于多模态大模型的数字化教学资源制作系统",
-    description="使用FastAPI和Tortoise ORM构建的多模态大模型的数字化教学资源制作系统后端",
+    title="LuminoEdu",
+    description="--基于多模态大模型的数字化教学资源制作系统",
     version="1.0.0"
 )
 

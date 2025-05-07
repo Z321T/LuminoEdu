@@ -8,7 +8,7 @@ TORTOISE_ORM = {
                     'port': '3306',
                     'user': 'root',
                     'password': 'root',
-                    'database': 'fastapi',
+                    'database': 'luminoedu',
                     'charset': 'utf8mb4',
                 }
             }
@@ -16,8 +16,11 @@ TORTOISE_ORM = {
     'apps': {
             'models':{
                 'models': [
-                    'app.models',
-                    # 'aerich.models'
+                    'app.models.user_common',
+                    'app.models.admin',
+                    'app.models.teacher',
+                    'app.models.student',
+                    'aerich.models'
                 ],
                 'default_connection': 'default',
             }
