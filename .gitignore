@@ -55,6 +55,16 @@ server/htmlcov/
 # 单元测试缓存
 server/.pytest_cache/
 
+### Aerich 生成的配置文件 ###
+server/pyproject.toml
+
+### Aerich 迁移文件 ###
+server/migrations/*
+
+# 保留 migrations 文件夹本身
+!server/migrations/
+!server/migrations/.gitkeep
+
 
 ### IDE/编辑器配置 ###
 # VS Code
