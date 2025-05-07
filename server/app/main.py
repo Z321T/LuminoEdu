@@ -13,8 +13,8 @@ sys.path.append(str(BASE_DIR))
 
 # FastAPI 应用实例
 app = FastAPI(
-    title="教学管理系统",
-    description="使用FastAPI和Tortoise ORM构建的教学管理系统后端",
+    title="基于多模态大模型的数字化教学资源制作系统",
+    description="使用FastAPI和Tortoise ORM构建的多模态大模型的数字化教学资源制作系统后端",
     version="1.0.0"
 )
 
@@ -26,7 +26,6 @@ register_tortoise(
     app=app,
     config=TORTOISE_ORM,
 )
-
 
 
 if __name__ == "__main__":
