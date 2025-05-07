@@ -65,6 +65,8 @@ server/migrations/*
 !server/migrations/
 !server/migrations/.gitkeep
 
+# 安全相关
+server/.secret_key
 
 ### IDE/编辑器配置 ###
 # VS Code
