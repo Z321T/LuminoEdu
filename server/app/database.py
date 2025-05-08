@@ -19,6 +19,7 @@ TORTOISE_ORM = {
                     'app.models.admin',
                     'app.models.teacher',
                     'app.models.student',
+                    'app.models.course',
                     'aerich.models'
                 ],
                 'default_connection': 'default',
