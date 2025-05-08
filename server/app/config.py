@@ -3,9 +3,8 @@ import os
 import secrets
 from pathlib import Path
 
-# 项目基础路径/根目录
-BASE_DIR = Path(__file__).resolve().parent.parent
-SERVER_DIR = BASE_DIR
+# 后端项目基础路径server/
+SERVER_DIR = Path(__file__).resolve().parent.parent
 
 # 密钥文件路径
 SECRET_KEY_FILE = SERVER_DIR / ".secret_key"

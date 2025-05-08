@@ -16,10 +16,10 @@ TORTOISE_ORM = {
     'apps': {
             'models':{
                 'models': [
-                    'app.models.user_common',
                     'app.models.admin',
                     'app.models.teacher',
                     'app.models.student',
+                    'app.models.course',
                     'aerich.models'
                 ],
                 'default_connection': 'default',
