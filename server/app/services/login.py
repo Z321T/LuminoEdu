@@ -4,9 +4,7 @@ from typing import Union
 from fastapi import HTTPException, status
 
 from app.core.security import create_access_token
-from app.models.admin import Admin
-from app.models.student import Student
-from app.models.teacher import Teacher
+from app.models import Admin, Student, Teacher
 from app.models.user_common import UserRole
 
 # 用户模型字典，用于根据角色快速获取对应的用户模型
