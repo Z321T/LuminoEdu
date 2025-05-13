@@ -3,7 +3,7 @@ from typing import Any
 
 from app.schemas.auth import LoginForm, Token
 from app.core.auth import get_current_user
-from app.services.login import login_for_access_token
+from app.services.auth import login_for_access_token
 
 router = APIRouter(tags=["登录认证"])
 
@@ -13,7 +13,7 @@ async def login(form_data: LoginForm) -> Any:
     用户登录接口，返回访问令牌
     """
     return await login_for_access_token(
-        username=form_data.username,
+        user_id=form_data.user_id,
         password=form_data.password,
         role=form_data.role
     )
