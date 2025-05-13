@@ -11,10 +11,25 @@ import './style.css'; // 导入全局样式文件
 
 axios.defaults.withCredentials=true;
 
-// 创建axios实例
+// 创建Axios实例
 const axiosInstance = axios.create({
-    // baseURL: 'http://127.0.0.1:8000',
-  });
+  baseURL: 'http://localhost:8000', // 根据后端实际地址进行修改
+});
+
+// 请求拦截器
+axiosInstance.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => {
+    return Promise.reject(error);
+  }
+);
+
 
 
 createApp(App)

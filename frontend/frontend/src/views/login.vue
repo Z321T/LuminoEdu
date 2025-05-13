@@ -28,10 +28,10 @@
           :rules="rules"
           class="login-form"
         >
-          <el-form-item prop="id">
+          <el-form-item prop="username">
             <el-input
-              v-model="loginForm.id"
-              placeholder="请输入用户名或邮箱"
+              v-model="loginForm.username"
+              placeholder="请输入用户名"
               class="custom-input"
               size="large"
             >
@@ -60,6 +60,27 @@
             </el-input>
           </el-form-item>
 
+          <el-form-item prop="role">
+            <el-select
+              v-model="loginForm.role"
+              placeholder="请选择角色"
+              class="custom-select"
+            >
+              <el-option
+                label="学生"
+                value="student"
+              ></el-option>
+              <el-option
+                label="教师"
+                value="teacher"
+              ></el-option>
+              <el-option
+                label="管理员"
+                value="admin"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+
           <el-form-item class="login-options">
             <el-checkbox
               v-model="remember"
@@ -83,13 +104,6 @@
             </el-button>
           </el-form-item>
 
-          <div class="login-footer">
-            <span>还没有账号？</span>
-            <router-link
-              to="/register"
-              class="register-link"
-            >立即注册</router-link>
-          </div>
         </el-form>
       </el-card>
     </transition>
@@ -98,9 +112,9 @@
 
 
 <script setup lang="ts">
-import { ref, inject, defineComponent, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, inject, reactive, onMounted } from 'vue'
 import type { AxiosInstance } from 'axios'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login } from '@/api/login' // 引入登录请求的API
 
@@ -114,57 +128,48 @@ const loading = ref(false)
 const loginFormRef = ref(null)
 const remember = ref(false)
 const loginForm = reactive({
-  id: '',
+  username: '',
   password: '',
+  role: 'student', // 默认角色为学生
 })
 
 const rules = reactive({
-  id: [
-    { required: true, message: '请输入账号', trigger: 'blur' },
-    { message: '请输入正确的账号格式', trigger: 'blur' },
-  ],
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, max: 20, message: '密码长度在6-20位之间', trigger: 'blur' },
   ],
+  role: [{ required: true, message: '请选择角色', trigger: 'change' }],
 })
 
-const submitForm = () => {
-  loginFormRef.value.validate((valid: boolean) => {
+const submitForm = async () => {
+  await loginFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
       loading.value = true
       showCard.value = false // 隐藏卡片触发动画
-      // 提交登录请求
-      setTimeout(() => {
-        login(loginForm)
-          .then((res) => {
-            // const message = res.data.message
-            // if (message === 'Login successful') {
-            //   // 从响应头中获取Authentication字段的值
-            //   const authHeader = res.headers.get('Authentication')
-            //   if (authHeader) {
-            //     // 将Authentication字段的值存储到localStorage
-            //     localStorage.setItem('Authentication', authHeader)
-            //   }
-            //   ElMessage.success('登录成功')
-            //   router.push('/SelectService') // 替换为您想要重定向到的路由
-            // } else {
-            //   ElMessage.error('登录失败：' + res.data.message)
-            //   router.push('/InvalidPass')
-            // }
-            ElMessage.success('操作成功')
-            router.push('/home_student') // 替换为您想要重定向到的路由
-          })
-          .catch((error) => {
-            console.error('Error during login:', error)
-            ElMessage.error('登录失败：' + error.message)
-            router.push('/InvalidPass')
-          })
-          .finally(() => {
-            loading.value = false
-            showCard.value = true // 保证出错也可以重新显示卡片
-          })
-      }, 400)
+
+      try {
+        const response = await login(loginForm, http)
+        const { data, headers } = response
+
+        if (data.success) {
+          const token = headers['authorization'] // 假设JWT令牌在Authorization头中
+          if (token) {
+            localStorage.setItem('token', token)
+          }
+          ElMessage.success('登录成功')
+          router.push('/home_student') // 根据角色重定向或统一页面
+        } else {
+          ElMessage.error(data.message || '登录失败')
+        }
+      } catch (error) {
+        console.error('Error during login:', error)
+        ElMessage.error('登录失败：未知错误')
+        router.push('/InvalidPass')
+      } finally {
+        loading.value = false
+        showCard.value = true // 保证出错也可以重新显示卡片
+      }
     }
   })
 }
@@ -291,27 +296,25 @@ onMounted(() => {
   margin-bottom: 1.5rem;
 }
 
-.custom-input {
-  :deep(.el-input__wrapper) {
-    background-color: #f9fafb;
-    border-radius: 0.5rem;
-    border: 1px solid #d1d5db;
-    color: #111827;
-    transition: border-color 0.2s;
+.custom-input .el-input__wrapper {
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  color: #111827;
+  transition: border-color 0.2s;
+}
 
-    &:hover {
-      border-color: #9ca3af;
-    }
+.custom-input .el-input__wrapper:hover {
+  border-color: #9ca3af;
+}
 
-    &.is-focus {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 1px #6366f1;
-    }
-  }
+.custom-input .el-input__wrapper.is-focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
+}
 
-  :deep(.el-input__inner::placeholder) {
-    color: #9ca3af;
-  }
+.custom-input .el-input__inner::placeholder {
+  color: #9ca3af;
 }
 
 .login-options {
@@ -321,20 +324,17 @@ onMounted(() => {
   margin-bottom: 1rem;
 }
 
-.remember-me {
-  :deep(.el-checkbox__label) {
-    color: #6b7280;
-  }
+.remember-me .el-checkbox__label {
+  color: #6b7280;
 }
 
 .forgot-password {
   font-size: 0.85rem;
   color: #6b7280;
   text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
+}
+.forgot-password.hover {
+  text-decoration: underline;
 }
 
 .login-button {
@@ -343,10 +343,9 @@ onMounted(() => {
   font-weight: 600;
   width: 100%;
   border: none;
-
-  &:hover {
-    background-color: #0e8c6e;
-  }
+}
+.login-button:hover {
+  background-color: #0e8c6e;
 }
 
 .social-login {
@@ -389,10 +388,10 @@ onMounted(() => {
   background-color: #f3f4f6;
   color: #374151;
   border: 1px solid #d1d5db;
+}
 
-  &:hover {
-    background-color: #e5e7eb;
-  }
+.social-icon:hover {
+  background-color: #e5e7eb;
 }
 
 .login-footer {
@@ -406,9 +405,8 @@ onMounted(() => {
   color: #10a37f;
   font-weight: 500;
   margin-left: 4px;
-
-  &:hover {
-    text-decoration: underline;
-  }
+}
+.register-link:hover {
+  text-decoration: underline;
 }
 </style>
