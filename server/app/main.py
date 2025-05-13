@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from app.database import TORTOISE_ORM
 from app.routers import api_router
@@ -16,6 +17,15 @@ app = FastAPI(
     title="LuminoEdu",
     description="--基于多模态大模型的数字化教学资源制作系统",
     version="1.0.0"
+)
+
+# 配置CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Vue开发服务器地址
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # 注册路由

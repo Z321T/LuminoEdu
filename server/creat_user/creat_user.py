@@ -1,0 +1,45 @@
+import asyncio
+from tortoise import Tortoise
+from app.models.student import Student
+from app.models.teacher import Teacher
+from app.models.user_common import UserRole
+from app.database import TORTOISE_ORM
+
+async def init():
+    # 初始化数据库连接
+    await Tortoise.init(config=TORTOISE_ORM)
+
+async def create_student():
+    # 创建学生用户实例
+    student = Student(
+        username="王测试",
+        student_id="2023001",
+        college="计算机学院",
+        major="软件工程",
+        grade="2023级",
+        enrollment_year=2023
+    )
+    student.set_password("password123")  # 使用模型方法设置密码
+    await student.save()
+    print(f"已创建学生: {student.username}")
+
+async def create_teacher():
+    # 创建教师用户实例
+    teacher = Teacher(
+        username="王教师",
+        staff_id="T2023001",
+        department="计算机科学系",
+        expertise="人工智能"
+    )
+    teacher.set_password("password123")  # 使用模型方法设置密码
+    await teacher.save()
+    print(f"已创建教师: {teacher.username}")
+
+async def main():
+    await init()
+    await create_student()
+    await create_teacher()
+    await Tortoise.close_connections()
+
+if __name__ == "__main__":
+    asyncio.run(main())
