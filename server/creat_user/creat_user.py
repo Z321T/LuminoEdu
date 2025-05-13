@@ -1,9 +1,11 @@
 import asyncio
+
 from tortoise import Tortoise
+
+from app.database import TORTOISE_ORM
 from app.models.student import Student
 from app.models.teacher import Teacher
-from app.models.user_common import UserRole
-from app.database import TORTOISE_ORM
+
 
 async def init():
     # 初始化数据库连接
