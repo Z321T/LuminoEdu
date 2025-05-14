@@ -84,11 +84,6 @@ server/.secret_key
 *.ipr
 *.iws
 
-# Vim
-*.swp
-*.swo
-
-
 ### 其他通用忽略 ###
 # 本地环境变量文件
 *.env
@@ -99,6 +94,6 @@ server/.secret_key
 debug.log
 
 # 构建输出目录
-client/dist/
 server/build/
 
+/server/app/documents
