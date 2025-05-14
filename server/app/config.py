@@ -48,3 +48,14 @@ DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "sk-0eda12ea690b402b9f6e7a
 
 # 文件存储路径
 MEDIA_ROOT = SERVER_DIR / "app" / "documents"
+
+# 确保媒体目录存在
+def ensure_media_directories_exist():
+    """确保媒体目录存在，避免重复创建"""
+    media_dir = Path(MEDIA_ROOT)
+    if not media_dir.exists():
+        media_dir.mkdir(parents=True, exist_ok=True)
+        print(f"媒体目录已创建: {media_dir}")
+
+# 导入时立即执行目录检查
+ensure_media_directories_exist()
