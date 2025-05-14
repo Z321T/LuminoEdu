@@ -42,3 +42,9 @@ def get_or_create_secret_key():
 SECRET_KEY = get_or_create_secret_key()
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 0.5小时过期
+
+# 习题生成配置
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "sk-0eda12ea690b402b9f6e7a702504280d")
+
+# 文件存储路径
+MEDIA_ROOT = SERVER_DIR / "app" / "documents"

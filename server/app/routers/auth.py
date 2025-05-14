@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Any
 
-from app.schemas.auth import LoginForm, Token
+from fastapi import APIRouter, Depends
+
 from app.core.auth import get_current_user
+from app.schemas.auth import LoginForm, Token
 from app.services.auth import login_for_access_token
 
 router = APIRouter(tags=["登录认证"])
