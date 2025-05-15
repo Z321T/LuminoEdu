@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 
 from app.config import MEDIA_ROOT
+from app.core import initialize_system_directories
 from app.database import TORTOISE_ORM
 from app.routers import api_router
 
@@ -14,29 +15,13 @@ from app.routers import api_router
 BASE_DIR = Path(__file__).parent
 sys.path.append(str(BASE_DIR))
 
-
-# 创建必要的目录结构
-def setup_directories():
-    """创建必要的目录结构，确保只创建一次"""
-    # 定义需要创建的目录
-    directories = [
-        Path(MEDIA_ROOT),  # 基础媒体目录
-        Path(MEDIA_ROOT) / "exercises" / "generated",  # 习题生成目录
-    ]
-
-    # 创建每个目录，使用exist_ok=True确保不会因目录已存在而报错
-    for directory in directories:
-        directory.mkdir(parents=True, exist_ok=True)
-        print(f"目录结构已检查: {directory}")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     FastAPI 应用生命周期管理器
     """
     # 应用启动前的操作
-    setup_directories()
+    initialize_system_directories(MEDIA_ROOT)
     print("应用初始化: 目录结构已准备就绪")
 
     # 应用运行中
