@@ -1,10 +1,11 @@
 from typing import Any
+from fastapi import APIRouter, Depends, Form
+from fastapi.security import OAuth2PasswordRequestForm
 
-from fastapi import APIRouter, Depends
-
-from app.core.auth import get_current_user
+from app.core.auth import auth_current_user
 from app.schemas.auth import LoginForm, Token
 from app.services.auth import login_for_access_token
+from app.models.user_common import UserRole
 
 router = APIRouter(tags=["登录认证"])
 
@@ -19,8 +20,8 @@ async def login(form_data: LoginForm) -> Any:
         role=form_data.role
     )
 
-@router.get("/me", description="获取当前登录用户信息")
-async def read_users_me(current_user = Depends(get_current_user)):
+@router.get("/user", description="获取当前登录用户信息")
+async def read_users_me(current_user = Depends(auth_current_user)):
     """获取当前登录用户信息"""
     return {
         # 可以根据需要返回更多用户信息

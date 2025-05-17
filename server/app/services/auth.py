@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Union, Optional, Tuple
+from typing import Union
 
 from fastapi import HTTPException, status
 
@@ -59,7 +59,6 @@ async def authenticate_user(user_id: str, password: str, role: UserRole) -> Unio
 
     return user
 
-
 async def login_for_access_token(user_id: str, password: str, role: UserRole):
     """
     登录并创建访问令牌
@@ -83,7 +82,7 @@ async def login_for_access_token(user_id: str, password: str, role: UserRole):
         "username": user.username
     }
 
-async def get_user_by_role_and_id(role: str, user_id: str):
+async def auth_user_by_role_and_id(role: str, user_id: str):
     """
     根据角色和ID获取用户
     """
@@ -99,3 +98,5 @@ async def get_user_by_role_and_id(role: str, user_id: str):
         return await role_config["model"].filter(**query_kwargs).first()
     except ValueError:
         return None
+
+
