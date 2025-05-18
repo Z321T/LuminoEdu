@@ -1,11 +1,18 @@
 from datetime import timedelta
-from typing import Union
+from typing import Union, Tuple
 
 from fastapi import HTTPException, status
 
 from app.core.security import create_access_token
 from app.models import Admin, Student, Teacher
 from app.models.user_common import UserRole
+
+# 用户ID前缀与角色的映射
+ID_PREFIX_ROLE_MAP = {
+    "S": UserRole.STUDENT,
+    "T": UserRole.TEACHER,
+    "A": UserRole.ADMIN,
+}
 
 # 用户模型及其对应ID字段的映射
 USER_MODEL_CONFIG = {
@@ -15,15 +22,48 @@ USER_MODEL_CONFIG = {
 }
 
 
-async def authenticate_user(user_id: str, password: str, role: UserRole) -> Union[Student, Teacher, Admin]:
+def parse_user_role_from_id(user_id: str) -> Tuple[UserRole, str]:
     """
-    根据角色特定ID和密码验证用户
+    从用户ID解析角色
 
     Args:
-        user_id: 根据角色不同表示学号/工号/管理员编号
-        password: 用户密码
-        role: 用户角色
+        user_id: 用户ID (如 S12345, T67890, A00001)
+
+    Returns:
+        元组: (用户角色, 原始ID)
+
+    Raises:
+        HTTPException: 如果ID格式无效
     """
+    if not user_id or len(user_id) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="用户ID格式无效"
+        )
+
+    prefix = user_id[0].upper()
+    role = ID_PREFIX_ROLE_MAP.get(prefix)
+
+    if not role:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"无效的用户ID前缀: {prefix}"
+        )
+
+    return role, user_id
+
+
+async def authenticate_user(user_id: str, password: str) -> Union[Student, Teacher, Admin]:
+    """
+    根据角色ID和密码验证用户
+
+    Args:
+        user_id: 用户ID (自动从前缀识别角色)
+        password: 用户密码
+    """
+    # 从ID解析角色
+    role, original_id = parse_user_role_from_id(user_id)
+
     # 获取角色对应的配置
     role_config = USER_MODEL_CONFIG.get(role)
     if not role_config:
@@ -43,9 +83,10 @@ async def authenticate_user(user_id: str, password: str, role: UserRole) -> Unio
 
     # 验证用户是否存在
     if not user:
+        role_name = {"student": "学生", "teacher": "教师", "admin": "管理员"}[role.value]
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"该{role.value}用户不存在",
+            detail=f"该{role_name}用户不存在",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -59,12 +100,12 @@ async def authenticate_user(user_id: str, password: str, role: UserRole) -> Unio
 
     return user
 
-async def login_for_access_token(user_id: str, password: str, role: UserRole):
+async def login_for_access_token(user_id: str, password: str):
     """
     登录并创建访问令牌
     """
     # 验证用户
-    user = await authenticate_user(user_id, password, role)
+    user = await authenticate_user(user_id, password)
 
     # 创建访问令牌
     access_token_expires = timedelta(minutes=60 * 24)  # 24小时

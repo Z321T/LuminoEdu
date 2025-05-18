@@ -6,7 +6,7 @@ from app.services.auth import auth_user_by_role_and_id
 from app.models.user_common import UserRole
 
 # 创建OAuth2认证方案
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 async def auth_current_user(token: str = Depends(oauth2_scheme)):

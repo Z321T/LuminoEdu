@@ -7,9 +7,14 @@ from app.core.auth import auth_teacher_user
 api_router = APIRouter()
 
 # 子路由
-api_router.include_router(auth.router, prefix="/auth")
+# 登录认证路由
+api_router.include_router(
+    auth.router,
+    prefix="/auth"
+)
+# 教师端练习生成器路由
 api_router.include_router(
     exercise_generator.router,
     prefix="/generator_exercise",
-    # dependencies=[Depends(auth_teacher_user)]
+    dependencies=[Depends(auth_teacher_user)]
 )
