@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from app.routers import auth,exercise_generator
-from app.core.auth import auth_teacher_user
+from app.core.dependencies import auth_teacher_user
 
 
 # 主路由

@@ -13,6 +13,11 @@ async def init():
     await Tortoise.init(config=TORTOISE_ORM)
 
 async def create_student():
+    # 检查学生是否已存在
+    student_exists = await Student.filter(student_id="S2025001").exists()
+    if student_exists:
+        return
+
     # 创建学生用户实例
     student = Student(
         username="王测试",
@@ -27,6 +32,11 @@ async def create_student():
     print(f"已创建学生: {student.username}")
 
 async def create_teacher():
+    # 检查教师是否已存在
+    teacher_exists = await Teacher.filter(staff_id="T2025001").exists()
+    if teacher_exists:
+        return
+
     # 创建教师用户实例
     teacher = Teacher(
         username="王教师",
@@ -39,6 +49,11 @@ async def create_teacher():
     print(f"已创建教师: {teacher.username}")
 
 async def create_admin():
+    # 检查管理员是否已存在
+    admin_exists = await Admin.filter(admin_id="A2025001").exists()
+    if admin_exists:
+        return
+
     # 创建管理员用户实例
     admin = Admin(
         username="admin",
@@ -52,6 +67,7 @@ async def main():
     await init()
     await create_student()
     await create_teacher()
+    await create_admin()
     await Tortoise.close_connections()
 
 if __name__ == "__main__":

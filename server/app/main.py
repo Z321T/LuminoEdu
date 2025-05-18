@@ -8,6 +8,8 @@ from tortoise.contrib.fastapi import register_tortoise
 
 from app.config import MEDIA_ROOT
 from app.core import initialize_system_directories
+from app.core.logger import app_logger
+from app.core.middleware import log_request_middleware
 from app.database import TORTOISE_ORM
 from app.routers import api_router
 
@@ -23,12 +25,14 @@ async def lifespan(app: FastAPI):
     # 应用启动前的操作
     initialize_system_directories(MEDIA_ROOT)
     print("应用初始化: 目录结构已准备就绪")
+    app_logger.info("应用程序启动")
 
     # 应用运行中
     yield
 
     # 应用关闭时的操作
     print("应用关闭中: 正在清理资源...")
+    app_logger.info("应用程序关闭")
 
 
 # FastAPI 应用实例
@@ -47,6 +51,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 添加日志请求中间件
+app.middleware("http")(log_request_middleware)
 
 # 注册路由
 app.include_router(api_router)
