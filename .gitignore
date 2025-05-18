@@ -70,6 +70,12 @@ server/documents/*
 !server/documents/
 !server/documents/.gitkeep
 
+# logs文件夹
+server/app/logs/*
+# 保留 logs 文件夹本身
+!server/app/logs/
+!server/app/logs/.gitkeep
+
 # 安全相关
 server/.secret_key
 

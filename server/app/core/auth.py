@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordBearer
 
 from app.core.security import verify_token
 from app.services.auth import auth_user_by_role_and_id
-from app.models.user_common import UserRole
 
 # 创建OAuth2认证方案
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
@@ -29,14 +28,3 @@ async def auth_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
 
     return user
-
-async def auth_teacher_user(current_user = Depends(auth_current_user)):
-    """
-    验证当前用户是否为教师
-    """
-    if current_user.role != UserRole.TEACHER:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="权限不足，只有教师可以访问此功能"
-        )
-    return current_user
