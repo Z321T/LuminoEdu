@@ -95,9 +95,9 @@ async def list_generated_exercises(
     列出最近生成的习题文件
 
     参数:
-        - limit: 返回的最大文件数量
-        - title_filter: 可选的标题过滤条件
-        - current_user: 当前请求的教师用户
+    - limit: 返回的最大文件数量
+    - title_filter: 可选的标题过滤条件
+    - current_user: 当前请求的教师用户
     """
     from app.config import MEDIA_ROOT
 
