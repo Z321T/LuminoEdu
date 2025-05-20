@@ -60,10 +60,21 @@ server/pyproject.toml
 
 ### Aerich 迁移文件 ###
 server/migrations/*
-
 # 保留 migrations 文件夹本身
 !server/migrations/
 !server/migrations/.gitkeep
+
+# documents文件夹
+server/documents/*
+# 保留 documents 文件夹本身
+!server/documents/
+!server/documents/.gitkeep
+
+# logs文件夹
+server/app/logs/*
+# 保留 logs 文件夹本身
+!server/app/logs/
+!server/app/logs/.gitkeep
 
 # 安全相关
 server/.secret_key
@@ -79,11 +90,6 @@ server/.secret_key
 *.ipr
 *.iws
 
-# Vim
-*.swp
-*.swo
-
-
 ### 其他通用忽略 ###
 # 本地环境变量文件
 *.env
@@ -94,5 +100,6 @@ server/.secret_key
 debug.log
 
 # 构建输出目录
-client/dist/
 server/build/
+
+/server/app/documents
