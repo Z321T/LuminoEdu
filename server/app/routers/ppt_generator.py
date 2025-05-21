@@ -35,6 +35,48 @@ async def generate_ppt_outline_endpoint(
         raise HTTPException(status_code=500, detail=f"PPT大纲生成失败: {str(e)}")
 
 
+@router.get("/outlines")
+async def list_ppt_outlines(current_user: Teacher = Depends(auth_teacher_user)):
+    """
+    列出当前教师的所有PPT大纲
+    """
+    staff_id = current_user.staff_id
+    logger.info(f"教师 {current_user.username}(教工号:{staff_id}) 请求查看所有PPT大纲")
+
+    outlines = []
+
+    for file_path in PPT_OUTLINE_DIR.glob(f"outline_{staff_id}_*.md"):
+        try:
+            filename = file_path.name
+            base_name = filename.rsplit('.', 1)[0]
+            parts = base_name.split('_')
+
+            # 提取文件名中的时间戳
+            if len(parts) >= 3:
+                timestamp = parts[2]
+                title = parts[4]
+            else:
+                # 如果文件名格式不符合预期
+                timestamp = ""
+                title = '未知标题'
+
+            # 读取文件内容
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read(50)  # 只读取前50个字符用于预览
+
+            outlines.append({
+                "file_path": file_path,
+                "title": title,
+                "created_at": timestamp,
+                "preview": content[:50] + ("..." if len(content) > 50 else ""),
+            })
+        except Exception as e:
+            logger.error(f"处理大纲文件 {file_path.name} 失败: {str(e)}")
+            continue
+
+    return {"outlines": outlines}
+
+
 @router.post("/generate_from_outline", response_model=PPTGenerationResponse)
 async def generate_ppt_from_outline_endpoint(
         request: PPTGenerationFromOutlineRequest,
@@ -52,47 +94,24 @@ async def generate_ppt_from_outline_endpoint(
         raise HTTPException(status_code=500, detail=f"从大纲生成PPT失败: {str(e)}")
 
 
-@router.get("/outlines")
-async def list_ppt_outlines(current_user: Teacher = Depends(auth_teacher_user)):
+@router.get("/list")
+async def list_ppt_files(current_user: Teacher = Depends(auth_teacher_user)):
     """
-    列出当前教师的所有PPT大纲
+    列出当前用户可用的PPT文件
     """
-    staff_id = current_user.staff_id
-    logger.info(f"教师 {current_user.username}(教工号:{staff_id}) 请求查看所有PPT大纲")
+    staff_id_pattern = f"teacher_{current_user.staff_id}_"
 
-    outlines = []
-
-    for file_path in PPT_OUTLINE_DIR.glob(f"outline_{staff_id}_*.md"):
-        try:
-            # 从文件名提取request_id
-            request_id = file_path.name.replace(f"outline_{staff_id}_", "").replace(".md", "")
-
-            # 读取文件内容
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read(500)  # 只读取前500个字符用于预览
-
-            # 检查是否已生成PPT
-            has_ppt = any(PPT_FILES_DIR.glob(f"teacher_{staff_id}_{request_id}_*.pptx"))
-
-            # 提取标题
-            title = ""
-            for line in content.split("\n"):
-                if line.startswith("# PPT标题"):
-                    title = line.replace("# PPT标题：", "").strip()
-                    break
-
-            outlines.append({
-                "request_id": request_id,
-                "title": title,
-                "created_at": file_path.stat().st_ctime,
-                "preview": content[:200] + ("..." if len(content) > 200 else ""),
-                "has_generated_ppt": has_ppt
+    files = []
+    for file_path in PPT_FILES_DIR.glob("*.pptx"):
+        # 只返回当前教师的文件
+        if file_path.name.startswith(staff_id_pattern):
+            files.append({
+                "file_name": file_path.name,
+                "size": file_path.stat().st_size,
+                "created_at": file_path.stat().st_ctime
             })
-        except Exception as e:
-            logger.error(f"处理大纲文件 {file_path.name} 失败: {str(e)}")
-            continue
 
-    return {"outlines": outlines}
+    return {"files": files}
 
 
 @router.get("/download/{file_name}")
@@ -118,23 +137,3 @@ async def download_ppt(
         filename=file_name,
         media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation"
     )
-
-
-@router.get("/list")
-async def list_ppt_files(current_user: Teacher = Depends(auth_teacher_user)):
-    """
-    列出当前用户可用的PPT文件
-    """
-    staff_id_pattern = f"teacher_{current_user.staff_id}_"
-
-    files = []
-    for file_path in PPT_FILES_DIR.glob("*.pptx"):
-        # 只返回当前教师的文件
-        if file_path.name.startswith(staff_id_pattern):
-            files.append({
-                "file_name": file_path.name,
-                "size": file_path.stat().st_size,
-                "created_at": file_path.stat().st_ctime
-            })
-
-    return {"files": files}

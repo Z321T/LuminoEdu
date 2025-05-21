@@ -1,6 +1,6 @@
-import json
 import uuid
-from typing import Dict, Any, Tuple
+from datetime import datetime
+from typing import Dict, Any, List
 
 from openai import OpenAI
 from pptx import Presentation
@@ -40,61 +40,31 @@ async def generate_ppt_outline(request: PPTGenerationRequest, staff_id: str) -> 
 
     logger.info(f"开始生成PPT大纲: 标题={request.title}, ID={request_id}")
 
-    prompt = f"""你是一位经验丰富的教师和课件专家，请为以下教学内容设计一个详细的PPT大纲:
+    prompt = f"""你是一位经验丰富的教师和课件专家，请为以下教学内容设计一个详细且内容丰富的PPT大纲:
     
     标题: {request.title}
     学科: {request.subject}
     目标年级: {request.target_grade}
     教学目标: {request.teaching_target}
     教学重点: {', '.join(request.key_points)}
+    幻灯片数量: {request.slide_count}
     {f"其他信息: {request.additional_info}" if request.additional_info else ""}
     
-    请生成{request.slide_count}张幻灯片的大纲，内容需要包括:
+    请生成{request.slide_count}张幻灯片的md格式设计，要求每张幻灯片的内容具体、丰富、实用，避免空洞的表述。内容需要包括:
     1. 封面页(标题+简介)
-    2. 学习目标页
-    3. 内容页(核心知识讲解)
-    4. 案例/示例页
-    5. 练习/活动页
-    6. 总结页
+    2. 学习目标页(详细列出具体可衡量的学习成果)
+    3. 内容页(核心知识讲解，包含具体概念、定义、原理和示例代码)
+    4. 案例/示例页(真实可执行的代码示例，而非空泛描述)
+    5. 练习/活动页(有明确步骤和要求的练习题)
+    6. 总结页(具体的知识点总结，不要简单重复前面内容)
     
-    请提供两种格式的输出:
+    对于编程相关内容，请提供实际的代码片段而非仅描述代码功能。
+    对于概念解释，请给出明确的定义和具体的例子。
+    对于操作步骤，请提供详细的分步骤说明。
     
-    1. 首先提供一个完整的Markdown格式大纲，这个大纲将直接展示给用户进行编辑，格式如下:
-    ```markdown
-    # PPT标题：{request.title}
+    请提供一个完整的Markdown格式大纲，包含每张幻灯片的标题和内容。
     
-    ## 幻灯片1：封面
-    - 标题：xxx
-    - 内容：
-      * 点1
-      * 点2
-    
-    ## 幻灯片2：xxx
-    - 标题：xxx
-    - 内容：
-      * xxx
-      * xxx
-    
-    ## 教师备注
-    - 幻灯片1：xxx
-    - 幻灯片2：xxx
-    ```
-    
-    2. 然后提供一个JSON格式的幻灯片结构数据(这部分将被程序使用，不会展示给用户):
-    ```json
-    {{
-        "title": "PPT标题",
-        "slides": [
-            {{
-                "title": "幻灯片标题",
-                "content": "幻灯片内容(支持Markdown格式)",
-                "note": "教师备注说明"
-            }}
-        ]
-    }}
-    ```
-    
-    请确保两种格式的内容保持一致，字数适中且内容有教学价值。
+    请确保生成了符合要求的幻灯片数量，字数适中且内容有教学价值。
     """
 
     try:
@@ -106,81 +76,30 @@ async def generate_ppt_outline(request: PPTGenerationRequest, staff_id: str) -> 
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=4000
+            max_tokens=8000,
+            stream=False
         )
 
-        content = response.choices[0].message.content
+        md_content = response.choices[0].message.content
         logger.info(f"成功从API获取大纲内容，请求ID={request_id}")
 
-        # 提取Markdown和JSON部分
-        md_outline, json_data = extract_content_parts(content)
-
         # 保存大纲到文件
-        outline_path = PPT_OUTLINE_DIR / f"outline_{staff_id}_{request_id}.md"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        outline_path = PPT_OUTLINE_DIR / f"outline_{staff_id}_{timestamp}_{request.title}.md"
         with open(outline_path, "w", encoding="utf-8") as f:
-            f.write(md_outline)
+            f.write(md_content)
 
         logger.info(f"大纲已保存到文件: {outline_path}")
 
-        # 构建返回结果
-        slides_data = []
-        for slide in json_data.get("slides", []):
-            slides_data.append(PPTSlide(
-                title=slide.get("title", ""),
-                content=slide.get("content", ""),
-                note=slide.get("note", "")
-            ))
-
         return PPTOutlineResponse(
             request_id=request_id,
-            title=json_data.get("title", request.title),
-            outline_md=md_outline,
-            slides_data=slides_data
+            title=request.title,
+            outline_md=md_content,
         )
 
     except Exception as e:
         logger.error(f"生成PPT大纲失败: {str(e)}")
         raise Exception(f"生成PPT大纲失败: {str(e)}")
-
-
-def extract_content_parts(content: str) -> Tuple[str, Dict]:
-    """从API响应中提取Markdown和JSON部分"""
-    try:
-        # 提取Markdown部分
-        md_match = content.split("```markdown")[1].split("```")[0].strip() if "```markdown" in content else ""
-        if not md_match and "```" in content:
-            # 尝试提取第一个代码块
-            md_match = content.split("```")[1].strip()
-
-        # 提取JSON部分
-        json_match = None
-        if "```json" in content:
-            json_text = content.split("```json")[1].split("```")[0].strip()
-            json_match = json.loads(json_text)
-        elif "```" in content and content.count("```") >= 4:
-            # 尝试提取第二个代码块
-            blocks = content.split("```")
-            if len(blocks) >= 5:  # 至少有两个代码块
-                json_text = blocks[3].strip()
-                json_match = json.loads(json_text)
-
-        if not json_match:
-            # 最后尝试提取任何JSON格式内容
-            import re
-            pattern = r'\{[\s\S]*\}'
-            matches = re.findall(pattern, content)
-            if matches:
-                json_match = json.loads(matches[0])
-
-        if not json_match:
-            logger.warning("无法提取JSON数据，返回空对象")
-            json_match = {"title": "", "slides": []}
-
-        return md_match, json_match
-
-    except Exception as e:
-        logger.error(f"提取内容部分失败: {str(e)}")
-        return "", {"title": "", "slides": []}
 
 
 async def generate_ppt_from_outline(

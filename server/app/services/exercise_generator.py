@@ -25,9 +25,13 @@ class ExerciseGenerator:
         )
 
         # 文件保存目录
-        self.output_dir = Path(MEDIA_ROOT) / "exercises" / "generated"
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        logger.info(f"习题生成器初始化完成，输出目录: {self.output_dir}")
+        self.base_dir = Path(MEDIA_ROOT) / "exercises"
+        self.json_dir = self.base_dir / "json"
+        self.md_dir = self.base_dir / "md"
+        # 创建必要的目录
+        self.json_dir.mkdir(parents=True, exist_ok=True)
+        self.md_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"习题生成器初始化完成，JSON目录: {self.json_dir}, Markdown目录: {self.md_dir}")
 
     async def generate_exercises(
         self,
@@ -38,7 +42,7 @@ class ExerciseGenerator:
         types: List[ExerciseType] = None,
     ) -> Dict[str, Any]:
         """
-        根据内容生成习题并保存为Markdown文件
+        根据内容生成习题并保存为Markdown和JSON文件
 
         参数:
             content: 用于生成习题的内容
@@ -74,21 +78,27 @@ class ExerciseGenerator:
             # 生成文件存储路径
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"teacher_{staff_id}_{timestamp}_{title}"
-            file_path_base = self.output_dir / filename
 
-            # 生成文件内容
+            # 保存JSON文件
+            json_path = self.json_dir / f"{filename}.json"
+            with open(json_path, "w", encoding="utf-8") as f:
+                json.dump(exercises_data, f, ensure_ascii=False, indent=2)
+            logger.info(f"教师(工号:{staff_id})的习题JSON数据已保存: {json_path}")
+
+            # 生成并保存Markdown文件
             md_content = self._generate_markdown(exercises_data, title)
-
-            # 保存文件
-            file_path = self._save_markdown(md_content, file_path_base)
-            logger.info(f"教师(工号:{staff_id})的习题已保存: {file_path}")
+            md_path = self.md_dir / f"{filename}.md"
+            with open(md_path, "w", encoding="utf-8") as f:
+                f.write(md_content)
+            logger.info(f"教师(工号:{staff_id})的习题Markdown文件已保存: {md_path}")
 
             return {
-                "file_path": file_path,
-                "exercises_data": exercises_data,
+                "md_path": str(md_path),
+                "json_path": str(json_path),
                 "timestamp": timestamp,
                 "title": title,
-                "staff_id": staff_id
+                "staff_id": staff_id,
+                "exercises_count": len(exercises_data)
             }
         except Exception as e:
             logger.error(f"习题生成过程中发生错误: {str(e)}")
@@ -147,7 +157,7 @@ class ExerciseGenerator:
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
-                max_tokens=2000,
+                max_tokens=8000,
                 stream=False
             )
             logger.info("AI API调用成功")
@@ -206,15 +216,3 @@ class ExerciseGenerator:
 
         logger.info("Markdown格式习题内容生成完成")
         return "\n".join(md_lines)
-
-    def _save_markdown(self, md_content: str, file_path_base: Path) -> str:
-        """保存Markdown文件"""
-        file_path = file_path_base.with_suffix('.md')
-        try:
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(md_content)
-            logger.info(f"成功保存习题文件: {file_path}")
-            return str(file_path)
-        except Exception as e:
-            logger.error(f"保存习题文件失败: {str(e)}")
-            raise

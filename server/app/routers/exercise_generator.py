@@ -42,12 +42,12 @@ async def generate_exercises(
             types=request.types
         )
 
-        logger.info(f"习题生成成功: 标题='{request.title}', 生成数量={len(result['exercises_data'])}")
+        logger.info(f"习题生成成功: 标题='{request.title}', 生成数量={result["exercises_count"]}")
 
         return {
-            "file_path": result["file_path"],
-            "exercise_count": len(result["exercises_data"]),
-            "exercises_data": result["exercises_data"]
+            "md_path": result["md_path"],
+            "json_path": result["json_path"],
+            "exercise_count": result["exercises_count"]
         }
     except Exception as e:
         logger.error(f"习题生成失败: {str(e)}", exc_info=True)
@@ -105,14 +105,14 @@ async def list_generated_exercises(
     logger.info(f"教师(工号:{staff_id})查询习题文件列表")
 
     # 获取生成的习题文件目录
-    exercises_dir = Path(MEDIA_ROOT) / "exercises" / "generated"
+    md_dir = Path(MEDIA_ROOT) / "exercises" / "md"
 
-    if not exercises_dir.exists():
-        logger.warning(f"教师(工号:{staff_id})查询习题目录不存在: {exercises_dir}")
+    if not md_dir.exists():
+        logger.warning(f"教师(工号:{staff_id})查询习题目录不存在: {md_dir}")
         return {"exercises": []}
 
     # 只列出当前教师的文件
-    files = list(exercises_dir.glob(f"teacher_{staff_id}_*.md"))
+    files = list(md_dir.glob(f"teacher_{staff_id}_*.md"))
 
     # 如果有标题过滤，应用过滤条件
     if title_filter:

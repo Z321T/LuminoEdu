@@ -32,7 +32,6 @@ class PPTOutlineResponse(BaseModel):
     request_id: str
     title: str
     outline_md: str  # Markdown格式的PPT大纲
-    slides_data: List[PPTSlide]  # 用于存储结构化的幻灯片数据
 
 
 class PPTGenerationFromOutlineRequest(BaseModel):
