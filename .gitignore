@@ -19,15 +19,15 @@ $RECYCLE.BIN/
 
 
 ### 前端 (Vue) 需要忽略的文件 ###
-client/node_modules/
-client/dist/
-client/.env.local
-client/.env.*.local
-client/npm-debug.log*
-client/yarn-debug.log*
-client/yarn-error.log*
-client/.vscode/
-client/.idea/
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.vscode/
+frontend/.idea/
 
 
 ### 后端 (FastAPI) 需要忽略的文件 ###
