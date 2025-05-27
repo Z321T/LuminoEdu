@@ -28,9 +28,9 @@
           :rules="rules"
           class="login-form"
         >
-          <el-form-item prop="username">
+          <el-form-item prop="user_id">
             <el-input
-              v-model="loginForm.username"
+              v-model="loginForm.user_id"
               placeholder="请输入用户名"
               class="custom-input"
               size="large"
@@ -58,27 +58,6 @@
                 </el-icon>
               </template>
             </el-input>
-          </el-form-item>
-
-          <el-form-item prop="role">
-            <el-select
-              v-model="loginForm.role"
-              placeholder="请选择角色"
-              class="custom-select"
-            >
-              <el-option
-                label="学生"
-                value="student"
-              ></el-option>
-              <el-option
-                label="教师"
-                value="teacher"
-              ></el-option>
-              <el-option
-                label="管理员"
-                value="admin"
-              ></el-option>
-            </el-select>
           </el-form-item>
 
           <el-form-item class="login-options">
@@ -128,18 +107,16 @@ const loading = ref(false)
 const loginFormRef = ref(null)
 const remember = ref(false)
 const loginForm = reactive({
-  username: '',
+  user_id: '',
   password: '',
-  role: 'student', // 默认角色为学生
 })
 
 const rules = reactive({
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  user_id: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, max: 20, message: '密码长度在6-20位之间', trigger: 'blur' },
   ],
-  role: [{ required: true, message: '请选择角色', trigger: 'change' }],
 })
 
 const submitForm = async () => {
@@ -149,23 +126,16 @@ const submitForm = async () => {
       showCard.value = false // 隐藏卡片触发动画
 
       try {
-        const response = await login(loginForm, http)
-        const { data, headers } = response
+        const data = await login(loginForm, http) // 获取登录响应数据
 
-        if (data.success) {
-          const token = headers['authorization'] // 假设JWT令牌在Authorization头中
-          if (token) {
-            localStorage.setItem('token', token)
-          }
-          ElMessage.success('登录成功')
-          router.push('/home_student') // 根据角色重定向或统一页面
-        } else {
-          ElMessage.error(data.message || '登录失败')
-        }
+        const { access_token, user_id, role, username } = data
+        localStorage.setItem('token', access_token)
+
+        ElMessage.success('登录成功')
+        router.push(role === 'teacher' ? '/home_teacher' : '/home_student') // 根据角色重定向
       } catch (error) {
-        console.error('Error during login:', error)
-        ElMessage.error('登录失败：未知错误')
-        router.push('/InvalidPass')
+        console.error('前端捕获到错误', error)
+        ElMessage.error(error.detail || '未知错误')
       } finally {
         loading.value = false
         showCard.value = true // 保证出错也可以重新显示卡片
@@ -173,7 +143,6 @@ const submitForm = async () => {
     }
   })
 }
-
 onMounted(() => {
   showCard.value = true
 })
