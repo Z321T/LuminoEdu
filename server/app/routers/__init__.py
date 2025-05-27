@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from app.routers import auth, exercise_generator, ppt_generator
-from app.core.dependencies import auth_teacher_user
+from app.routers import auth, teacher, user
+from app.core.dependencies import auth_current_user, auth_teacher_user
 
 
 # 主路由
@@ -12,15 +12,17 @@ api_router.include_router(
     auth.router,
     prefix="/auth"
 )
-# 教师端练习生成器路由
+
+# 教师端路由
 api_router.include_router(
-    exercise_generator.router,
-    prefix="/generator_exercise",
+    teacher.router,
+    prefix="/teacher",
     dependencies=[Depends(auth_teacher_user)]
 )
-# 教师端PPT生成器路由
+
+# 用户个人中心路由
 api_router.include_router(
-    ppt_generator.router,
-    prefix="/generator_ppt",
-    dependencies=[Depends(auth_teacher_user)]
+    user.router,
+    prefix="/user",
+    dependencies=[Depends(auth_current_user)]
 )

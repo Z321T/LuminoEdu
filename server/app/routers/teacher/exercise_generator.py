@@ -13,7 +13,7 @@ from app.models.teacher import Teacher
 # 创建专用于习题生成器的日志记录器
 logger = setup_logger("exercise_generator_api")
 
-router = APIRouter(tags=["习题自动化生成"])
+router = APIRouter()
 
 
 @router.post("/generate")
@@ -87,7 +87,7 @@ async def get_exercise_file_content(
             content = f.read()
 
         logger.info(f"教师 {current_user.username}(教工号:{staff_id}) 成功读取习题文件内容: {path.name}")
-        
+
         return {
             "content": content
         }

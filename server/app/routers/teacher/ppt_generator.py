@@ -13,7 +13,7 @@ from app.services.ppt_generator import (
     PPT_FILES_DIR, PPT_OUTLINE_DIR
 )
 
-router = APIRouter(tags=["PPT自动化生成"])
+router = APIRouter()
 
 logger = setup_logger("ppt_generator_api")
 
