@@ -118,32 +118,33 @@ class ExerciseGenerator:
         type_str = "、".join(types_desc)
         logger.debug(f"构建提示词: {count}道{type_str}")
 
-        return f"""
-请根据以下教学内容，生成{count}道{type_str}。每道题目需要包含：
-1. 题目标题
-2. 题目内容
-3. 正确答案
-4. 答案解析
-
-对于选择题，请提供4个选项（A、B、C、D）。
-
-教学内容：
-{content}
-
-请以JSON格式返回，格式如下：
-[
-  {{
-    "title": "题目标题",
-    "content": "题目内容",
-    "type": 1,  // 1=选择题, 2=填空题, 3=简答题
-    "options": ["选项A", "选项B", "选项C", "选项D"],  // 选择题必须
-    "answer": "正确答案",
-    "explanation": "解析说明"
-  }}
-  // 其他题目...
-]
-
-只返回JSON数据，不要有其他说明文字。
+        return \
+f"""
+        请根据以下教学内容，生成{count}道{type_str}。每道题目需要包含：
+        1. 题目标题
+        2. 题目内容
+        3. 正确答案
+        4. 答案解析
+        
+        对于选择题，请提供4个选项（A、B、C、D）。
+        
+        教学内容：
+        {content}
+        
+        请以JSON格式返回，格式如下：
+        [
+          {{
+            "title": "题目标题",
+            "content": "题目内容",
+            "type": 1,  // 1=选择题, 2=填空题, 3=简答题
+            "options": ["选项A", "选项B", "选项C", "选项D"],  // 选择题必须
+            "answer": "正确答案",
+            "explanation": "解析说明"
+          }}
+          // 其他题目...
+        ]
+        
+        只返回JSON数据，不要有其他说明文字。
 """
 
     async def _call_ai_api(self, prompt: str) -> str:

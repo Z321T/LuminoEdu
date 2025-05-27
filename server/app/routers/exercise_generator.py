@@ -54,6 +54,51 @@ async def generate_exercises(
         raise HTTPException(status_code=500, detail=f"习题生成失败: {str(e)}")
 
 
+
+@router.get("/file_md_content")
+async def get_exercise_file_content(
+        file_path: str,
+        current_user: Teacher = Depends(auth_teacher_user)
+):
+    """
+    获取习题文件的Markdown内容
+    """
+    path = Path(file_path)
+    staff_id = current_user.staff_id
+
+    logger.info(f"教师 {current_user.username}(教工号:{staff_id}) 请求获取习题md文件内容: {path.name}")
+
+    # 检查文件名是否包含当前教师的工号
+    if f"teacher_{staff_id}_" not in path.name:
+        logger.warning(f"权限拒绝: 教师{staff_id}尝试访问非本人文件: {path.name}")
+        raise HTTPException(status_code=403, detail="您无权访问此文件")
+
+    # 检查是否为 Markdown 文件
+    if path.suffix.lower() != '.md':
+        logger.warning(f"文件类型错误: 文件不是 Markdown 格式 '{file_path}'")
+        raise HTTPException(status_code=400, detail="只支持查看 Markdown 格式的文件")
+
+    if not path.exists():
+        logger.warning(f"文件读取失败: 文件不存在 '{file_path}'")
+        raise HTTPException(status_code=404, detail="文件不存在")
+
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            content = f.read()
+
+        logger.info(f"教师 {current_user.username}(教工号:{staff_id}) 成功读取习题文件内容: {path.name}")
+        
+        return {
+            "content": content
+        }
+
+    except Exception as e:
+        logger.error(f"读取习题文件失败: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"读取文件失败: {str(e)}")
+
+
+
+
 @router.get("/download")
 async def download_exercise_file(
         file_path: str,
@@ -144,7 +189,6 @@ async def list_generated_exercises(
 @router.delete("/delete")
 async def delete_exercise_file(
         file_path: str,
-        req: Request,
         current_user: Teacher = Depends(auth_teacher_user)
 ):
     """删除习题文件，仅允许教师删除自己的文件"""

@@ -94,7 +94,7 @@ async def generate_ppt_from_outline_endpoint(
         raise HTTPException(status_code=500, detail=f"从大纲生成PPT失败: {str(e)}")
 
 
-@router.get("/list")
+@router.get("/list_ppt")
 async def list_ppt_files(current_user: Teacher = Depends(auth_teacher_user)):
     """
     列出当前用户可用的PPT文件
