@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.routers import auth,exercise_generator
+from app.routers import auth, exercise_generator, ppt_generator
 from app.core.dependencies import auth_teacher_user
 
 
@@ -16,5 +16,11 @@ api_router.include_router(
 api_router.include_router(
     exercise_generator.router,
     prefix="/generator_exercise",
+    dependencies=[Depends(auth_teacher_user)]
+)
+# 教师端PPT生成器路由
+api_router.include_router(
+    ppt_generator.router,
+    prefix="/generator_ppt",
     dependencies=[Depends(auth_teacher_user)]
 )
