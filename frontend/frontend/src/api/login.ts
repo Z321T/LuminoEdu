@@ -1,5 +1,5 @@
 import type { AxiosInstance, AxiosResponse } from 'axios';
-import axios from 'axios';
+
 export interface LoginData {
   user_id: string; // 修改字段名为 username
     password: string;
@@ -35,7 +35,7 @@ export function login(data: LoginData, axiosInstance: AxiosInstance): Promise<Lo
              })
         .catch((error) => {
            // 处理网络错误或服务器错误
-      console.error('服务器错误，error是',error.request);
+      console.error('服务器错误,error是',error.request);
       // 构造一个包含错误信息的LoginResponse对象
       const errorResponse: LoginResponse = {
         detail: '登陆失败：' + (error.request.response || 'An unknown error occurred'),
