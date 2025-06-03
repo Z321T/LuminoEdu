@@ -1,12 +1,18 @@
-import pandas as pd
 import io
+from typing import Optional, Dict, Any
+
+import pandas as pd
 from fastapi import UploadFile, HTTPException, status
+from tortoise.exceptions import IntegrityError
+from tortoise.expressions import Q
+
+from app.core.logger import setup_logger
 from app.models.student import Student
 from app.models.teacher import Teacher
+from app.schemas.user_admin import (
+    UserPasswordResetRequest
+)
 from app.schemas.user_create import BatchUserCreateResponse, UserCreateResult
-from app.core.logger import setup_logger
-from tortoise.exceptions import IntegrityError
-from datetime import datetime
 
 # 设置日志
 logger = setup_logger("user_create")
@@ -187,3 +193,118 @@ async def create_teachers(file: UploadFile) -> BatchUserCreateResponse:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"处理Excel文件失败: {str(e)}"
         )
+
+async def get_all_students(
+        page: int = 1,
+        page_size: int = 20,
+        search: Optional[str] = None
+):
+    """获取学生列表，支持分页和搜索"""
+    offset = (page - 1) * page_size
+
+    # 准备查询条件
+    filters = Q()
+    if search:
+        filters = (
+                Q(username__contains=search) |
+                Q(student_id__contains=search) |
+                Q(college__contains=search) |
+                Q(major__contains=search)
+        )
+
+    # 查询总数
+    total_count = await Student.filter(filters).count()
+
+    # 获取分页数据
+    students = await Student.filter(filters).limit(page_size).offset(offset)
+
+    # 格式化结果
+    users = []
+    for student in students:
+        users.append({
+            "id": student.id,
+            "username": student.username,
+            "student_id": student.student_id,
+            "college": student.college,
+        })
+
+    return {
+        "total": total_count,
+        "page": page,
+        "page_size": page_size,
+        "students": users
+    }
+
+
+async def get_student_detail(student_id: str):
+    """获取学生详细信息"""
+    student = await Student.filter(student_id=student_id).first()
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="未找到该学生"
+        )
+
+    return {
+        "id": student.id,
+        "username": student.username,
+        "student_id": student.student_id,
+        "college": student.college,
+        "major": student.major,
+        "grade": student.grade,
+        "created_at": student.created_at.isoformat() if student.created_at else None,
+        "enrollment_year": student.enrollment_year,
+        "intro": student.intro,
+        "contact_email": student.contact_email
+    }
+
+async def update_student_info(student_id: str, student_data: Dict[str, Any]):
+    """更新学生信息"""
+    student = await Student.filter(student_id=student_id).first()
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="未找到该学生"
+        )
+
+    # 检查学号是否已存在（如果要更新学号）
+    if "student_id" in student_data and student_data["student_id"] != student.student_id:
+        existing = await Student.filter(student_id=student_data["student_id"]).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="学号已被使用"
+            )
+
+    # 更新可修改的字段
+    for field, value in student_data.items():
+        if value is not None and hasattr(student, field):
+            setattr(student, field, value)
+
+    await student.save()
+    logger.info(f"学生信息更新成功 - ID: {student_id}, 用户名: {student.username}")
+
+    return {
+        "status": "success",
+        "message": "学生信息更新成功",
+        "user_id": student_id
+    }
+
+async def reset_student_password(student_id: str, password_data: UserPasswordResetRequest):
+    """重置学生密码"""
+    student = await Student.filter(student_id=student_id).first()
+    if not student:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="未找到该学生"
+        )
+
+    student.set_password(password_data.new_password)
+    await student.save()
+    logger.info(f"学生密码重置成功 - ID: {student_id}, 用户名: {student.username}")
+
+    return {
+        "status": "success",
+        "message": "学生密码重置成功",
+        "user_id": student_id
+    }

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 class UserCreateResult(BaseModel):
@@ -12,4 +12,4 @@ class BatchUserCreateResponse(BaseModel):
     total: int
     success_count: int
     failed_count: int
-    failed_records: List[UserCreateResult] = []
+    failed_records: List[UserCreateResult] = Field(default_factory=list)
