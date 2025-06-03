@@ -6,25 +6,55 @@
     >
       <RouterView></RouterView>
     </transition>
-
   </div>
 </template>
   
-  <script setup lang="ts" name="App">
+<script setup lang="ts" name="App">
 import { RouterView, RouterLink } from 'vue-router'
 </script>
 
-<style scoped>
-.main-content {
-  position: fixed;
-  top: 0;
-  left: 0;
+<style>
+/* 全局重置样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
   width: 100%;
   height: 100%;
-  background-color: #f5f5f5; /* 背景颜色可自定义 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: auto; /* 根据需要调整溢出行为 */
+  overflow-x: hidden;
+}
+
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+</style>
+
+<style scoped>
+.main-content {
+  width: 100%;
+  height: 100vh;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* 页面切换动画 */
+.fade-page-enter-active,
+.fade-page-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-page-enter-from,
+.fade-page-leave-to {
+  opacity: 0;
 }
 </style>
