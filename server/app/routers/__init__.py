@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from app.routers import auth, teacher, user
-from app.core.dependencies import auth_current_user, auth_teacher_user
+from app.routers import auth, user, teacher, admin, student
+from app.core.dependencies import auth_current_user, auth_teacher_user, auth_student_user, auth_admin_user
 
 
 # 主路由
@@ -13,6 +13,20 @@ api_router.include_router(
     prefix="/auth"
 )
 
+# 用户个人中心路由
+api_router.include_router(
+    user.router,
+    prefix="/user",
+    dependencies=[Depends(auth_current_user)]
+)
+
+# 管理员端路由
+api_router.include_router(
+    admin.router,
+    prefix="/admin",
+    dependencies=[Depends(auth_admin_user)]
+)
+
 # 教师端路由
 api_router.include_router(
     teacher.router,
@@ -20,9 +34,9 @@ api_router.include_router(
     dependencies=[Depends(auth_teacher_user)]
 )
 
-# 用户个人中心路由
+# 学生端路由
 api_router.include_router(
-    user.router,
-    prefix="/user",
-    dependencies=[Depends(auth_current_user)]
+    student.router,
+    prefix="/student",
+    dependencies=[Depends(auth_student_user)]
 )

@@ -8,12 +8,12 @@ from app.schemas.ppt_generator import (
     PPTGenerationRequest, PPTGenerationResponse,
     PPTOutlineResponse, PPTGenerationFromOutlineRequest
 )
-from app.services.ppt_generator import (
+from app.services.teacher.ppt_generator import (
     generate_ppt_outline, generate_ppt_from_outline,
     PPT_FILES_DIR, PPT_OUTLINE_DIR
 )
 
-router = APIRouter()
+router = APIRouter(tags=["教师端-PPT生成"])
 
 logger = setup_logger("ppt_generator_api")
 
