@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+<<<<<<< HEAD
 // 创建 axios 实例
 const api = axios.create({
   timeout: 60000, // 增加超时时间到60秒，因为AI生成可能需要较长时间
@@ -63,6 +64,8 @@ api.interceptors.response.use(
   }
 )
 
+=======
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 // 定义请求参数类型
 export interface ExerciseGenerateRequest {
   content: string
@@ -71,6 +74,7 @@ export interface ExerciseGenerateRequest {
   types: number[]
 }
 
+<<<<<<< HEAD
 // 定义生成响应数据类型
 export interface ExerciseGenerateResponse {
   code: number
@@ -82,6 +86,12 @@ export interface ExerciseGenerateResponse {
 export interface ExerciseContentResponse {
   code: number
   data: string // 后端返回的markdown内容
+=======
+// 定义响应数据类型
+export interface ExerciseGenerateResponse {
+  code: number
+  data: string // 后端返回的JSON字符串
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   message?: string
 }
 
@@ -99,6 +109,7 @@ export const typeMapping = {
   'essay': ExerciseType.ESSAY
 }
 
+<<<<<<< HEAD
 // 习题生成API - 返回文件路径
 export const generateExercises = async (params: ExerciseGenerateRequest): Promise<any> => {
   try {
@@ -257,11 +268,22 @@ export const getExerciseContent = async (filePath: string): Promise<any> => {
                           '未知错误'
       throw new Error(`获取内容失败: ${errorMessage}`)
     }
+=======
+// 习题生成API
+export const generateExercises = async (params: ExerciseGenerateRequest): Promise<ExerciseGenerateResponse> => {
+  try {
+    const response = await axios.post('/api/exercise/generate', params)
+    return response.data
+  } catch (error) {
+    console.error('习题生成失败:', error)
+    throw error
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   }
 }
 
 // 工具函数：将前端类型转换为后端类型
 export const convertTypeToBackend = (frontendType: string): number => {
+<<<<<<< HEAD
   const result = typeMapping[frontendType] || ExerciseType.CHOICE
   console.log(`🔄 类型转换: ${frontendType} -> ${result}`)
   return result
@@ -288,5 +310,17 @@ export const testConnection = async (): Promise<boolean> => {
   } catch (error) {
     console.error('❌ 网络连接测试失败:', error)
     return false
+=======
+  return typeMapping[frontendType] || ExerciseType.CHOICE
+}
+
+// 工具函数：解析后端返回的JSON字符串
+export const parseExerciseData = (jsonString: string) => {
+  try {
+    return JSON.parse(jsonString)
+  } catch (error) {
+    console.error('解析习题数据失败:', error)
+    return null
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   }
 }

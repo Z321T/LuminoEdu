@@ -4,10 +4,14 @@
     <aside class="sidebar">
       <div class="logo">LuminoEdu</div>
       <ul class="menu">
+<<<<<<< HEAD
         <li
           class="menu-item"
           @click="navigateTo('/home_teacher')"
         >
+=======
+        <li class="menu-item">
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
           <i class="icon">🏠</i>
           <span>首页</span>
         </li>
@@ -43,6 +47,7 @@
       <!-- 顶部导航栏 -->
       <header class="header">
         <div class="header-left">
+<<<<<<< HEAD
           <button
             class="back-btn"
             @click="navigateTo('/home_teacher')"
@@ -53,6 +58,10 @@
             <h1 class="page-title">智能习题生成</h1>
             <p class="page-subtitle">基于AI技术，快速生成高质量习题</p>
           </div>
+=======
+          <h1 class="page-title">智能习题生成</h1>
+          <p class="page-subtitle">基于AI技术，快速生成高质量习题</p>
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
         </div>
         <div class="header-user">
           <span>欢迎，张老师</span>
@@ -70,7 +79,14 @@
               <p>请填写以下信息来生成习题</p>
             </div>
 
+<<<<<<< HEAD
             <div class="generate-form">
+=======
+            <form
+              @submit.prevent="generateExercises"
+              class="generate-form"
+            >
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
               <!-- 标题输入 -->
               <div class="form-group">
                 <label
@@ -158,6 +174,7 @@
                 </div>
               </div>
 
+<<<<<<< HEAD
               <!-- 生成按钮区域 -->
               <div class="form-actions">
                 <!-- 第一步：生成习题按钮 -->
@@ -195,6 +212,19 @@
                   <span v-else>⏳ 生成中...</span>
                 </button>
 
+=======
+              <!-- 生成按钮 -->
+              <div class="form-actions">
+                <button
+                  type="submit"
+                  class="generate-btn"
+                  :disabled="isGenerating"
+                  :class="{ loading: isGenerating }"
+                >
+                  <span v-if="!isGenerating">🚀 生成习题</span>
+                  <span v-else>⏳ 生成中...</span>
+                </button>
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
                 <button
                   type="button"
                   class="reset-btn"
@@ -203,6 +233,7 @@
                   🔄 重置表单
                 </button>
               </div>
+<<<<<<< HEAD
 
               <!-- 步骤提示 -->
               <div class="step-indicator">
@@ -232,12 +263,16 @@
                 <code>{{ filePath }}</code>
               </div>
             </div>
+=======
+            </form>
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
           </div>
 
           <!-- 右侧：结果展示 -->
           <div class="result-panel">
             <div class="panel-header">
               <h2>生成结果</h2>
+<<<<<<< HEAD
               <p v-if="!markdownContent && !errorMessage">习题生成后将在此处显示</p>
               <p v-else-if="markdownContent">习题已生成完成</p>
             </div>
@@ -254,11 +289,27 @@
                 class="retry-btn"
                 @click="handleGenerateExercises"
               >重试</button>
+=======
+              <p v-if="!generatedExercises.length && !errorMessage">习题生成后将在此处显示</p>
+              <p v-else-if="generatedExercises.length">共生成 {{ generatedExercises.length }} 道题目</p>
+            </div>
+
+            <!-- 错误状态 -->
+            <div v-if="errorMessage" class="error-state">
+              <div class="error-icon">❌</div>
+              <h3>生成失败</h3>
+              <p>{{ errorMessage }}</p>
+              <button class="retry-btn" @click="generateExercises">重试</button>
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
             </div>
 
             <!-- 空状态 -->
             <div
+<<<<<<< HEAD
               v-else-if="!markdownContent && !isGenerating"
+=======
+              v-else-if="!generatedExercises.length && !isGenerating"
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
               class="empty-state"
             >
               <div class="empty-icon">📝</div>
@@ -272,6 +323,7 @@
               class="loading-state"
             >
               <div class="loading-spinner"></div>
+<<<<<<< HEAD
               <h3 v-if="generationStep === 'generating'">AI正在生成习题文件...</h3>
               <h3 v-else-if="generationStep === 'fetching'">正在获取习题内容...</h3>
               <p>请稍候，这可能需要几秒钟时间</p>
@@ -294,6 +346,72 @@
                   @click="downloadExercises"
                 >
                   📄 下载习题
+=======
+              <h3>AI正在生成习题...</h3>
+              <p>请稍候，这可能需要几秒钟时间</p>
+            </div>
+
+            <!-- 习题列表 -->
+            <div
+              v-if="generatedExercises.length"
+              class="exercises-list"
+            >
+              <div
+                v-for="(exercise, index) in generatedExercises"
+                :key="index"
+                class="exercise-item"
+              >
+                <div class="exercise-header">
+                  <span class="exercise-number">第 {{ index + 1 }} 题</span>
+                  <span
+                    class="exercise-type">{{ getTypeLabel(exercise.type) }}</span>
+                </div>
+                <div class="exercise-content">
+                  <h4 class="exercise-question">{{ exercise.question }}</h4>
+
+                  <!-- 选择题选项 -->
+                  <div
+                    v-if="exercise.type === 'choice'"
+                    class="choice-options"
+                  >
+                    <div
+                      v-for="(option, optIndex) in exercise.options"
+                      :key="optIndex"
+                      class="choice-option"
+                    >
+                      {{ String.fromCharCode(65 + optIndex) }}. {{ option }}
+                    </div>
+                  </div>
+
+                  <!-- 答案 -->
+                  <div class="exercise-answer">
+                    <strong>参考答案：</strong>{{ exercise.answer }}
+                  </div>
+
+                  <!-- 解析 -->
+                  <div
+                    v-if="exercise.explanation"
+                    class="exercise-explanation"
+                  >
+                    <strong>解析：</strong>{{ exercise.explanation }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- 操作按钮 -->
+              <div class="result-actions">
+                <button
+                  class="action-btn primary"
+                  @click="saveExercises"
+                >
+                  💾 保存习题
+                </button>
+                <button
+                  class="action-btn"
+                  @click="exportExercises"
+                >
+                  📄 导出文档
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
                 </button>
                 <button
                   class="action-btn"
@@ -311,6 +429,7 @@
 </template>
 
 <script setup lang="ts">
+<<<<<<< HEAD
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { marked } from 'marked'
@@ -319,6 +438,15 @@ import {
   getExerciseContent,
   convertTypeToBackend,
   type ExerciseGenerateRequest,
+=======
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { 
+  generateExercises, 
+  convertTypeToBackend, 
+  parseExerciseData,
+  type ExerciseGenerateRequest 
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 } from '@/api/exercise_generate'
 
 const router = useRouter()
@@ -328,27 +456,41 @@ const formData = reactive({
   title: '',
   quantity: 5,
   content: '',
+<<<<<<< HEAD
   type: 'choice',
+=======
+  type: 'choice'
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 })
 
 // 生成状态
 const isGenerating = ref(false)
+<<<<<<< HEAD
 const generationStep = ref('') // 'generating' | 'fetching'
 
 // markdown 内容
 const markdownContent = ref('')
+=======
+
+// 生成的习题
+const generatedExercises = ref([])
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 
 // 错误信息
 const errorMessage = ref('')
 
+<<<<<<< HEAD
 // 文件路径
 const filePath = ref('')
 
+=======
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 // 页面跳转函数
 const navigateTo = (path: string) => {
   router.push(path)
 }
 
+<<<<<<< HEAD
 // 渲染 markdown 内容
 const renderedMarkdown = computed(() => {
   if (!markdownContent.value) return ''
@@ -362,10 +504,30 @@ const generateExerciseFile = async () => {
     generationStep.value = 'generating'
     errorMessage.value = ''
 
+=======
+// 题目类型标签映射
+const getTypeLabel = (type: string) => {
+  const typeMap = {
+    choice: '选择题',
+    fill: '填空题',
+    essay: '简答题'
+  }
+  return typeMap[type] || type
+}
+
+// 生成习题
+const generateExercises = async () => {
+  try {
+    isGenerating.value = true
+    errorMessage.value = ''
+    
+    // 构造请求参数
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
     const requestParams: ExerciseGenerateRequest = {
       title: formData.title || '未命名习题集',
       content: formData.content,
       count: formData.quantity,
+<<<<<<< HEAD
       types: [convertTypeToBackend(formData.type)],
     }
 
@@ -597,6 +759,38 @@ const handleGenerateExercises = async () => {
   } finally {
     isGenerating.value = false
     generationStep.value = ''
+=======
+      types: [convertTypeToBackend(formData.type)]
+    }
+    
+    // 调用API
+    const response = await generateExercises(requestParams)
+    
+    if (response.code === 200) {
+      // 解析返回的JSON字符串
+      const exerciseData = parseExerciseData(response.data)
+      
+      if (exerciseData) {
+        // 如果后端返回的是数组格式
+        if (Array.isArray(exerciseData)) {
+          generatedExercises.value = exerciseData
+        } else {
+          // 如果后端返回的是其他格式，需要根据实际情况调整
+          generatedExercises.value = [exerciseData]
+        }
+      } else {
+        throw new Error('解析返回数据失败')
+      }
+    } else {
+      throw new Error(response.message || '生成习题失败')
+    }
+  } catch (error) {
+    console.error('生成习题失败:', error)
+    errorMessage.value = error.message || '生成习题时发生错误，请重试'
+    generatedExercises.value = []
+  } finally {
+    isGenerating.value = false
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   }
 }
 
@@ -607,12 +801,16 @@ const resetForm = () => {
   formData.content = ''
   formData.type = 'choice'
   errorMessage.value = ''
+<<<<<<< HEAD
   markdownContent.value = ''
   filePath.value = ''
+=======
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 // 保存习题
 const saveExercises = () => {
+<<<<<<< HEAD
   alert('习题已保存到题库')
 }
 
@@ -670,22 +868,47 @@ const downloadExercises = () => {
     console.error('下载失败:', error)
     errorMessage.value = '文件下载失败，请重试'
   }
+=======
+  // 这里可以调用保存API
+  alert('习题已保存到题库')
+}
+
+// 导出习题
+const exportExercises = () => {
+  // 这里可以实现导出功能
+  alert('习题导出功能开发中')
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 // 清空结果
 const clearResults = () => {
+<<<<<<< HEAD
   markdownContent.value = ''
   errorMessage.value = ''
   filePath.value = ''
+=======
+  generatedExercises.value = []
+  errorMessage.value = ''
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 </script>
 
 <style scoped>
+<<<<<<< HEAD
+=======
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 .exercise-generate-layout {
   display: flex;
   height: 100vh;
   width: 100vw;
   background: #f5f6fa;
+<<<<<<< HEAD
   margin: 0;
   padding: 0;
   position: absolute;
@@ -693,6 +916,9 @@ const clearResults = () => {
   left: 0;
   right: 0;
   bottom: 0;
+=======
+  overflow: hidden;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .sidebar {
@@ -701,9 +927,15 @@ const clearResults = () => {
   color: #fff;
   display: flex;
   flex-direction: column;
+<<<<<<< HEAD
   flex-shrink: 0;
   margin: 0;
   padding: 0;
+=======
+  padding: 0;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .logo {
@@ -748,10 +980,15 @@ const clearResults = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
+<<<<<<< HEAD
   height: 100vh;
   overflow: hidden;
   margin: 0;
   padding: 0;
+=======
+  width: calc(100vw - 260px);
+  overflow: hidden;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .header {
@@ -759,11 +996,16 @@ const clearResults = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+<<<<<<< HEAD
   padding: 20px 32px;
+=======
+  padding: 24px 32px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
 }
 
+<<<<<<< HEAD
 .header-left {
   display: flex;
   align-items: center;
@@ -789,6 +1031,10 @@ const clearResults = () => {
 
 .header-left h1 {
   font-size: 24px;
+=======
+.header-left h1 {
+  font-size: 28px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   color: #2d3a4b;
   margin-bottom: 4px;
 }
@@ -821,19 +1067,31 @@ const clearResults = () => {
 
 .content {
   flex: 1;
+<<<<<<< HEAD
   padding: 20px;
   overflow-y: auto;
   background: #f5f6fa;
   margin: 0;
+=======
+  padding: 32px;
+  overflow-y: auto;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .generate-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
+<<<<<<< HEAD
   gap: 20px;
   width: 100%;
   margin: 0;
   padding: 0;
+=======
+  gap: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .form-panel,
@@ -841,6 +1099,7 @@ const clearResults = () => {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+<<<<<<< HEAD
   display: flex;
   flex-direction: column;
   height: fit-content;
@@ -854,12 +1113,27 @@ const clearResults = () => {
   border-bottom: 1px solid #e9ecef;
   background: #f8f9fa;
   flex-shrink: 0;
+=======
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .panel-header h2 {
   color: #2d3a4b;
   margin-bottom: 8px;
+<<<<<<< HEAD
   font-size: 18px;
+=======
+  font-size: 20px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .panel-header p {
@@ -868,12 +1142,20 @@ const clearResults = () => {
 }
 
 .generate-form {
+<<<<<<< HEAD
   padding: 24px;
+=======
+  padding: 32px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   flex: 1;
 }
 
 .form-group {
+<<<<<<< HEAD
   margin-bottom: 20px;
+=======
+  margin-bottom: 24px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .form-label {
@@ -892,7 +1174,10 @@ const clearResults = () => {
   border-radius: 8px;
   font-size: 14px;
   transition: border-color 0.3s ease;
+<<<<<<< HEAD
   box-sizing: border-box;
+=======
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .form-input:focus,
@@ -903,12 +1188,20 @@ const clearResults = () => {
 
 .form-textarea {
   resize: vertical;
+<<<<<<< HEAD
   min-height: 80px;
+=======
+  min-height: 100px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .radio-group {
   display: flex;
+<<<<<<< HEAD
   gap: 20px;
+=======
+  gap: 24px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   flex-wrap: wrap;
 }
 
@@ -953,6 +1246,7 @@ const clearResults = () => {
 }
 
 .form-actions {
+<<<<<<< HEAD
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -964,18 +1258,35 @@ const clearResults = () => {
 .fetch-btn,
 .step-btn {
   padding: 12px 20px;
+=======
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.generate-btn,
+.reset-btn {
+  padding: 12px 24px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   border: none;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+<<<<<<< HEAD
   text-align: center;
+=======
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .generate-btn {
   background: #3498db;
   color: white;
+<<<<<<< HEAD
+=======
+  flex: 1;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .generate-btn:hover:not(:disabled) {
@@ -988,6 +1299,7 @@ const clearResults = () => {
   cursor: not-allowed;
 }
 
+<<<<<<< HEAD
 .fetch-btn {
   background: #27ae60;
   color: white;
@@ -1003,17 +1315,23 @@ const clearResults = () => {
   cursor: not-allowed;
 }
 
+=======
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 .reset-btn {
   background: #f8f9fa;
   color: #666;
   border: 2px solid #e9ecef;
+<<<<<<< HEAD
   grid-column: 1 / -1;
+=======
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .reset-btn:hover {
   background: #e9ecef;
 }
 
+<<<<<<< HEAD
 .primary {
   background: #e74c3c !important;
   grid-column: 1 / -1;
@@ -1114,28 +1432,43 @@ const clearResults = () => {
 }
 
 /* 右侧面板样式 */
+=======
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 .result-panel {
   position: relative;
 }
 
 .empty-state,
+<<<<<<< HEAD
 .loading-state,
 .error-state {
+=======
+.loading-state {
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+<<<<<<< HEAD
   height: 300px;
+=======
+  height: 400px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   text-align: center;
   padding: 32px;
 }
 
 .empty-icon {
+<<<<<<< HEAD
   font-size: 48px;
+=======
+  font-size: 64px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   margin-bottom: 16px;
   opacity: 0.5;
 }
 
+<<<<<<< HEAD
 .error-icon {
   font-size: 48px;
   margin-bottom: 16px;
@@ -1170,6 +1503,13 @@ const clearResults = () => {
   height: 32px;
   border: 3px solid #f3f3f3;
   border-top: 3px solid #3498db;
+=======
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -1184,6 +1524,7 @@ const clearResults = () => {
   }
 }
 
+<<<<<<< HEAD
 .markdown-content {
   padding: 24px;
   flex: 1;
@@ -1199,11 +1540,69 @@ const clearResults = () => {
   margin-bottom: 20px;
   overflow-y: auto;
   max-height: 400px;
+=======
+.exercises-list {
+  padding: 32px;
+  flex: 1;
+}
+
+.exercise-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-left: 4px solid #3498db;
+}
+
+.exercise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.exercise-number {
+  font-weight: 600;
+  color: #2d3a4b;
+}
+
+.exercise-type {
+  background: #3498db;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.exercise-question {
+  color: #2d3a4b;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.choice-options {
+  margin-bottom: 16px;
+}
+
+.choice-option {
+  padding: 8px 0;
+  color: #666;
+}
+
+.exercise-answer,
+.exercise-explanation {
+  margin-bottom: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  font-size: 14px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .result-actions {
   display: flex;
   gap: 12px;
+<<<<<<< HEAD
   padding: 16px 0;
   border-top: 1px solid #e9ecef;
   justify-content: center;
@@ -1229,6 +1628,21 @@ const clearResults = () => {
   background: #f8f9fa;
   border-color: #ddd;
   transform: translateY(-2px);
+=======
+  justify-content: center;
+  padding: 24px 0;
+  border-top: 1px solid #e9ecef;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border: 2px solid #e9ecef;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 .action-btn.primary {
@@ -1237,6 +1651,7 @@ const clearResults = () => {
   border-color: #3498db;
 }
 
+<<<<<<< HEAD
 .action-btn.primary:hover {
   background: #2980b9;
   border-color: #2980b9;
@@ -1322,13 +1737,25 @@ const clearResults = () => {
   padding-left: 12px;
   color: #666;
   font-style: italic;
+=======
+.action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.action-btn.primary:hover {
+  background: #2980b9;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .generate-container {
     grid-template-columns: 1fr;
+<<<<<<< HEAD
     gap: 16px;
+=======
+    gap: 24px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   }
 }
 
@@ -1337,14 +1764,24 @@ const clearResults = () => {
     width: 200px;
   }
 
+<<<<<<< HEAD
   .content {
     padding: 12px;
+=======
+  .main {
+    width: calc(100vw - 200px);
+  }
+
+  .content {
+    padding: 16px;
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
   }
 
   .radio-group {
     flex-direction: column;
     gap: 12px;
   }
+<<<<<<< HEAD
 
   .form-actions {
     grid-template-columns: 1fr;
@@ -1360,5 +1797,7 @@ const clearResults = () => {
     width: 100%;
     justify-content: center;
   }
+=======
+>>>>>>> c896aeabfbf04f95e4cae82c78bd885966ef4dd1
 }
 </style>
