@@ -43,14 +43,18 @@ async def list_students(
     page_size: int = Query(20, description="每页记录数"),
     search: Optional[str] = Query(None, description="搜索关键词")
 ):
-    """获取学生列表，支持分页和搜索"""
+    """
+    获取学生列表，支持分页和搜索
+    """
     return await get_all_students(page, page_size, search)
 
 
 
 @router.get("/student_detail/{student_id}", response_model=StudentDetailResponse)
 async def get_student(student_id: str):
-    """获取单个学生的详细信息"""
+    """
+    获取单个学生的详细信息
+    """
     return await get_student_detail(student_id)
 
 
@@ -66,5 +70,7 @@ async def update_student(student_id: str, student_data: StudentUpdateFields):
 
 @router.post("/reset_password/{student_id}", response_model=UserUpdateResponse)
 async def reset_password(student_id: str, password_data: UserPasswordResetRequest):
-    """重置学生密码"""
+    """
+    重置学生密码
+    """
     return await reset_student_password(student_id, password_data)

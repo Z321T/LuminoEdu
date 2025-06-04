@@ -15,7 +15,7 @@ from app.schemas.user_admin import (
 from app.schemas.user_create import BatchUserCreateResponse, UserCreateResult
 
 # 设置日志
-logger = setup_logger("user_create")
+logger = setup_logger("user_management_service")
 
 async def create_students(file: UploadFile) -> BatchUserCreateResponse:
     """
@@ -200,6 +200,8 @@ async def get_all_students(
         search: Optional[str] = None
 ):
     """获取学生列表，支持分页和搜索"""
+    logger.info(f"查询学生列表 - 页码:{page}, 每页数量:{page_size}, 搜索关键词:'{search}'")
+
     offset = (page - 1) * page_size
 
     # 准备查询条件
@@ -214,6 +216,7 @@ async def get_all_students(
 
     # 查询总数
     total_count = await Student.filter(filters).count()
+    logger.info(f"学生列表查询结果 - 总记录数:{total_count}")
 
     # 获取分页数据
     students = await Student.filter(filters).limit(page_size).offset(offset)
@@ -228,6 +231,7 @@ async def get_all_students(
             "college": student.college,
         })
 
+    logger.info(f"学生列表查询成功 - 返回记录数:{len(users)}, 总记录数:{total_count}")
     return {
         "total": total_count,
         "page": page,
@@ -238,13 +242,17 @@ async def get_all_students(
 
 async def get_student_detail(student_id: str):
     """获取学生详细信息"""
+    logger.info(f"查询学生详细信息 - 学号:{student_id}")
+
     student = await Student.filter(student_id=student_id).first()
     if not student:
+        logger.warning(f"查询学生详细信息失败 - 学号:{student_id}, 原因:学生不存在")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="未找到该学生"
         )
 
+    logger.info(f"查询学生详细信息成功 - 学号:{student_id}, 姓名:{student.username}")
     return {
         "id": student.id,
         "username": student.username,
@@ -260,8 +268,11 @@ async def get_student_detail(student_id: str):
 
 async def update_student_info(student_id: str, student_data: Dict[str, Any]):
     """更新学生信息"""
+    logger.info(f"更新学生信息请求 - 学号:{student_id}, 更新字段:{list(student_data.keys())}")
+
     student = await Student.filter(student_id=student_id).first()
     if not student:
+        logger.warning(f"更新学生信息失败 - 学号:{student_id}, 原因:学生不存在")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="未找到该学生"
@@ -271,18 +282,23 @@ async def update_student_info(student_id: str, student_data: Dict[str, Any]):
     if "student_id" in student_data and student_data["student_id"] != student.student_id:
         existing = await Student.filter(student_id=student_data["student_id"]).first()
         if existing:
+            logger.warning(
+                f"更新学生信息失败 - 学号:{student_id}, 原因:新学号已被使用 - 新学号:{student_data['student_id']}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="学号已被使用"
             )
 
     # 更新可修改的字段
+    updated_fields = []
     for field, value in student_data.items():
         if value is not None and hasattr(student, field):
+            old_value = getattr(student, field)
             setattr(student, field, value)
+            updated_fields.append(f"{field}:'{old_value}'->'{{value}}'")
 
     await student.save()
-    logger.info(f"学生信息更新成功 - ID: {student_id}, 用户名: {student.username}")
+    logger.info(f"学生信息更新成功 - 学号: {student_id}, 姓名: {student.username}")
 
     return {
         "status": "success",
@@ -292,8 +308,11 @@ async def update_student_info(student_id: str, student_data: Dict[str, Any]):
 
 async def reset_student_password(student_id: str, password_data: UserPasswordResetRequest):
     """重置学生密码"""
+    logger.info(f"重置学生密码请求 - 学号:{student_id}")
+
     student = await Student.filter(student_id=student_id).first()
     if not student:
+        logger.warning(f"重置学生密码失败 - 学号:{student_id}, 原因:学生不存在")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="未找到该学生"
@@ -301,7 +320,7 @@ async def reset_student_password(student_id: str, password_data: UserPasswordRes
 
     student.set_password(password_data.new_password)
     await student.save()
-    logger.info(f"学生密码重置成功 - ID: {student_id}, 用户名: {student.username}")
+    logger.info(f"学生密码重置成功 - 学号:{student_id}, 姓名:{student.username}")
 
     return {
         "status": "success",

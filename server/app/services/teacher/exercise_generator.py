@@ -2,8 +2,9 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
+from fastapi import HTTPException
 from openai import OpenAI
 
 from app.config import DEEPSEEK_API_KEY, MEDIA_ROOT
@@ -93,8 +94,8 @@ class ExerciseGenerator:
             logger.info(f"教师(工号:{staff_id})的习题Markdown文件已保存: {md_path}")
 
             return {
-                "md_path": str(md_path),
-                "json_path": str(json_path),
+                "md_filename": md_path.name,
+                "json_filename": json_path.name,
                 "timestamp": timestamp,
                 "title": title,
                 "staff_id": staff_id,
@@ -217,3 +218,156 @@ f"""
 
         logger.info("Markdown格式习题内容生成完成")
         return "\n".join(md_lines)
+
+
+async def get_exercise_file_content_service(file_name: str, staff_id: str) -> str:
+    """
+    获取习题文件的Markdown内容
+
+    Args:
+        file_name: 文件名
+        staff_id: 教师工号
+
+    Returns:
+        文件内容字符串
+
+    Raises:
+        HTTPException: 当权限验证失败或文件不存在时
+    """
+    # 检查是否为当前教师的文件
+    if not file_name.startswith(f"teacher_{staff_id}_"):
+        logger.warning(f"权限拒绝: 教师{staff_id}尝试访问非本人文件: {file_name}")
+        raise HTTPException(status_code=403, detail="您无权访问此文件")
+
+    # 检查文件类型
+    if not file_name.endswith(".md"):
+        logger.warning(f"文件类型错误: 文件不是 Markdown 格式 '{file_name}'")
+        raise HTTPException(status_code=400, detail="只支持查看 Markdown 格式的文件")
+
+    # 构建文件路径
+    file_path = Path(MEDIA_ROOT) / "exercises" / "md" / file_name
+
+    if not file_path.exists():
+        logger.warning(f"文件读取失败: 文件不存在 '{file_path}'")
+        raise HTTPException(status_code=404, detail="文件不存在")
+
+    try:
+        with file_path.open("r", encoding="utf-8") as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        logger.error(f"读取习题文件失败: {str(e)}", exc_info=True)
+        raise Exception(f"读取文件失败: {str(e)}")
+
+
+async def download_exercise_file_service(file_name: str, staff_id: str) -> Path:
+    """
+    处理习题文件下载的权限验证和文件检查
+
+    Args:
+        file_name: 文件名
+        staff_id: 教师工号
+
+    Returns:
+        文件路径对象
+
+    Raises:
+        HTTPException: 当权限验证失败或文件不存在时
+    """
+    # 验证文件权限
+    if not file_name.startswith(f"teacher_{staff_id}_"):
+        logger.warning(f"权限拒绝: 教师{staff_id}尝试下载非本人文件: {file_name}")
+        raise HTTPException(status_code=403, detail="您无权下载此文件")
+
+    # 根据文件扩展名判断文件类型和目录
+    if file_name.endswith(".md"):
+        file_path = Path(MEDIA_ROOT) / "exercises" / "md" / file_name
+    elif file_name.endswith(".json"):
+        file_path = Path(MEDIA_ROOT) / "exercises" / "json" / file_name
+    else:
+        raise HTTPException(status_code=400, detail="不支持的文件类型")
+
+    if not file_path.exists():
+        logger.warning(f"文件下载失败: 文件不存在 '{file_path}'")
+        raise HTTPException(status_code=404, detail="文件不存在")
+
+    return file_path
+
+
+async def list_generated_exercises_service(staff_id: str, limit: int = 50, title_filter: Optional[str] = None) -> Dict[str, List[Dict[str, Any]]]:
+    """
+    列出教师生成的习题文件
+
+    Args:
+        staff_id: 教师工号
+        limit: 返回的最大文件数量
+        title_filter: 可选的标题过滤条件
+
+    Returns:
+        包含习题文件列表的字典
+    """
+    # 获取生成的习题文件目录
+    md_dir = Path(MEDIA_ROOT) / "exercises" / "md"
+
+    if not md_dir.exists():
+        logger.warning(f"教师(工号:{staff_id})查询习题目录不存在: {md_dir}")
+        return {"exercises": []}
+
+    # 只列出当前教师的文件
+    files = list(md_dir.glob(f"teacher_{staff_id}_*.md"))
+
+    # 如果有标题过滤，应用过滤条件
+    if title_filter:
+        files = [f for f in files if title_filter.lower() in f.name.lower()]
+
+    # 按修改时间排序并限制数量
+    files = sorted(
+        files,
+        key=lambda x: x.stat().st_mtime,
+        reverse=True
+    )[:limit]
+
+    # 转换为简单格式
+    result = []
+    for file in files:
+        result.append({
+            "filename": file.name,
+            "created_at": datetime.fromtimestamp(file.stat().st_mtime).isoformat(),
+            "size_kb": round(file.stat().st_size / 1024, 2)  # 文件大小（KB）
+        })
+
+    return {"exercises": result}
+
+
+async def delete_exercise_file_service(file_name: str, staff_id: str) -> None:
+    """
+    删除习题文件，包含权限验证
+
+    Args:
+        file_name: 文件名
+        staff_id: 教师工号
+
+    Raises:
+        HTTPException: 当权限验证失败或文件不存在时
+    """
+    # 检查是否为当前教师的文件
+    if not file_name.startswith(f"teacher_{staff_id}_"):
+        logger.warning(f"权限拒绝: 教师{staff_id}尝试删除非本人文件: {file_name}")
+        raise HTTPException(status_code=403, detail="您无权删除此文件")
+
+    # 构建文件路径
+    if file_name.endswith(".md"):
+        file_path = Path(MEDIA_ROOT) / "exercises" / "md" / file_name
+    elif file_name.endswith(".json"):
+        file_path = Path(MEDIA_ROOT) / "exercises" / "json" / file_name
+    else:
+        raise HTTPException(status_code=400, detail="不支持的文件类型")
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="文件不存在")
+
+    try:
+        file_path.unlink()
+    except Exception as e:
+        logger.error(f"删除文件失败: {str(e)}")
+        raise Exception(f"删除文件失败: {str(e)}")

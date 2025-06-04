@@ -24,19 +24,17 @@ class PPTGenerationResponse(BaseModel):
     """PPT生成响应模型"""
     title: str
     slides: List[PPTSlide]
-    file_path: Optional[str] = None
+    filename: Optional[str] = None
 
 
 class PPTOutlineResponse(BaseModel):
     """PPT大纲响应模型"""
-    request_id: str
     title: str
     outline_md: str  # Markdown格式的PPT大纲
 
 
 class PPTGenerationFromOutlineRequest(BaseModel):
     """基于大纲生成PPT的请求模型"""
-    request_id: str
     title: str
     outline_md: str  # 用户修改后的Markdown大纲
     design_preference: Optional[str] = None  # 设计偏好，如"简洁"、"多彩"等
