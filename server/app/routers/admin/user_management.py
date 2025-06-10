@@ -4,13 +4,15 @@ from fastapi import APIRouter, UploadFile, File, Query
 
 from app.schemas.user_admin import (
     StudentListResponse, StudentDetailResponse, StudentUpdateFields,
+    TeacherListResponse, TeacherDetailResponse, TeacherUpdateFields,
     UserUpdateResponse, UserPasswordResetRequest
 )
 from app.schemas.user_create import BatchUserCreateResponse
 from app.services.admin.user_service import (
     create_students as create_students_service,
     create_teachers as create_teachers_service,
-    get_all_students, get_student_detail, reset_student_password, update_student_info
+    get_all_students, get_student_detail, reset_student_password, update_student_info,
+    get_all_teachers, get_teacher_detail, reset_teacher_password, update_teacher_info
 )
 
 router = APIRouter(tags=["管理员端-用户管理"])
@@ -74,3 +76,43 @@ async def reset_password(student_id: str, password_data: UserPasswordResetReques
     重置学生密码
     """
     return await reset_student_password(student_id, password_data)
+
+
+
+@router.get("/list_teachers", response_model=TeacherListResponse)
+async def list_teachers(
+    page: int = Query(1, description="页码"),
+    page_size: int = Query(20, description="每页记录数"),
+    search: Optional[str] = Query(None, description="搜索关键词")
+):
+    """
+    获取教师列表，支持分页和搜索
+    """
+    return await get_all_teachers(page, page_size, search)
+
+
+
+@router.get("/teacher_detail/{teacher_id}", response_model=TeacherDetailResponse)
+async def get_teacher(teacher_id: str):
+    """
+    获取单个教师的详细信息
+    """
+    return await get_teacher_detail(teacher_id)
+
+
+
+@router.put("/update_teacher/{teacher_id}", response_model=UserUpdateResponse)
+async def update_teacher(teacher_id: str, teacher_data: TeacherUpdateFields):
+    """
+    更新教师信息
+    """
+    return await update_teacher_info(teacher_id, teacher_data.model_dump(exclude_unset=True))
+
+
+
+@router.post("/reset_teacher_password/{teacher_id}", response_model=UserUpdateResponse)
+async def reset_teacher_password(teacher_id: str, password_data: UserPasswordResetRequest):
+    """
+    重置教师密码
+    """
+    return await reset_teacher_password(teacher_id, password_data)

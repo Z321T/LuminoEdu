@@ -1,7 +1,7 @@
-from typing import Optional
 from io import BytesIO
+from typing import Optional
 
-from fastapi import APIRouter, Query, Response
+from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 
 from app.schemas.log_management import LogServiceList, LogFileList, LogContent
