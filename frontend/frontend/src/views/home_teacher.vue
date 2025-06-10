@@ -4,11 +4,17 @@
     <aside class="sidebar">
       <div class="logo">LuminoEdu</div>
       <ul class="menu">
-        <li class="menu-item active" @click="navigateTo('/home_teacher')">
+        <li
+          class="menu-item active"
+          @click="navigateTo('/home_teacher')"
+        >
           <i class="icon">🏠</i>
           <span>首页</span>
         </li>
-        <li class="menu-item" @click="navigateTo('/exercise_generate')">
+        <li
+          class="menu-item"
+          @click="navigateTo('/exercise_generate')"
+        >
           <i class="icon">📝</i>
           <span>习题生成</span>
         </li>
@@ -87,9 +93,12 @@
               <!-- 左侧功能栏 -->
               <div class="action-column">
                 <h4 class="column-title">教学工具</h4>
-                <button class="action-btn" @click="navigateTo('/exercise_generate')">
+                <button
+                  class="action-btn"
+                  @click="navigateTo('/exercise_history')"
+                >
                   <div class="action-icon">📝</div>
-                  <span>习题生成</span>
+                  <span>习题生成历史记录</span>
                 </button>
                 <button class="action-btn">
                   <div class="action-icon">📊</div>

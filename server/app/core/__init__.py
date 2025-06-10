@@ -61,7 +61,6 @@ def initialize_system_directories(media_root: Path) -> None:
     directories = [
         "",  # 基础媒体目录
         "exercises",  # 练习目录
-        "exercises/generated",  # 生成的习题目录
     ]
 
     ensure_directories_exist(media_root, directories)

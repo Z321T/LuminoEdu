@@ -176,7 +176,7 @@
                 <button
                   type="button"
                   class="fetch-btn step-btn"
-                  :disabled="!filePath || isGenerating"
+                  :disabled="!fileName || isGenerating"
                   @click="fetchExerciseContent"
                 >
                   <span v-if="generationStep !== 'fetching'">📄
@@ -208,7 +208,7 @@
               <div class="step-indicator">
                 <div
                   class="step-item"
-                  :class="{ active: filePath, completed: filePath }"
+                  :class="{ active: fileName, completed: fileName }"
                 >
                   <span class="step-number">1</span>
                   <span class="step-text">生成习题文件</span>
@@ -223,13 +223,13 @@
                 </div>
               </div>
 
-              <!-- 文件路径显示 -->
+              <!-- 文件名显示 -->
               <div
-                v-if="filePath"
+                v-if="fileName"
                 class="file-path-display"
               >
-                <h4>生成的文件路径：</h4>
-                <code>{{ filePath }}</code>
+                <h4>生成的文件名：</h4>
+                <code>{{ fileName }}</code>
               </div>
             </div>
           </div>
@@ -318,6 +318,7 @@ import {
   generateExercises,
   getExerciseContent,
   convertTypeToBackend,
+  downloadExerciseFile,
   type ExerciseGenerateRequest,
 } from '@/api/exercise_generate'
 
@@ -341,8 +342,8 @@ const markdownContent = ref('')
 // 错误信息
 const errorMessage = ref('')
 
-// 文件路径
-const filePath = ref('')
+// 修改：将 filePath 改为 fileName
+const fileName = ref('')
 
 // 页面跳转函数
 const navigateTo = (path: string) => {
@@ -370,38 +371,19 @@ const generateExerciseFile = async () => {
     }
 
     console.log('发送生成请求:', requestParams)
-    const generateResponse = await generateExercises(requestParams)
 
-    console.log('后端返回的完整响应:', generateResponse)
+    const generatedFileName = await generateExercises(requestParams)
 
-    // 修改这里：更好地处理后端返回的数据结构
-    let mdPath = ''
+    console.log('后端返回的文件名:', generatedFileName)
+    console.log('文件名类型:', typeof generatedFileName)
 
-    if (generateResponse && typeof generateResponse === 'object') {
-      // 情况1: 标准响应格式 {code: 200, data: "path"}
-      if (generateResponse.code === 200 && generateResponse.data) {
-        mdPath = generateResponse.data
-      }
-      // 情况2: 直接返回路径对象 {md_path: "...", json_path: "...", exercise_count: 5}
-      else if (generateResponse.md_path) {
-        mdPath = generateResponse.md_path
-      }
-      // 情况3: 其他格式
-      else {
-        console.error('未知的响应格式:', generateResponse)
-        throw new Error('后端返回的数据格式不正确')
-      }
-    } else {
-      console.error('无效的响应数据:', generateResponse)
-      throw new Error('后端返回的数据无效')
+    // 使用验证函数
+    if (!validateFileName(generatedFileName)) {
+      throw new Error(`无效的文件名: "${generatedFileName}"`)
     }
 
-    if (!mdPath) {
-      throw new Error('未能获取到有效的文件路径')
-    }
-
-    filePath.value = mdPath
-    console.log('成功获取到文件路径:', mdPath)
+    fileName.value = generatedFileName.trim()
+    console.log('成功获取到文件名:', fileName.value)
   } catch (error: any) {
     console.error('生成习题文件失败:', error)
     errorMessage.value = error.message || '生成习题文件时发生错误，请重试'
@@ -411,9 +393,9 @@ const generateExerciseFile = async () => {
   }
 }
 
-// 第二步：获取习题内容
+// 第二步：获取习题内容 - 简化版本
 const fetchExerciseContent = async () => {
-  if (!filePath.value) {
+  if (!fileName.value) {
     errorMessage.value = '请先生成习题文件'
     return
   }
@@ -423,110 +405,66 @@ const fetchExerciseContent = async () => {
     generationStep.value = 'fetching'
     errorMessage.value = ''
 
-    console.log('📁 准备获取文件内容')
-    console.log('📁 原始文件路径:', filePath.value)
-    console.log('📁 文件路径类型:', typeof filePath.value)
-    console.log('📁 文件路径长度:', filePath.value.length)
+    console.log('📁 准备获取文件内容，文件名:', fileName.value)
 
-    // 尝试多种方式获取内容
-    let contentResponse
+    // 调用API获取内容 - 现在API已经处理了各种响应格式
+    const content = await getExerciseContent(fileName.value)
 
-    try {
-      // 首先尝试标准方式
-      contentResponse = await getExerciseContent(filePath.value)
-    } catch (firstError) {
-      console.error('📁 标准方式失败，尝试其他方式:', firstError)
+    console.log('📄 获取到的内容类型:', typeof content)
+    console.log('📄 内容长度:', content?.length || 0)
 
-      // 如果是 422 错误，尝试不同的参数格式
-      if (firstError.message?.includes('422') || firstError.message?.includes('参数验证失败')) {
-        console.log('📁 尝试仅使用文件名...')
-
-        // 提取文件名
-        const fileName = filePath.value.split(/[/\\]/).pop()
-        console.log('📁 提取的文件名:', fileName)
-
-        if (fileName) {
-          try {
-            contentResponse = await getExerciseContent(fileName)
-          } catch (secondError) {
-            console.error('📁 使用文件名也失败:', secondError)
-            throw firstError // 抛出原始错误
-          }
-        } else {
-          throw firstError
-        }
-      } else {
-        throw firstError
-      }
-    }
-
-    console.log('📄 获取内容的完整响应:', contentResponse)
-
-    // 处理内容响应
-    let content = ''
-
-    if (contentResponse && typeof contentResponse === 'object') {
-      // 标准响应格式
-      if (contentResponse.code === 200 && contentResponse.data) {
-        content = contentResponse.data
-      }
-      // 直接返回内容的情况
-      else if (typeof contentResponse.content === 'string') {
-        content = contentResponse.content
-      }
-      // 其他可能的字段名
-      else if (typeof contentResponse.markdown === 'string') {
-        content = contentResponse.markdown
-      } else if (typeof contentResponse.text === 'string') {
-        content = contentResponse.text
-      } else {
-        console.error('📄 未识别的响应格式:', contentResponse)
-        // 尝试直接使用响应作为字符串
-        content = JSON.stringify(contentResponse)
-      }
-    } else if (typeof contentResponse === 'string') {
-      // 如果直接返回字符串
-      content = contentResponse
-    } else {
-      console.error('📄 无效的内容响应:', contentResponse)
-      throw new Error('获取到的内容数据无效')
-    }
-
+    // 验证内容
     if (!content) {
       throw new Error('获取到的内容为空')
     }
 
-    markdownContent.value = content
+    if (typeof content !== 'string') {
+      throw new Error(`内容类型错误，期望字符串，实际: ${typeof content}`)
+    }
+
+    const trimmedContent = content.trim()
+    if (trimmedContent.length === 0) {
+      throw new Error('获取到的内容只包含空白字符')
+    }
+
+    // 成功获取内容
+    markdownContent.value = trimmedContent
     console.log('✅ 成功获取到 markdown 内容')
-    console.log('📊 内容长度:', content.length)
-    console.log('📝 内容预览:', content.substring(0, 200) + '...')
+    console.log('📊 内容预览:', trimmedContent.substring(0, 100) + '...')
   } catch (error: any) {
     console.error('💥 获取习题内容失败:', error)
 
-    // 提供更具体的错误信息
-    if (error.message?.includes('参数验证失败')) {
-      errorMessage.value = `文件路径格式错误: ${error.message}\n\n文件路径: ${filePath.value}`
-    } else if (error.message?.includes('422')) {
-      errorMessage.value = `后端参数验证失败，可能是文件路径格式不正确。\n\n请检查文件是否存在: ${filePath.value}`
-    } else {
-      errorMessage.value = error.message || '获取习题内容时发生错误，请重试'
+    let errorMsg = '获取习题内容时发生错误，请重试'
+
+    if (error.message) {
+      if (error.message.includes('网络')) {
+        errorMsg = '网络连接失败，请检查网络后重试'
+      } else if (error.message.includes('404')) {
+        errorMsg = '文件不存在，可能已被删除'
+      } else if (error.message.includes('403')) {
+        errorMsg = '没有权限访问该文件'
+      } else if (error.message.includes('401')) {
+        errorMsg = '登录已过期，请重新登录'
+      } else {
+        errorMsg = error.message
+      }
     }
+
+    errorMessage.value = errorMsg
   } finally {
     isGenerating.value = false
     generationStep.value = ''
   }
 }
 
-// 一键生成（原来的逻辑）
+// 一键生成 - 简化版本
 const handleGenerateExercises = async () => {
   try {
     isGenerating.value = true
     errorMessage.value = ''
     markdownContent.value = ''
-    filePath.value = ''
+    fileName.value = ''
 
-    // 第一步：生成习题，获取文件路径
-    generationStep.value = 'generating'
     const requestParams: ExerciseGenerateRequest = {
       title: formData.title || '未命名习题集',
       content: formData.content,
@@ -534,58 +472,27 @@ const handleGenerateExercises = async () => {
       types: [convertTypeToBackend(formData.type)],
     }
 
-    console.log('一键生成 - 发送生成请求:', requestParams)
-    const generateResponse = await generateExercises(requestParams)
+    console.log('一键生成 - 发送请求:', requestParams)
 
-    console.log('一键生成 - 后端返回的完整响应:', generateResponse)
+    // 第一步：生成习题
+    generationStep.value = 'generating'
+    const generatedFileName = await generateExercises(requestParams)
 
-    // 获取文件路径
-    let mdPath = ''
-
-    if (generateResponse && typeof generateResponse === 'object') {
-      if (generateResponse.code === 200 && generateResponse.data) {
-        mdPath = generateResponse.data
-      } else if (generateResponse.md_path) {
-        mdPath = generateResponse.md_path
-      } else {
-        throw new Error(generateResponse.message || '生成习题失败')
-      }
-    } else {
-      throw new Error('生成响应格式错误')
+    if (!generatedFileName || typeof generatedFileName !== 'string' || !generatedFileName.trim()) {
+      throw new Error(`无效的文件名: "${generatedFileName}"`)
     }
 
-    if (!mdPath) {
-      throw new Error('未能获取到有效的文件路径')
-    }
+    fileName.value = generatedFileName
+    console.log('一键生成 - 获取到文件名:', generatedFileName)
 
-    filePath.value = mdPath
-    console.log('一键生成 - 获取到文件路径:', mdPath)
-
-    // 第二步：通过文件路径获取 markdown 内容
+    // 第二步：获取内容
     generationStep.value = 'fetching'
     console.log('一键生成 - 开始获取文件内容')
 
-    const contentResponse = await getExerciseContent(mdPath)
+    const content = await getExerciseContent(generatedFileName)
 
-    console.log('一键生成 - 获取内容响应:', contentResponse)
-
-    // 处理内容
-    let content = ''
-
-    if (contentResponse && typeof contentResponse === 'object') {
-      if (contentResponse.code === 200 && contentResponse.data) {
-        content = contentResponse.data
-      } else {
-        throw new Error(contentResponse.message || '获取习题内容失败')
-      }
-    } else if (typeof contentResponse === 'string') {
-      content = contentResponse
-    } else {
-      throw new Error('获取内容响应格式错误')
-    }
-
-    if (!content) {
-      throw new Error('获取到的内容为空')
+    if (!content || typeof content !== 'string') {
+      throw new Error('获取到的内容无效')
     }
 
     markdownContent.value = content
@@ -608,7 +515,7 @@ const resetForm = () => {
   formData.type = 'choice'
   errorMessage.value = ''
   markdownContent.value = ''
-  filePath.value = ''
+  fileName.value = ''
 }
 
 // 保存习题
@@ -616,13 +523,43 @@ const saveExercises = () => {
   alert('习题已保存到题库')
 }
 
-// 下载文件
-const downloadExercises = () => {
+// 修改下载函数 - 支持从服务器下载和本地下载
+const downloadExercises = async () => {
   if (!markdownContent.value) {
     errorMessage.value = '没有可下载的内容'
     return
   }
 
+  try {
+    // 如果有文件名，尝试从服务器下载
+    if (fileName.value) {
+      console.log('📁 从服务器下载文件:', fileName.value)
+      await downloadExerciseFile(fileName.value)
+      return
+    }
+
+    // 否则进行本地下载
+    console.log('📁 进行本地下载')
+    await downloadExercisesLocal()
+  } catch (error: any) {
+    console.error('下载失败:', error)
+
+    // 如果服务器下载失败，尝试本地下载
+    if (fileName.value && error.message.includes('404')) {
+      console.log('📁 服务器文件不存在，切换到本地下载')
+      try {
+        await downloadExercisesLocal()
+      } catch (localError) {
+        errorMessage.value = '文件下载失败，请重试'
+      }
+    } else {
+      errorMessage.value = error.message || '文件下载失败，请重试'
+    }
+  }
+}
+
+// 本地下载函数
+const downloadExercisesLocal = async (): Promise<void> => {
   try {
     // 生成文件名（包含时间戳）
     const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '_')
@@ -646,37 +583,78 @@ const downloadExercises = () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
 
-    console.log('✅ 文件下载成功:', filename)
+    console.log('✅ 本地文件下载成功:', filename)
 
-    // 显示成功提示（可选）
-    // 这里可以添加一个简单的成功提示
-    const successMsg = document.createElement('div')
-    successMsg.textContent = `文件 "${filename}" 下载成功！`
-    successMsg.style.cssText = `
-      position: fixed; top: 20px; right: 20px; z-index: 9999;
-      background: #28a745; color: white; padding: 12px 20px;
-      border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      font-size: 14px; font-weight: 500;
-    `
-    document.body.appendChild(successMsg)
-
-    // 3秒后移除提示
-    setTimeout(() => {
-      if (document.body.contains(successMsg)) {
-        document.body.removeChild(successMsg)
-      }
-    }, 3000)
+    // 显示成功提示
+    showDownloadSuccessMessage(filename)
   } catch (error) {
-    console.error('下载失败:', error)
-    errorMessage.value = '文件下载失败，请重试'
+    console.error('本地下载失败:', error)
+    throw new Error('本地下载失败，请重试')
   }
 }
 
-// 清空结果
-const clearResults = () => {
-  markdownContent.value = ''
-  errorMessage.value = ''
-  filePath.value = ''
+// 显示下载成功消息
+const showDownloadSuccessMessage = (filename: string): void => {
+  const successMsg = document.createElement('div')
+  successMsg.textContent = `文件 "${filename}" 下载成功！`
+  successMsg.style.cssText = `
+    position: fixed; top: 20px; right: 20px; z-index: 9999;
+    background: #28a745; color: white; padding: 12px 20px;
+    border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 14px; font-weight: 500;
+  `
+  document.body.appendChild(successMsg)
+
+  // 3秒后移除提示
+  setTimeout(() => {
+    if (document.body.contains(successMsg)) {
+      document.body.removeChild(successMsg)
+    }
+  }, 3000)
+}
+
+// 添加单独的服务器下载按钮函数（可选）
+const downloadFromServer = async () => {
+  if (!fileName.value) {
+    errorMessage.value = '没有可下载的文件'
+    return
+  }
+
+  try {
+    console.log('📁 从服务器下载文件:', fileName.value)
+    await downloadExerciseFile(fileName.value)
+  } catch (error: any) {
+    console.error('服务器下载失败:', error)
+    errorMessage.value = error.message || '从服务器下载失败，请重试'
+  }
+}
+
+// 添加一个验证函数来检查文件名格式
+const validateFileName = (fileNameToValidate: string): boolean => {
+  console.log('🔍 验证文件名:', fileNameToValidate)
+
+  if (!fileNameToValidate) {
+    console.error('❌ 文件名为空')
+    return false
+  }
+
+  if (typeof fileNameToValidate !== 'string') {
+    console.error('❌ 文件名不是字符串类型:', typeof fileNameToValidate)
+    return false
+  }
+
+  const trimmed = fileNameToValidate.trim()
+  if (trimmed.length === 0) {
+    console.error('❌ 文件名只包含空白字符')
+    return false
+  }
+
+  if (!trimmed.endsWith('.md')) {
+    console.warn('⚠️ 文件名不以.md结尾:', trimmed)
+  }
+
+  console.log('✅ 文件名验证通过')
+  return true
 }
 </script>
 

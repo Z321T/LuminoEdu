@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any
 
+from fastapi import HTTPException
 from openai import OpenAI
 from pptx import Presentation
 from pptx.dml.color import RGBColor
@@ -35,10 +36,7 @@ async def generate_ppt_outline(request: PPTGenerationRequest, staff_id: str) -> 
     """
     生成PPT的Markdown格式大纲
     """
-    # 生成唯一标识
-    request_id = uuid.uuid4().hex[:8]
-
-    logger.info(f"开始生成PPT大纲: 标题={request.title}, ID={request_id}")
+    logger.info(f"开始生成PPT大纲: 标题={request.title}")
 
     prompt = f"""你是一位经验丰富的教师和课件专家，请为以下教学内容设计一个详细且内容丰富的PPT大纲:
     
@@ -81,7 +79,7 @@ async def generate_ppt_outline(request: PPTGenerationRequest, staff_id: str) -> 
         )
 
         md_content = response.choices[0].message.content
-        logger.info(f"成功从API获取大纲内容，请求ID={request_id}")
+        logger.info(f"成功从API获取大纲内容")
 
         # 保存大纲到文件
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -92,7 +90,6 @@ async def generate_ppt_outline(request: PPTGenerationRequest, staff_id: str) -> 
         logger.info(f"大纲已保存到文件: {outline_path}")
 
         return PPTOutlineResponse(
-            request_id=request_id,
             title=request.title,
             outline_md=md_content,
         )
@@ -109,23 +106,18 @@ async def generate_ppt_from_outline(
     """
     第二步：从修改后的大纲生成PPT
     """
-    logger.info(f"从大纲生成PPT: 请求ID={request.request_id}, 教师ID={staff_id}")
-
-    # 检查大纲文件是否存在
-    outline_path = PPT_OUTLINE_DIR / f"outline_{staff_id}_{request.request_id}.md"
-    if not outline_path.exists():
-        logger.error(f"大纲文件不存在: {outline_path}")
-        raise Exception("大纲文件不存在")
+    logger.info(f"从大纲生成PPT: 标题={request.title}, 教师ID={staff_id}")
 
     try:
         # 将大纲解析为结构化数据
         structured_data = parse_outline_to_json(request.outline_md, request.title)
 
         # 生成文件名，包含教师工号以实现权限隔离
-        file_name = f"teacher_{staff_id}_{request.request_id}_{request.title.replace(' ', '_')}.pptx"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"ppt_{staff_id}_{timestamp}_{request.title.replace(' ', '_')}.pptx"
 
         # 创建高质量PPT
-        file_path = await create_enhanced_pptx(structured_data, file_name, request.design_preference)
+        await create_enhanced_pptx(structured_data, file_name, request.design_preference)
 
         # 构建返回结果
         slides = [
@@ -136,7 +128,7 @@ async def generate_ppt_from_outline(
         return PPTGenerationResponse(
             title=structured_data["title"],
             slides=slides,
-            file_path=file_path
+            filename=file_name
         )
 
     except Exception as e:
@@ -279,7 +271,6 @@ async def create_enhanced_pptx(data: Dict[str, Any], file_name: str, design_pref
         prs.save(str(file_path))
 
         logger.info(f"PPT文件已保存: {file_path}")
-        return str(file_path)
 
     except Exception as e:
         logger.error(f"创建PPT失败: {str(e)}")
@@ -406,3 +397,184 @@ def get_theme_colors(preference: str = None) -> Dict[str, RGBColor]:
         return themes[preference]
     else:
         return themes["default"]
+
+
+async def list_ppt_outlines_service(staff_id: str):
+    """
+    列出教师的所有PPT大纲
+
+    Args:
+        staff_id: 教师工号
+
+    Returns:
+        包含大纲列表的字典
+    """
+    outlines = []
+
+    for file_path in PPT_OUTLINE_DIR.glob(f"outline_{staff_id}_*.md"):
+        try:
+            filename = file_path.name
+            base_name = filename.rsplit('.', 1)[0]
+            parts = base_name.split('_')
+
+            # 提取文件名中的时间戳
+            if len(parts) >= 3:
+                timestamp = parts[2]
+                title = parts[4] if len(parts) > 4 else "未知标题"
+            else:
+                # 如果文件名格式不符合预期
+                timestamp = ""
+                title = '未知标题'
+
+            # 读取文件内容
+            with open(file_path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            outlines.append({
+                "filename": filename,
+                "title": title,
+                "created_at": timestamp,
+                "preview": content[:50] + ("..." if len(content) > 50 else ""),
+            })
+        except Exception as e:
+            logger.error(f"处理大纲文件 {file_path.name} 失败: {str(e)}")
+            continue
+
+    return {"outlines": outlines}
+
+
+async def download_ppt_outline_service(file_name: str, staff_id: str):
+    """
+    处理PPT大纲下载的权限验证和文件检查
+
+    Args:
+        file_name: 要下载的大纲文件名
+        staff_id: 教师工号
+
+    Returns:
+        文件路径对象
+
+    Raises:
+        HTTPException: 当权限验证失败或文件不存在时
+    """
+    # 验证文件权限
+    if not file_name.startswith(f"outline_{staff_id}_"):
+        logger.warning(f"教师(工号:{staff_id}) 尝试访问非自己的大纲文件: {file_name}")
+        raise HTTPException(status_code=403, detail="没有权限访问此文件")
+
+    file_path = PPT_OUTLINE_DIR / file_name
+    if not file_path.exists():
+        logger.warning(f"教师(工号:{staff_id}) 请求的大纲文件不存在: {file_name}")
+        raise HTTPException(status_code=404, detail="文件不存在")
+
+    return file_path
+
+
+async def list_ppt_files_service(staff_id: str):
+    """
+    列出教师的所有PPT文件
+
+    Args:
+        staff_id: 教师工号
+
+    Returns:
+        包含文件列表的字典
+    """
+    staff_id_pattern = f"ppt_{staff_id}_"
+    files = []
+
+    for file_path in PPT_FILES_DIR.glob("*.pptx"):
+        # 只返回当前教师的文件
+        if file_path.name.startswith(staff_id_pattern):
+            files.append({
+                "file_name": file_path.name,
+                "size": file_path.stat().st_size,
+                "created_at": file_path.stat().st_ctime
+            })
+
+    return {"files": files}
+
+
+async def download_ppt_service(file_name: str, staff_id: str):
+    """
+    处理PPT下载的权限验证和文件检查
+
+    Args:
+        file_name: 要下载的文件名
+        staff_id: 教师工号
+
+    Returns:
+        文件路径对象
+
+    Raises:
+        HTTPException: 当权限验证失败或文件不存在时
+    """
+    # 验证文件权限
+    if not file_name.startswith(f"ppt_{staff_id}_"):
+        logger.warning(f"教师(工号:{staff_id}) 尝试访问非自己的文件: {file_name}")
+        raise HTTPException(status_code=403, detail="没有权限访问此文件")
+
+    file_path = PPT_FILES_DIR / file_name
+    if not file_path.exists():
+        logger.warning(f"教师(工号:{staff_id}) 请求的文件不存在: {file_name}")
+        raise HTTPException(status_code=404, detail="文件不存在")
+
+    return file_path
+
+
+async def delete_ppt_outline_service(file_name: str, staff_id: str) -> None:
+    """
+    删除PPT大纲文件
+
+    Args:
+        file_name: 要删除的大纲文件名
+        staff_id: 教师工号
+
+    Raises:
+        HTTPException: 当权限验证失败或文件不存在时
+    """
+    # 验证文件权限 (格式应为 outline_staff_id_*.md)
+    if not file_name.startswith(f"outline_{staff_id}_"):
+        logger.warning(f"权限拒绝: 教师(工号:{staff_id})尝试删除非本人大纲: {file_name}")
+        raise HTTPException(status_code=403, detail="您无权删除此大纲")
+
+    file_path = PPT_OUTLINE_DIR / file_name
+    if not file_path.exists():
+        logger.warning(f"删除大纲失败: 文件不存在 '{file_path}'")
+        raise HTTPException(status_code=404, detail="大纲文件不存在")
+
+    try:
+        file_path.unlink()
+        logger.info(f"教师(工号:{staff_id})成功删除大纲文件: {file_name}")
+    except Exception as e:
+        logger.error(f"删除大纲文件失败: {str(e)}")
+        raise Exception(f"删除大纲文件失败: {str(e)}")
+
+
+async def delete_ppt_file_service(file_name: str, staff_id: str) -> None:
+    """
+    删除PPT文件
+
+    Args:
+        file_name: 要删除的PPT文件名
+        staff_id: 教师工号
+
+    Raises:
+        HTTPException: 当权限验证失败或文件不存在时
+    """
+    # 验证文件权限 (格式应为 ppt_staff_id_*.pptx)
+    if not file_name.startswith(f"ppt_{staff_id}_"):
+        logger.warning(f"权限拒绝: 教师(工号:{staff_id})尝试删除非本人PPT文件: {file_name}")
+        raise HTTPException(status_code=403, detail="您无权删除此文件")
+
+    file_path = PPT_FILES_DIR / file_name
+    if not file_path.exists():
+        logger.warning(f"删除PPT文件失败: 文件不存在 '{file_path}'")
+        raise HTTPException(status_code=404, detail="PPT文件不存在")
+
+    try:
+        file_path.unlink()
+        logger.info(f"教师(工号:{staff_id})成功删除PPT文件: {file_name}")
+    except Exception as e:
+        logger.error(f"删除PPT文件失败: {str(e)}")
+        raise Exception(f"删除PPT文件失败: {str(e)}")
