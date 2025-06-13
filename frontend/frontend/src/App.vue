@@ -1,11 +1,13 @@
 <template>
-  <div class="main-content">
-    <transition
-      name="fade-page"
-      mode="out-in"
-    >
-      <RouterView></RouterView>
-    </transition>
+  <div id="app">
+    <router-view v-slot="{ Component }">
+      <transition
+        name="fade-page"
+        mode="out-in"
+      >
+        <component :is="Component" />
+      </transition>
+    </router-view>
   </div>
 </template>
   
@@ -21,7 +23,8 @@ import { RouterView, RouterLink } from 'vue-router'
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
