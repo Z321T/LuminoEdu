@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from app.core.dependencies import auth_teacher_user
 from app.core.logger import setup_logger
 from app.models.teacher import Teacher
-from app.schemas.ppt_generator import (
+from app.schemas.teacher.ppt_generator import (
     PPTGenerationRequest, PPTGenerationResponse,
     PPTOutlineResponse, PPTGenerationFromOutlineRequest
 )

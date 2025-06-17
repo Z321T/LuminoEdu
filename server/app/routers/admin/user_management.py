@@ -2,12 +2,12 @@ from typing import Optional
 
 from fastapi import APIRouter, UploadFile, File, Query
 
-from app.schemas.user_admin import (
+from app.schemas.admin.user_admin import (
     StudentListResponse, StudentDetailResponse, StudentUpdateFields,
     TeacherListResponse, TeacherDetailResponse, TeacherUpdateFields,
     UserUpdateResponse, UserPasswordResetRequest
 )
-from app.schemas.user_create import BatchUserCreateResponse
+from app.schemas.admin.user_create import BatchUserCreateResponse
 from app.services.admin.user_service import (
     create_students as create_students_service,
     create_teachers as create_teachers_service,

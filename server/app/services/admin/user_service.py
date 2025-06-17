@@ -9,10 +9,10 @@ from tortoise.expressions import Q
 from app.core.logger import setup_logger
 from app.models.student import Student
 from app.models.teacher import Teacher
-from app.schemas.user_admin import (
+from app.schemas.admin.user_admin import (
     UserPasswordResetRequest
 )
-from app.schemas.user_create import BatchUserCreateResponse, UserCreateResult
+from app.schemas.admin.user_create import BatchUserCreateResponse, UserCreateResult
 
 # 设置日志
 logger = setup_logger("user_management_service")

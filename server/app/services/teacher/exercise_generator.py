@@ -358,8 +358,8 @@ async def delete_exercise_file_service(file_name: str, staff_id: str) -> None:
     # 构建文件路径
     if file_name.endswith(".md"):
         file_path = Path(MEDIA_ROOT) / "exercises" / "md" / file_name
-    elif file_name.endswith(".json"):
-        file_path = Path(MEDIA_ROOT) / "exercises" / "json" / file_name
+        json_file_name = file_name[:-3] + ".json"
+        json_file_path = Path(MEDIA_ROOT) / "exercises" / "json" / json_file_name
     else:
         raise HTTPException(status_code=400, detail="不支持的文件类型")
 
@@ -368,6 +368,10 @@ async def delete_exercise_file_service(file_name: str, staff_id: str) -> None:
 
     try:
         file_path.unlink()
+        logger.info(f"md文件已删除: {file_path}")
+        if json_file_path and json_file_path.exists():
+            json_file_path.unlink()
+            logger.info(f"关联JSON文件已删除: {json_file_path}")
     except Exception as e:
         logger.error(f"删除文件失败: {str(e)}")
         raise Exception(f"删除文件失败: {str(e)}")

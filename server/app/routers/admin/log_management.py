@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 
-from app.schemas.log_management import LogServiceList, LogFileList, LogContent
+from app.schemas.admin.log_management import LogServiceList, LogFileList, LogContent
 from app.services.admin.log_service import (
     get_log_services, get_log_files, get_log_content, export_log_files
 )

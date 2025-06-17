@@ -1,16 +1,13 @@
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, List
 
 from fastapi import HTTPException
 from openai import OpenAI
 from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
-from pptx.util import Inches, Pt
 
 from app.config import DEEPSEEK_API_KEY, SERVER_DIR
 from app.core.logger import setup_logger
-from app.schemas.ppt_generator import (
+from app.schemas.teacher.ppt_generator import (
     PPTGenerationRequest, PPTGenerationResponse, PPTSlide,
     PPTOutlineResponse, PPTGenerationFromOutlineRequest
 )

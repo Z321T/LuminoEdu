@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.routers import auth, user, teacher, admin, student
+from app.routers import auth, user, teacher, admin, student, chat
 from app.core.dependencies import auth_current_user, auth_teacher_user, auth_student_user, auth_admin_user
 
 
@@ -17,6 +17,13 @@ api_router.include_router(
 api_router.include_router(
     user.router,
     prefix="/user",
+    dependencies=[Depends(auth_current_user)]
+)
+
+# AI-Chat相关路由
+api_router.include_router(
+    chat.router,
+    prefix="/chat",
     dependencies=[Depends(auth_current_user)]
 )
 
