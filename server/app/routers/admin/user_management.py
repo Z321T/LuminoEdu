@@ -1,7 +1,10 @@
+import os
 from typing import Optional
 
-from fastapi import APIRouter, UploadFile, File, Query
+from fastapi import APIRouter, UploadFile, File, Query, HTTPException
+from fastapi.responses import FileResponse
 
+from app.config import MEDIA_ROOT
 from app.schemas.admin.user_admin import (
     StudentListResponse, StudentDetailResponse, StudentUpdateFields,
     TeacherListResponse, TeacherDetailResponse, TeacherUpdateFields,
@@ -17,6 +20,26 @@ from app.services.admin.user_service import (
 
 router = APIRouter(tags=["管理员端-用户管理"])
 
+EXCEL_DIR = MEDIA_ROOT / "excel"
+
+
+
+@router.get("/download_student_template")
+async def download_student_template():
+    """
+    下载学生批量导入Excel模板
+    """
+    file_path = EXCEL_DIR / "student_template.xlsx"
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="学生模板文件不存在")
+    return FileResponse(
+        file_path,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename="student_template.xlsx"
+    )
+
+
+
 @router.post("/create_students", response_model=BatchUserCreateResponse)
 async def create_students(
     file: UploadFile = File(..., description="上传包含学生信息的Excel文件"),
@@ -25,17 +48,6 @@ async def create_students(
     通过Excel表格批量创建学生用户
     """
     return await create_students_service(file)
-
-
-
-@router.post("/create_teachers", response_model=BatchUserCreateResponse)
-async def create_teachers(
-    file: UploadFile = File(..., description="上传包含教师信息的Excel文件"),
-):
-    """
-    通过Excel表格批量创建教师用户
-    """
-    return await create_teachers_service(file)
 
 
 
@@ -76,6 +88,33 @@ async def reset_password(student_id: str, password_data: UserPasswordResetReques
     重置学生密码
     """
     return await reset_student_password(student_id, password_data)
+
+
+
+@router.get("/download_teacher_template")
+async def download_teacher_template():
+    """
+    下载教师批量导入Excel模板
+    """
+    file_path = EXCEL_DIR / "teacher_template.xlsx"
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="教师模板文件不存在")
+    return FileResponse(
+        file_path,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename="teacher_template.xlsx"
+    )
+
+
+
+@router.post("/create_teachers", response_model=BatchUserCreateResponse)
+async def create_teachers(
+    file: UploadFile = File(..., description="上传包含教师信息的Excel文件"),
+):
+    """
+    通过Excel表格批量创建教师用户
+    """
+    return await create_teachers_service(file)
 
 
 

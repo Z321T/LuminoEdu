@@ -12,7 +12,7 @@ logger = setup_logger("log_management_service")
 
 # 服务描述映射，可以随时扩展
 SERVICE_DESCRIPTIONS = {
-    # 系统服务记录
+    # 系统服务
     "app": "应用启动日志",
     "request": "应用请求日志",
     # 用户个人中心服务
