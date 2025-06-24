@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 
 from fastapi import APIRouter, UploadFile, File, Query, HTTPException
@@ -21,7 +20,6 @@ from app.services.admin.user_service import (
 router = APIRouter(tags=["管理员端-用户管理"])
 
 EXCEL_DIR = MEDIA_ROOT / "excel"
-
 
 
 @router.get("/download_student_template")

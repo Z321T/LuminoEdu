@@ -27,6 +27,7 @@ SERVICE_DESCRIPTIONS = {
     "exercise_generator_api": "习题生成服务相关API请求日志",
     "ppt_generator_service": "PPT生成服务日志",
     "ppt_generator_api": "PPT生成服务相关API请求日志",
+    "course_management_service": "课程管理服务日志",
     # 学生端服务
 
     # 可根据需要扩展更多服务

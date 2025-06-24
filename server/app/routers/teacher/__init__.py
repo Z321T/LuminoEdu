@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.routers.teacher import exercise_generator, ppt_generator
+from app.routers.teacher import exercise_generator, ppt_generator, course
 
 # 教师专用路由
 teacher_router = APIRouter()
@@ -14,6 +14,12 @@ teacher_router.include_router(
 teacher_router.include_router(
     ppt_generator.router,
     prefix="/ppt",
+)
+
+# 教师端课程管理路由
+teacher_router.include_router(
+    course.router,
+    prefix="/course",
 )
 
 # 导出路由供主路由使用
