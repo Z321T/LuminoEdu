@@ -258,12 +258,27 @@ const submitForm = async () => {
         ElMessage.success('登录成功！欢迎回来')
 
         // 延迟跳转，让用户看到成功消息
-        setTimeout(() => {
-          router.push(role === 'teacher' ? '/home_teacher' : '/home_student')
+        setTimeout(async () => {
+          try {
+            let targetRoute
+            if (role === 'teacher') {
+              targetRoute = '/home_teacher'
+            } else if (role === 'student') {
+              targetRoute = '/home_student'
+            } else if (role === 'admin') {
+              targetRoute = '/admin_home' // 跳转到管理员界面
+            } else {
+              throw new Error('未知角色，无法跳转')
+            }
+
+            await router.push(targetRoute)
+            console.log(`成功跳转到 ${targetRoute}`)
+          } catch (error) {
+            console.error('跳转失败:', error)
+            await router.push('/login')
+            ElMessage.error(error.detail || error.message || '登录失败，请重试')
+          }
         }, 1000)
-      } catch (error: any) {
-        console.error('登录失败:', error)
-        ElMessage.error(error.detail || error.message || '登录失败，请重试')
 
         // 登录失败时，如果密码错误，可以选择清除保存的密码
         if (remember.value && (error.message?.includes('密码') || error.detail?.includes('密码'))) {

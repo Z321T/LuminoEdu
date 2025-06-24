@@ -36,6 +36,38 @@ class StudentUpdateFields(BaseModel):
     intro: Optional[str] = None
     contact_email: Optional[str] = None
 
+# 教师基本信息（列表显示）
+class TeacherBasicInfo(BaseModel):
+    id: int
+    username: str
+    staff_id: str
+    department: str
+
+# 教师列表响应
+class TeacherListResponse(BaseModel):
+    total: int
+    page: int
+    page_size: int
+    teachers: List[TeacherBasicInfo]
+
+# 教师详细信息
+class TeacherDetailResponse(TeacherBasicInfo):
+    created_at: str
+    expertise: Optional[str] = None
+    intro: Optional[str] = None
+    contact_email: Optional[str] = None
+    office_location: Optional[str] = None
+
+# 教师信息更新字段
+class TeacherUpdateFields(BaseModel):
+    username: Optional[str] = None
+    staff_id: Optional[str] = None
+    department: Optional[str] = None
+    expertise: Optional[str] = None
+    intro: Optional[str] = None
+    contact_email: Optional[str] = None
+    office_location: Optional[str] = None
+
 # 用户操作响应
 class UserUpdateResponse(BaseModel):
     status: str

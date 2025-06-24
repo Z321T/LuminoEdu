@@ -1,14 +1,15 @@
 <!-- filepath: d:\git\LuminoEdu\frontend\frontend\src\components\layout\Sidebar.vue -->
 <template>
   <aside class="sidebar">
-    <div class="logo">LuminoEdu</div>
+    <div class="logo">🎓 LuminoEdu</div>
     <ul class="menu">
       <li
         v-for="item in menuItems"
         :key="item.path"
         class="menu-item"
         :class="{ active: isActive(item.path) }"
-        @click="navigateTo(item.path)"
+        @click="handleMenuClick(item)"
+        :data-path="item.path"
       >
         <i class="icon">{{ item.icon }}</i>
         <span>{{ item.label }}</span>
@@ -29,6 +30,7 @@ interface MenuItem {
 const props = withDefaults(
   defineProps<{
     menuItems: MenuItem[]
+    activeItem?: string // 新增：当前激活的菜单项
   }>(),
   {
     menuItems: () => [
@@ -38,17 +40,37 @@ const props = withDefaults(
       { path: '/student_management', icon: '👥', label: '学生管理' },
       { path: '/settings', icon: '⚙️', label: '设置' },
     ],
+    activeItem: '',
   }
 )
 
+const emit = defineEmits<{
+  menuClick: [item: MenuItem]
+}>()
+
 const router = useRouter()
 const route = useRoute()
+
+const handleMenuClick = (item: MenuItem) => {
+  // 如果是路由路径，则导航
+  if (item.path.startsWith('/')) {
+    navigateTo(item.path)
+  } else {
+    // 否则发射事件给父组件处理
+    emit('menuClick', item)
+  }
+}
 
 const navigateTo = (path: string) => {
   router.push(path)
 }
 
 const isActive = (path: string) => {
+  // 如果有activeItem prop，则使用它来判断激活状态
+  if (props.activeItem) {
+    return props.activeItem === path
+  }
+  // 否则使用路由来判断
   return route.path === path
 }
 </script>
@@ -63,14 +85,16 @@ const isActive = (path: string) => {
   position: fixed;
   height: 100vh;
   z-index: 1000;
+  overflow-y: auto;
 }
 
 .logo {
-  padding: 20px;
-  font-size: 24px;
+  padding: 25px 20px;
+  font-size: 20px;
   font-weight: bold;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .menu {
@@ -82,21 +106,28 @@ const isActive = (path: string) => {
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 15px 20px;
   cursor: pointer;
   transition: all 0.3s ease;
-  border-left: 3px solid transparent;
+  border-left: 4px solid transparent;
+  user-select: none;
 }
 
-.menu-item:hover,
-.menu-item.active {
+.menu-item:hover {
   background: rgba(255, 255, 255, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.5);
+}
+
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.2);
   border-left-color: #fff;
 }
 
 .menu-item .icon {
-  margin-right: 12px;
+  margin-right: 15px;
   font-size: 18px;
+  width: 20px;
+  text-align: center;
 }
 
 /* 响应式设计 */

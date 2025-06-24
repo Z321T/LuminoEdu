@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import HTTPException, status
 
 from app.core.logger import LOG_DIR, setup_logger
-from app.schemas.log_management import LogService, LogServiceList, LogFile, LogFileList, LogContent
+from app.schemas.admin.log_management import LogService, LogServiceList, LogFile, LogFileList, LogContent
 
 # 设置日志记录器
 logger = setup_logger("log_management_service")
@@ -15,6 +15,10 @@ SERVICE_DESCRIPTIONS = {
     # 系统服务记录
     "app": "应用启动日志",
     "request": "应用请求日志",
+    # 用户个人中心服务
+    "user_center_service": "用户个人中心服务日志",
+    # AI-Chat服务
+    "chat_service": "AI聊天服务日志",
     # 管理员端服务
     "user_management_service": "用户管理日志",
     "log_management_service": "日志管理服务日志",

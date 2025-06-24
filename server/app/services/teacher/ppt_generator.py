@@ -1,17 +1,13 @@
-import uuid
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, List
 
 from fastapi import HTTPException
 from openai import OpenAI
 from pptx import Presentation
-from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
-from pptx.util import Inches, Pt
 
 from app.config import DEEPSEEK_API_KEY, SERVER_DIR
 from app.core.logger import setup_logger
-from app.schemas.ppt_generator import (
+from app.schemas.teacher.ppt_generator import (
     PPTGenerationRequest, PPTGenerationResponse, PPTSlide,
     PPTOutlineResponse, PPTGenerationFromOutlineRequest
 )
@@ -103,30 +99,32 @@ async def generate_ppt_from_outline(
         request: PPTGenerationFromOutlineRequest,
         staff_id: str
 ) -> PPTGenerationResponse:
-    """
-    第二步：从修改后的大纲生成PPT
-    """
+    """从修改后的大纲生成PPT"""
     logger.info(f"从大纲生成PPT: 标题={request.title}, 教师ID={staff_id}")
 
     try:
         # 将大纲解析为结构化数据
-        structured_data = parse_outline_to_json(request.outline_md, request.title)
+        slides_data = parse_markdown_outline(request.outline_md)
 
-        # 生成文件名，包含教师工号以实现权限隔离
+        # 生成文件名
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"ppt_{staff_id}_{timestamp}_{request.title.replace(' ', '_')}.pptx"
 
-        # 创建高质量PPT
-        await create_enhanced_pptx(structured_data, file_name, request.design_preference)
+        # 创建PPT文件
+        file_path = create_pptx(slides_data, file_name)
 
         # 构建返回结果
         slides = [
-            PPTSlide(title=slide["title"], content=slide["content"], note=slide.get("note"))
-            for slide in structured_data["slides"]
+            PPTSlide(
+                title=slide["title"],
+                content=slide["content"],
+                note=slide.get("note", "")
+            )
+            for slide in slides_data
         ]
 
         return PPTGenerationResponse(
-            title=structured_data["title"],
+            title=request.title,
             slides=slides,
             filename=file_name
         )
@@ -136,131 +134,90 @@ async def generate_ppt_from_outline(
         raise Exception(f"从大纲生成PPT失败: {str(e)}")
 
 
-def parse_outline_to_json(outline_md: str, title: str) -> Dict[str, Any]:
-    """解析Markdown大纲为JSON结构"""
-    result = {"title": title, "slides": []}
+def parse_markdown_outline(outline_md: str) -> List[Dict[str, str]]:
+    """解析Markdown大纲为幻灯片数据列表"""
+    slides = []
+    current_slide = None
+    lines = outline_md.strip().split('\n')
 
-    try:
-        lines = outline_md.split("\n")
-        current_slide = None
-        notes = {}
-        in_notes_section = False
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
 
-        for line in lines:
-            line = line.strip()
+        # 处理幻灯片标题（以 "# 幻灯片" 开头的行）
+        if line.startswith('# 幻灯片') or line.startswith('## 幻灯片'):
+            # 保存之前处理的幻灯片
+            if current_slide:
+                slides.append(current_slide)
 
-            # 处理标题行
-            if line.startswith("## 幻灯片"):
-                # 如果有当前处理的幻灯片，保存它
-                if current_slide:
-                    result["slides"].append(current_slide)
+            # 创建新的幻灯片数据
+            current_slide = {"title": "", "content": "", "note": ""}
 
-                # 提取幻灯片标题
-                slide_title = line.split("：", 1)[1] if "：" in line else line[2:].strip()
-                current_slide = {"title": slide_title, "content": "", "note": ""}
-
-            # 处理教师备注部分
-            elif line.startswith("## 教师备注"):
-                in_notes_section = True
-                # 保存最后一个幻灯片
-                if current_slide:
-                    result["slides"].append(current_slide)
-                    current_slide = None
-
-            # 处理备注内容
-            elif in_notes_section and line.startswith("- 幻灯片"):
-                parts = line.split("：", 1)
-                if len(parts) == 2:
-                    slide_num = parts[0].replace("- 幻灯片", "").strip()
-                    try:
-                        slide_idx = int(slide_num) - 1
-                        if 0 <= slide_idx < len(result["slides"]):
-                            result["slides"][slide_idx]["note"] = parts[1].strip()
-                    except ValueError:
-                        pass
-
-            # 处理幻灯片内容
-            elif current_slide and line:
-                if line.startswith("- 标题："):
-                    current_slide["title"] = line[5:].strip()
-                elif line.startswith("- 内容："):
-                    current_slide["content"] = ""
+            # 查找下一行作为标题（通常是 ## 标题）
+            if i + 1 < len(lines) and lines[i + 1].strip().startswith('##'):
+                current_slide["title"] = lines[i + 1].strip().replace('##', '').strip()
+                i += 2  # 跳过标题行
+            else:
+                # 如果没有独立的标题行，则使用当前行的内容作为标题
+                title_parts = line.split('：', 1)
+                if len(title_parts) > 1:
+                    current_slide["title"] = title_parts[1].strip()
                 else:
-                    current_slide["content"] += line + "\n"
+                    current_slide["title"] = line.replace('#', '').strip()
+                i += 1
 
-        # 确保最后一个幻灯片被添加
-        if current_slide and not in_notes_section:
-            result["slides"].append(current_slide)
+            continue
 
-        return result
+        # 处理分隔符
+        if line == '---':
+            i += 1
+            continue
 
-    except Exception as e:
-        logger.error(f"解析大纲失败: {str(e)}")
-        raise Exception(f"解析大纲失败: {str(e)}")
+        # 处理备注
+        if line.startswith('## 教师备注'):
+            # 进入教师备注部分
+            i += 1
+            while i < len(lines) and not (lines[i].startswith('# ') or lines[i].startswith('## 幻灯片')):
+                note_line = lines[i].strip()
+                if note_line and not note_line == '---':
+                    if current_slide:
+                        current_slide["note"] += note_line + "\n"
+                i += 1
+            continue
+
+        # 处理普通内容
+        if current_slide is not None and line:
+            current_slide["content"] += line + "\n"
+
+        i += 1
+
+    # 添加最后一个幻灯片
+    if current_slide:
+        slides.append(current_slide)
+
+    logger.info(f"成功解析出 {len(slides)} 张幻灯片")
+    return slides
 
 
-async def create_enhanced_pptx(data: Dict[str, Any], file_name: str, design_preference: str = None) -> str:
-    """创建增强版PPT，更美观丰富"""
+def create_pptx(slides_data: List[Dict[str, str]], file_name: str) -> str:
+    """创建基本的PPT文件"""
     try:
         # 创建演示文稿
         prs = Presentation()
 
-        # 设置主题颜色
-        colors = get_theme_colors(design_preference)
+        for slide_data in slides_data:
+            # 添加幻灯片（使用标题和内容布局）
+            slide_layout = prs.slide_layouts[1]  # 使用标题和内容布局
+            slide = prs.slides.add_slide(slide_layout)
 
-        for i, slide_data in enumerate(data["slides"]):
-            # 根据内容选择合适的布局
-            if i == 0:  # 封面页使用标题页布局
-                slide_layout = prs.slide_layouts[0]
-                slide = prs.slides.add_slide(slide_layout)
+            # 设置标题
+            if slide.shapes.title:
+                slide.shapes.title.text = slide_data["title"]
 
-                # 设置标题
-                title = slide.shapes.title
-                title.text = slide_data["title"]
-                format_text_frame(title.text_frame, font_size=44, bold=True, color=colors["title"])
-
-                # 设置副标题
-                subtitle = slide.placeholders[1]
-                subtitle.text = extract_subtitle(slide_data["content"])
-                format_text_frame(subtitle.text_frame, font_size=28, color=colors["subtitle"])
-
-            else:
-                # 根据内容选择布局
-                content = slide_data["content"]
-                if "* " in content and content.count("* ") > 3:
-                    # 使用带项目符号的布局
-                    slide_layout = prs.slide_layouts[1]  # Title and Content
-                elif i == len(data["slides"]) - 1:
-                    # 最后一页用总结布局
-                    slide_layout = prs.slide_layouts[5]  # Title Only
-                else:
-                    # 普通内容页
-                    slide_layout = prs.slide_layouts[2]  # Section Header
-
-                slide = prs.slides.add_slide(slide_layout)
-
-                # 设置标题
-                title = slide.shapes.title
-                title.text = slide_data["title"]
-                format_text_frame(title.text_frame, font_size=36, bold=True, color=colors["title"])
-
-                # 设置内容
-                if len(slide.placeholders) > 1:
-                    content_shape = slide.placeholders[1]
-                    format_content(content_shape, slide_data["content"], colors)
-                else:
-                    # 创建自定义文本框
-                    left = Inches(1)
-                    top = Inches(2)
-                    width = Inches(8)
-                    height = Inches(4)
-                    txBox = slide.shapes.add_textbox(left, top, width, height)
-                    tf = txBox.text_frame
-                    tf.text = slide_data["content"]
-                    format_text_frame(tf, font_size=24, color=colors["text"])
-
-            # 添加页脚
-            add_footer(slide, i + 1, len(data["slides"]), data["title"])
+            # 设置内容
+            if len(slide.placeholders) > 1:
+                content_placeholder = slide.placeholders[1]
+                content_placeholder.text = slide_data["content"]
 
             # 添加备注
             if slide_data.get("note"):
@@ -271,133 +228,11 @@ async def create_enhanced_pptx(data: Dict[str, Any], file_name: str, design_pref
         prs.save(str(file_path))
 
         logger.info(f"PPT文件已保存: {file_path}")
+        return str(file_path)
 
     except Exception as e:
         logger.error(f"创建PPT失败: {str(e)}")
         raise Exception(f"创建PPT失败: {str(e)}")
-
-
-def format_text_frame(text_frame, font_size=24, bold=False, italic=False, color=None, alignment=PP_ALIGN.LEFT):
-    """格式化文本框架"""
-    text_frame.clear()
-    p = text_frame.paragraphs[0]
-    p.alignment = alignment
-
-    run = p.add_run()
-    run.text = text_frame.text
-
-    font = run.font
-    font.size = Pt(font_size)
-    font.bold = bold
-    font.italic = italic
-
-    if color:
-        font.color.rgb = color
-
-
-def format_content(shape, content: str, colors: Dict):
-    """格式化内容，支持Markdown格式"""
-    tf = shape.text_frame
-    tf.clear()
-
-    lines = content.split("\n")
-    first = True
-
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-
-        # 添加段落
-        p = tf.paragraphs[0] if first else tf.add_paragraph()
-        first = False
-
-        # 设置段落格式
-        if line.startswith("* ") or line.startswith("- "):
-            p.level = 1
-            line = line[2:]
-        elif line.startswith("  * ") or line.startswith("  - "):
-            p.level = 2
-            line = line[4:]
-
-        # 添加文本
-        run = p.add_run()
-        run.text = line
-
-        # 设置字体
-        font = run.font
-        font.size = Pt(24 if p.level == 0 else 20 if p.level == 1 else 18)
-
-        # 设置颜色
-        if p.level == 0:
-            font.color.rgb = colors["text"]
-        else:
-            font.color.rgb = colors["bullet"]
-            font.bold = p.level == 1  # 第一级项目符号加粗
-
-
-def add_footer(slide, slide_number, total_slides, title):
-    """添加页脚"""
-    left = Inches(0.3)
-    top = Inches(6.8)
-    width = Inches(9.4)
-    height = Inches(0.3)
-
-    txBox = slide.shapes.add_textbox(left, top, width, height)
-    tf = txBox.text_frame
-    tf.text = f"{title} | 第 {slide_number}/{total_slides} 页"
-
-    p = tf.paragraphs[0]
-    p.alignment = PP_ALIGN.RIGHT
-
-    run = p.runs[0]
-    font = run.font
-    font.size = Pt(12)
-    font.color.rgb = RGBColor(128, 128, 128)
-
-
-def extract_subtitle(content: str) -> str:
-    """从内容中提取适合作为副标题的文本"""
-    lines = content.split("\n")
-    clean_lines = [line.strip() for line in lines if line.strip() and not line.strip().startswith("*")]
-
-    return " | ".join(clean_lines[:2]) if clean_lines else ""
-
-
-def get_theme_colors(preference: str = None) -> Dict[str, RGBColor]:
-    """根据设计偏好获取主题颜色"""
-    themes = {
-        "default": {
-            "title": RGBColor(31, 73, 125),  # 深蓝色
-            "subtitle": RGBColor(68, 114, 196),  # 蓝色
-            "text": RGBColor(0, 0, 0),  # 黑色
-            "bullet": RGBColor(89, 89, 89)  # 深灰色
-        },
-        "modern": {
-            "title": RGBColor(0, 102, 153),  # 蓝绿色
-            "subtitle": RGBColor(0, 153, 204),  # 亮蓝色
-            "text": RGBColor(51, 51, 51),  # 深灰色
-            "bullet": RGBColor(0, 153, 153)  # 青色
-        },
-        "warm": {
-            "title": RGBColor(204, 51, 0),  # 红色
-            "subtitle": RGBColor(231, 145, 36),  # 橙色
-            "text": RGBColor(51, 51, 0),  # 棕色
-            "bullet": RGBColor(153, 51, 0)  # 深红色
-        },
-        "elegant": {
-            "title": RGBColor(68, 35, 102),  # 紫色
-            "subtitle": RGBColor(109, 71, 150),  # 淡紫色
-            "text": RGBColor(0, 0, 0),  # 黑色
-            "bullet": RGBColor(76, 47, 107)  # 深紫色
-        }
-    }
-
-    if preference and preference in themes:
-        return themes[preference]
-    else:
-        return themes["default"]
-
 
 async def list_ppt_outlines_service(staff_id: str):
     """
