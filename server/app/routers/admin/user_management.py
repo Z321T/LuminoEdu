@@ -29,7 +29,7 @@ async def download_student_template():
     """
     下载学生批量导入Excel模板
     """
-    file_path = EXCEL_DIR / "student_template.xlsx"
+    file_path = EXCEL_DIR / "student_create.xlsx"
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="学生模板文件不存在")
     return FileResponse(
@@ -96,7 +96,7 @@ async def download_teacher_template():
     """
     下载教师批量导入Excel模板
     """
-    file_path = EXCEL_DIR / "teacher_template.xlsx"
+    file_path = EXCEL_DIR / "teacher_create.xlsx"
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="教师模板文件不存在")
     return FileResponse(
