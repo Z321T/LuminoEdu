@@ -16,7 +16,7 @@ class Student(UserBase):
     contact_email = fields.CharField(max_length=100, null=True, description="联系邮箱")
 
     class Meta:
-        table = "students"
+        table = "student"
         table_description = "学生信息表"
 
     def __init__(self, **kwargs):

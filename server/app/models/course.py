@@ -11,13 +11,13 @@ class Course(models.Model):
 
     # 课程所属教师
     teacher = fields.ForeignKeyField(
-        "models.Teacher", related_name="courses",
+        "models.Teacher", related_name="create_courses",
         on_delete=fields.CASCADE, description="课程教师"
     )
 
     # 课程学生
     students = fields.ManyToManyField(
-        "models.Student", related_name="courses",
+        "models.Student", related_name="enrolled_courses",
         through="course_student", description="课程学生"
     )
 
@@ -32,15 +32,15 @@ class Course(models.Model):
     updated_at = fields.DatetimeField(auto_now=True, description="更新时间")
 
     class Meta:
-        table = "courses"
+        table = "course"
         table_description = "课程信息表"
 
 
 class CourseStudent(models.Model):
     """课程-学生关联表"""
     id = fields.IntField(pk=True)
-    course = fields.ForeignKeyField("models.Course", on_delete=fields.CASCADE)
-    student = fields.ForeignKeyField("models.Student", on_delete=fields.CASCADE)
+    course = fields.ForeignKeyField("models.Course", on_delete=fields.CASCADE, source_field="course_id")
+    student = fields.ForeignKeyField("models.Student", on_delete=fields.CASCADE, source_field="student_id")
 
     # 额外的关联信息
     final_score = fields.FloatField(null=True, description="课程成绩")

@@ -62,7 +62,7 @@ aerich init-db
 
 
 
-## **✅ 3. 后续迁移操作命令**
+## **✅ 3. 后续迁移操作命令**（在server/目录下进行操作）
 
 - 检测模型变更并生成迁移文件：# 创建迁移文件
 
@@ -79,4 +79,15 @@ aerich upgrade
 ------
 
 
+
+### **彻底重置迁移和数据库**：
+
+```bash
+# 1. 删除迁移文件
+rm -rf migrations/models
+
+# 2. 重新初始化迁移
+aerich init -t app.database.TORTOISE_ORM
+aerich init-db
+```
 

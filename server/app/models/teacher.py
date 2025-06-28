@@ -15,7 +15,7 @@ class Teacher(UserBase):
     office_location = fields.CharField(max_length=100, null=True, description="办公室位置")
 
     class Meta:
-        table = "teachers"
+        table = "teacher"
         table_description = "教师信息表"
 
     def __init__(self, **kwargs):
