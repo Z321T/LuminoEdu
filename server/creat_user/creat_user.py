@@ -27,7 +27,7 @@ async def create_student():
         grade="2025级",
         enrollment_year=2025
     )
-    student.set_password("mm123")  # 使用模型方法设置密码
+    student.set_password("mmmm123")  # 使用模型方法设置密码
     await student.save()
     print(f"已创建学生: {student.username}")
 
@@ -44,7 +44,7 @@ async def create_teacher():
         department="计算机科学系",
         expertise="人工智能"
     )
-    teacher.set_password("mm123")  # 使用模型方法设置密码
+    teacher.set_password("mmmm123")  # 使用模型方法设置密码
     await teacher.save()
     print(f"已创建教师: {teacher.username}")
 
@@ -59,7 +59,7 @@ async def create_admin():
         username="admin",
         admin_id="A2025001",
     )
-    admin.set_password("mm123")  # 使用模型方法设置密码
+    admin.set_password("mmmm123")  # 使用模型方法设置密码
     await admin.save()
     print(f"已创建管理员: {admin.username}")
 

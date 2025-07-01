@@ -19,6 +19,13 @@ class CourseCreateResponse(BaseModel):
     description: Optional[str] = Field(None, description="课程描述")
 
 
+## 课程删除
+# 课程删除响应模型
+class CourseDeleteResponse(BaseModel):
+    success: bool = Field(..., description="是否成功")
+    message: str = Field(..., description="结果消息")
+
+
 ## 课程信息获取
 # 课程基础信息响应模型
 class CourseBaseResponse(BaseModel):
@@ -45,11 +52,21 @@ class CourseDetailResponse(CourseBaseResponse):
     students: List[StudentBaseInfo] = Field(default_factory=list, description="学生列表")
 
 
-## 课程学生添加
+## 课程学生添加与删除
 # 课程添加学生响应模型
 class CourseAddStudentsResponse(BaseModel):
     success: bool = Field(..., description="是否成功")
     total: int = Field(..., description="总学生数")
     added: int = Field(..., description="添加成功数量")
     failed: List[str] = Field(default_factory=list, description="添加失败的学号")
+    message: str = Field(..., description="结果消息")
+
+# 课程删除学生请求模型
+class CourseRemoveStudentsRequest(BaseModel):
+    student_ids: List[str] = Field(..., description="要删除的学生学号列表")
+
+# 课程删除学生响应模型
+class CourseRemoveStudentsResponse(BaseModel):
+    success: bool = Field(..., description="是否成功")
+    removed: int = Field(..., description="删除成功数量")
     message: str = Field(..., description="结果消息")

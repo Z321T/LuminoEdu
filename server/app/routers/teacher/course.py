@@ -3,11 +3,12 @@ from fastapi.responses import FileResponse
 
 from app.config import MEDIA_ROOT
 from app.schemas.teacher.course import (
-    CourseCreateRequest, CourseCreateResponse,
+    CourseCreateRequest, CourseCreateResponse, CourseDeleteResponse,
     CourseBaseResponse, CourseDetailResponse,
-    CourseAddStudentsResponse)
+    CourseAddStudentsResponse, CourseRemoveStudentsResponse,CourseRemoveStudentsRequest)
 from app.services.teacher.course_management import (
-    create_course, list_courses, get_course_detail, add_students_to_course
+    create_course, delete_course,
+    list_courses, get_course_detail, add_students_to_course, remove_students_from_course
 )
 
 from app.core.dependencies import auth_teacher_user
@@ -33,6 +34,27 @@ async def create_course_api(
         return CourseCreateResponse(id=course.id, name=course.name, description=course.description)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+
+@router.delete("/{course_id}", response_model=CourseDeleteResponse)
+async def delete_course_api(
+    course_id: int,
+    current_user: Teacher = Depends(auth_teacher_user)
+):
+    """
+    删除课程接口
+    """
+    try:
+        success = await delete_course(current_user.id, course_id)
+        return CourseDeleteResponse(
+            success=success,
+            message="课程删除成功" if success else "课程删除失败"
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 
@@ -106,5 +128,42 @@ async def add_students_to_course_api(
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{course_id}/students", response_model=CourseRemoveStudentsResponse)
+async def remove_students_from_course_api(
+        course_id: int,
+        data: CourseRemoveStudentsRequest,
+        current_user: Teacher = Depends(auth_teacher_user)
+):
+    """
+    批量删除课程内学生
+
+    ## 请求体示例:
+    ```json
+    {
+      "student_ids": ["S2025001", "S2025002", "S2025003"]
+    }
+    ```
+
+    ## 字段说明:
+    - student_ids: 要删除的学生学号列表，使用学生的学号字符串，而非系统内部ID
+    """
+    try:
+        removed_count = await remove_students_from_course(
+            current_user.id,
+            course_id,
+            data.student_ids
+        )
+
+        return CourseRemoveStudentsResponse(
+            success=True,
+            removed=removed_count,
+            message=f"成功从课程中删除 {removed_count} 名学生"
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

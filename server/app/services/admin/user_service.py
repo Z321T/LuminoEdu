@@ -1,5 +1,5 @@
 import io
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 import pandas as pd
 from fastapi import UploadFile, HTTPException, status
@@ -500,3 +500,31 @@ async def reset_teacher_password(teacher_id: str, password_data: UserPasswordRes
         "message": "教师密码重置成功",
         "user_id": teacher_id
     }
+
+
+
+async def batch_delete_students(student_ids: List[str]) -> int:
+    """
+    批量删除学生
+    """
+    logger.info(f"管理员正在批量删除学生: {student_ids}")
+
+    # 查询这些学号对应的记录
+    deleted_count = await Student.filter(student_id__in=student_ids).delete()
+
+    logger.info(f"成功删除 {deleted_count} 名学生")
+    return deleted_count
+
+
+
+async def batch_delete_teachers(staff_ids: List[str]) -> int:
+    """
+    批量删除教师
+    """
+    logger.info(f"管理员正在批量删除教师: {staff_ids}")
+
+    # 查询这些工号对应的记录
+    deleted_count = await Teacher.filter(staff_id__in=staff_ids).delete()
+
+    logger.info(f"成功删除 {deleted_count} 名教师")
+    return deleted_count

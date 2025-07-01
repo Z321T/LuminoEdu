@@ -39,6 +39,31 @@ async def create_course(teacher_id: int, data: CourseCreateRequest) -> Course:
         raise ValueError(f"课程创建失败: {str(e)}")
 
 
+async def delete_course(teacher_id: int, course_id: int) -> bool:
+    """
+    删除课程
+    """
+    logger.info(f"教师 {teacher_id} 正在删除课程: 课程ID={course_id}")
+
+    # 检查课程是否存在且属于该教师
+    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    if not course:
+        logger.warning(f"课程删除失败: 课程ID={course_id} 不存在或不属于教师ID={teacher_id}")
+        raise ValueError("课程不存在或无权限删除")
+
+    # 删除课程前，先删除所有相关的学生关联
+    await CourseStudent.filter(course_id=course_id).delete()
+
+    # 删除课程
+    deleted_count = await Course.filter(id=course_id, teacher_id=teacher_id).delete()
+    if deleted_count:
+        logger.info(f"课程删除成功: 课程ID={course_id}")
+        return True
+    else:
+        logger.warning(f"课程删除失败: 课程ID={course_id}")
+        return False
+
+
 
 async def list_courses(teacher_id: int) -> List[CourseBaseResponse]:
     logger.info(f"教师 {teacher_id} 正在获取课程列表")
@@ -136,3 +161,35 @@ async def add_students_to_course(teacher_id: int, course_id: int, file: UploadFi
     except Exception as e:
         logger.error(f"导入学生失败: {str(e)}", exc_info=True)
         raise ValueError(f"导入学生失败: {str(e)}")
+
+
+async def remove_students_from_course(teacher_id: int, course_id: int, student_numbers: List[str]) -> int:
+    """
+    从课程中批量删除学生
+    """
+    logger.info(f"教师 {teacher_id} 正在从课程 {course_id} 批量删除学生: {student_numbers}")
+
+    # 检查课程是否存在且属于该教师
+    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    if not course:
+        logger.warning(f"课程不存在或不属于该教师: 教师ID={teacher_id}, 课程ID={course_id}")
+        raise ValueError("课程不存在或无权限访问")
+
+    # 查询这些学号对应的内部ID
+    students = await Student.filter(student_id__in=student_numbers).values("id", "student_id")
+    student_id_map = {s["student_id"]: s["id"] for s in students}
+
+    internal_ids = [student_id_map.get(sid) for sid in student_numbers if sid in student_id_map]
+
+    if not internal_ids:
+        logger.warning(f"未找到任何有效的学生学号: {student_numbers}")
+        return 0
+
+    # 删除课程学生关联
+    deleted_count = await CourseStudent.filter(
+        course_id=course_id,
+        student_id__in=internal_ids
+    ).delete()
+
+    logger.info(f"从课程 {course_id} 成功删除 {deleted_count} 名学生")
+    return deleted_count
