@@ -84,7 +84,8 @@ aerich upgrade
 
 ```bash
 # 1. 删除迁移文件
-rm -rf migrations/models
+mac：rm -rf migrations/models
+Windows：Remove-Item -Recurse -Force .\migrations\models
 
 # 2. 重新初始化迁移
 aerich init -t app.database.TORTOISE_ORM
