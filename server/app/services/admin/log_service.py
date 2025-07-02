@@ -29,7 +29,9 @@ SERVICE_DESCRIPTIONS = {
     "ppt_generator_api": "PPT生成服务相关API请求日志",
     "course_management_service": "课程管理服务日志",
     "course_material_service": "课程资料管理服务日志",
+    "course_notification_service": "课程通知服务日志",
     # 学生端服务
+    "student_notification_service": "学生课程通知服务日志",
 
     # 可根据需要扩展更多服务
 }

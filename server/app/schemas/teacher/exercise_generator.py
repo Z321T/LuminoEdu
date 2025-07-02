@@ -2,7 +2,7 @@ from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-from app.models.course_exercise import ExerciseType
+from app.models.exercise import ExerciseType
 
 class ExerciseGenerateRequest(BaseModel):
     """习题生成请求模型"""

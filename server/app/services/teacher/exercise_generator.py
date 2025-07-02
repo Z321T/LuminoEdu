@@ -9,7 +9,7 @@ from openai import OpenAI
 
 from app.config import DEEPSEEK_API_KEY, MEDIA_ROOT
 from app.core.logger import setup_logger
-from app.models.course_exercise import ExerciseType
+from app.models.exercise import ExerciseType
 
 # 设置日志
 logger = setup_logger("exercise_generator_service")

@@ -39,8 +39,8 @@ class Course(models.Model):
 class CourseStudent(models.Model):
     """课程-学生关联表"""
     id = fields.IntField(pk=True)
-    course = fields.ForeignKeyField("models.Course", on_delete=fields.CASCADE, source_field="course_id")
-    student = fields.ForeignKeyField("models.Student", on_delete=fields.CASCADE, source_field="student_id")
+    course = fields.ForeignKeyField("models.Course", on_delete=fields.CASCADE)
+    student = fields.ForeignKeyField("models.Student", on_delete=fields.CASCADE)
 
     # 额外的关联信息
     final_score = fields.FloatField(null=True, description="课程成绩")
