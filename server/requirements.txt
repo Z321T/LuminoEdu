@@ -4,7 +4,7 @@ aiosqlite==0.21.0
 annotated-types==0.7.0
 anyio==4.9.0
 asyncclick==8.1.8.0
-bcrypt==4.3.0
+bcrypt==3.2.2
 certifi==2025.4.26
 click==8.1.8
 colorama==0.4.6
