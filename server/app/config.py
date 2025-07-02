@@ -20,3 +20,14 @@ DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "sk-0eda12ea690b402b9f6e7a
 
 # 文件存储路径
 MEDIA_ROOT = SERVER_DIR / "app" / "documents"
+
+# 课程资料存储路径
+COURSE_MATERIALS_DIR = MEDIA_ROOT / "coursematerial"
+
+# 文件上传配置
+MAX_FILE_SIZE = 2048 * 1024 * 1024  # 2GB
+ALLOWED_FILE_EXTENSIONS = {
+    '.pdf', '.doc', '.docx', '.ppt', '.pptx', '.xls', '.xlsx',
+    '.txt', '.md', '.zip', '.rar', '.7z', '.tar', '.gz',
+    '.jpg', '.jpeg', '.png', '.gif', '.mp4', '.avi', '.mov'
+}
