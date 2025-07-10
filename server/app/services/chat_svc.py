@@ -7,7 +7,7 @@ from openai import OpenAI
 from app.config import DEEPSEEK_API_KEY, SERVER_DIR
 from app.core.logger import setup_logger
 from app.models.user_common import UserRole
-from app.schemas.chat import (
+from app.schemas.chat_sch import (
     ChatMessage, ChatRequest, ChatStreamResponse, ChatMessageRole
 )
 

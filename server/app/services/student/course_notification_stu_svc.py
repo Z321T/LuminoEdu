@@ -3,7 +3,7 @@ from typing import List, Tuple, Optional
 from app.core.logger import setup_logger
 from app.models.course import CourseStudent
 from app.models.course_notification import CourseNotification, NotificationConfirmation
-from app.schemas.student.course_notification import StudentNotificationResponse
+from app.schemas.student.course_notification_stu_sch import StudentNotificationResponse, StudentNotificationDetailResponse
 
 logger = setup_logger("student_notification_service")
 
@@ -18,8 +18,6 @@ async def get_student_notifications(
     logger.info(f"学生ID {student_id} 正在获取通知列表")
 
     # 构建查询条件
-    query = CourseNotification.filter(is_active=True)
-
     if course_id:
         # 验证学生是否在该课程中
         course_student = await CourseStudent.filter(
@@ -29,7 +27,7 @@ async def get_student_notifications(
         if not course_student:
             raise ValueError("课程不存在或未加入该课程")
 
-        query = query.filter(course_id=course_id)
+        query = CourseNotification.filter(course_id=course_id)
     else:
         # 获取学生所有课程ID
         student_course_ids = await CourseStudent.filter(
@@ -72,14 +70,59 @@ async def get_student_notifications(
             priority=notification.priority,
             require_confirmation=notification.require_confirmation,
             publish_time=notification.publish_time,
-            deadline=notification.deadline,
             course_name=notification.course.name,
-            teacher_name=notification.teacher.real_name,
+            teacher_name=notification.teacher.username,
             is_confirmed=confirmation is not None,
             confirmed_at=confirmation.confirmed_at if confirmation else None
         ))
 
     return notification_list, total_count
+
+
+
+async def get_student_notification_detail(
+        student_id: int,
+        notification_id: int
+) -> StudentNotificationDetailResponse:
+    """获取学生的通知详情"""
+    logger.info(f"学生ID {student_id} 正在获取通知详情，通知ID {notification_id}")
+
+    # 验证通知是否存在
+    notification = await CourseNotification.get_or_none(id=notification_id).prefetch_related(
+        'course', 'teacher'
+    )
+
+    if not notification:
+        raise ValueError("通知不存在")
+
+    # 验证学生是否有权限访问该通知（即是否在该课程中）
+    course_student = await CourseStudent.filter(
+        course_id=notification.course_id,
+        student_id=student_id
+    ).first()
+
+    if not course_student:
+        raise ValueError("无权限访问该通知")
+
+    # 获取学生的确认记录
+    confirmation = await NotificationConfirmation.filter(
+        notification_id=notification_id,
+        student_id=student_id
+    ).first()
+
+    # 构建响应数据
+    return StudentNotificationDetailResponse(
+        id=notification.id,
+        title=notification.title,
+        content=notification.content,
+        priority=notification.priority,
+        require_confirmation=notification.require_confirmation,
+        publish_time=notification.publish_time,
+        course_name=notification.course.name,
+        teacher_name=notification.teacher.username,
+        is_confirmed=confirmation is not None,
+    )
+
 
 
 async def confirm_notification(

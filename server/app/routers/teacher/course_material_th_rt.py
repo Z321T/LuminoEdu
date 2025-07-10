@@ -4,10 +4,10 @@ from fastapi.responses import FileResponse
 from app.core.dependencies import auth_teacher_user
 from app.models.course import Course
 from app.models.teacher import Teacher
-from app.schemas.teacher.course_material import (
+from app.schemas.teacher.course_material_th_sch import (
     MaterialUploadResponse, MaterialListResponse, MaterialDeleteResponse
 )
-from app.services.teacher.course_material import (
+from app.services.teacher.course_material_th_svc import (
     upload_course_material, get_course_materials, delete_course_material,
     get_course_material_dir
 )

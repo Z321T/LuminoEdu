@@ -7,7 +7,7 @@ from pptx import Presentation
 
 from app.config import DEEPSEEK_API_KEY, SERVER_DIR
 from app.core.logger import setup_logger
-from app.schemas.teacher.ppt_generator import (
+from app.schemas.teacher.ppt_generator_sch import (
     PPTGenerationRequest, PPTGenerationResponse, PPTSlide,
     PPTOutlineResponse, PPTGenerationFromOutlineRequest
 )

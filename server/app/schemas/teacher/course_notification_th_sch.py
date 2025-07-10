@@ -20,7 +20,6 @@ class NotificationCreateRequest(BaseModel):
         description="通知优先级"
     )
     require_confirmation: bool = Field(default=False, description="是否需要确认")
-    deadline: Optional[datetime] = Field(None, description="截止时间")
 
 
 # 更新通知请求
@@ -29,7 +28,6 @@ class NotificationUpdateRequest(BaseModel):
     content: Optional[str] = Field(None, description="通知内容")
     priority: Optional[NotificationPriority] = Field(None, description="通知优先级")
     require_confirmation: Optional[bool] = Field(None, description="是否需要确认")
-    deadline: Optional[datetime] = Field(None, description="截止时间")
 
 
 # 学生确认信息
@@ -48,7 +46,6 @@ class NotificationDetailResponse(BaseModel):
     priority: NotificationPriority = Field(..., description="通知优先级")
     require_confirmation: bool = Field(..., description="是否需要确认")
     publish_time: datetime = Field(..., description="发布时间")
-    deadline: Optional[datetime] = Field(None, description="截止时间")
 
     # 统计信息
     total_students: int = Field(..., description="课程总学生数")
@@ -69,7 +66,6 @@ class NotificationListResponse(BaseModel):
     priority: NotificationPriority = Field(..., description="通知优先级")
     require_confirmation: bool = Field(..., description="是否需要确认")
     publish_time: datetime = Field(..., description="发布时间")
-    deadline: Optional[datetime] = Field(None, description="截止时间")
     confirmed_students: int = Field(default=0, description="已确认学生数")
     total_students: int = Field(..., description="课程总学生数")
 

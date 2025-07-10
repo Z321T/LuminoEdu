@@ -3,14 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.core.logger import setup_logger
 from app.core.dependencies import auth_current_user
 from app.models.user_common import UserRole
-from app.schemas.user import (
+from app.schemas.user_sch import (
     UserProfileUpdate,
     TeacherProfileUpdate,
     PasswordChange,
     ProfileUpdateResponse,
     PasswordChangeResponse
 )
-from app.services.user import update_user_profile, change_user_password
+from app.services.user_svc import update_user_profile, change_user_password
 
 router = APIRouter(tags=["用户个人中心"])
 

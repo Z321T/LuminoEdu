@@ -5,12 +5,12 @@ from typing import Optional
 from fastapi import HTTPException, status
 
 from app.core.logger import LOG_DIR, setup_logger
-from app.schemas.admin.log_management import LogService, LogServiceList, LogFile, LogFileList, LogContent
+from app.schemas.admin.log_management_sch import LogService, LogServiceList, LogFile, LogFileList, LogContent
 
 # 设置日志记录器
 logger = setup_logger("log_management_service")
 
-# 服务描述映射，可以随时扩展
+# 服务描述映射
 SERVICE_DESCRIPTIONS = {
     # 系统服务
     "app": "应用启动日志",
@@ -32,8 +32,7 @@ SERVICE_DESCRIPTIONS = {
     "course_notification_service": "课程通知服务日志",
     # 学生端服务
     "student_notification_service": "学生课程通知服务日志",
-
-    # 可根据需要扩展更多服务
+    "student_course_service": "学生课程服务日志",
 }
 
 def format_file_size(size_bytes: int) -> str:

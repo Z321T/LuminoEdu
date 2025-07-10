@@ -4,14 +4,14 @@ from fastapi import APIRouter, UploadFile, File, Query, HTTPException
 from fastapi.responses import FileResponse
 
 from app.config import MEDIA_ROOT
-from app.schemas.admin.user_admin import (
+from app.schemas.admin.user_management_sch import (
     StudentListResponse, StudentDetailResponse, StudentUpdateFields,
     TeacherListResponse, TeacherDetailResponse, TeacherUpdateFields,
     UserUpdateResponse, UserPasswordResetRequest,
     BatchDeleteResponse, StudentBatchDeleteRequest, TeacherBatchDeleteRequest
 )
-from app.schemas.admin.user_create import BatchUserCreateResponse
-from app.services.admin.user_service import (
+from app.schemas.admin.user_create_sch import BatchUserCreateResponse
+from app.services.admin.user_svc import (
     create_students as create_students_service,
     create_teachers as create_teachers_service,
     get_all_students, get_student_detail, reset_student_password, update_student_info,

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.schemas.auth import LoginForm, Token
-from app.services.auth import login_for_access_token
+from app.schemas.auth_sch import LoginForm, Token
+from app.services.auth_svc import login_for_access_token
 
 router = APIRouter(tags=["登录认证"])
 

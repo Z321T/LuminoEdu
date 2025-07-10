@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.core.dependencies import auth_teacher_user
 from app.models.teacher import Teacher
-from app.schemas.teacher.course_notification import (
+from app.schemas.teacher.course_notification_th_sch import (
     NotificationCreateRequest, NotificationUpdateRequest,
     NotificationOperationResponse, NotificationDetailResponse
 )
-from app.services.teacher.course_notification import (
+from app.services.teacher.course_notification_th_svc import (
     create_course_notification, get_course_notifications,
     get_notification_detail, update_notification, delete_notification
 )
@@ -25,7 +25,7 @@ async def create_notification_api(
 
     支持的通知优先级：
     - 1: 普通（默认）
-    - 2: 高优先级
+    - 2: 重要
     - 3: 紧急
     """
     try:

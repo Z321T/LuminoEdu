@@ -19,7 +19,6 @@ class StudentNotificationResponse(BaseModel):
     priority: NotificationPriority = Field(..., description="通知优先级")
     require_confirmation: bool = Field(..., description="是否需要确认")
     publish_time: datetime = Field(..., description="发布时间")
-    deadline: Optional[datetime] = Field(None, description="截止时间")
     course_name: str = Field(..., description="课程名称")
     teacher_name: str = Field(..., description="教师姓名")
     is_confirmed: bool = Field(default=False, description="是否已确认")
@@ -30,3 +29,16 @@ class StudentNotificationResponse(BaseModel):
 class NotificationConfirmResponse(BaseModel):
     success: bool = Field(..., description="确认是否成功")
     message: str = Field(..., description="操作结果消息")
+
+
+# 学生通知详情响应
+class StudentNotificationDetailResponse(BaseModel):
+    id: int = Field(..., description="通知ID")
+    title: str = Field(..., description="通知标题")
+    content: str = Field(..., description="通知内容")
+    priority: NotificationPriority = Field(..., description="通知优先级")
+    require_confirmation: bool = Field(..., description="是否需要确认")
+    publish_time: datetime = Field(..., description="发布时间")
+    course_name: str = Field(..., description="课程名称")
+    teacher_name: str = Field(..., description="教师姓名")
+    is_confirmed: bool = Field(default=False, description="是否已确认")

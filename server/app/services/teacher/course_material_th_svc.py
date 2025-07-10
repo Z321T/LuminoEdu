@@ -8,7 +8,7 @@ from fastapi import UploadFile
 from app.config import COURSE_MATERIALS_DIR, MAX_FILE_SIZE, ALLOWED_FILE_EXTENSIONS
 from app.core.logger import setup_logger
 from app.models.course import Course
-from app.schemas.teacher.course_material import MaterialInfo
+from app.schemas.teacher.course_material_th_sch import MaterialInfo
 
 logger = setup_logger("course_material_service")
 

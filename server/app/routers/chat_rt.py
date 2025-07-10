@@ -7,8 +7,8 @@ from fastapi.responses import StreamingResponse
 
 from app.core.auth import auth_current_user
 from app.models.user_common import UserBase
-from app.schemas.chat import ChatRequest
-from app.services.chat_service import process_chat_request, get_chat_history
+from app.schemas.chat_sch import ChatRequest
+from app.services.chat_svc import process_chat_request, get_chat_history
 
 
 router = APIRouter(tags=["AI-Chat"])

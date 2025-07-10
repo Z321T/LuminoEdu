@@ -8,7 +8,7 @@ from typing import List, Tuple
 from app.core.logger import setup_logger
 from app.models.student import Student
 from app.models.course import Course, CourseStudent
-from app.schemas.teacher.course import CourseCreateRequest, CourseBaseResponse, CourseDetailResponse, StudentBaseInfo
+from app.schemas.teacher.course_th_sch import CourseCreateRequest, CourseBaseResponse, CourseDetailResponse, StudentBaseInfo
 
 # 创建课程服务的日志记录器
 logger = setup_logger("course_management_service")

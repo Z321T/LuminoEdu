@@ -5,7 +5,7 @@ from tortoise import fields, models
 class NotificationPriority(IntEnum):
     """通知优先级"""
     NORMAL = 1  # 普通
-    HIGH = 2  # 高优先级
+    HIGH = 2  # 重要
     URGENT = 3  # 紧急
 
 
@@ -44,7 +44,6 @@ class CourseNotification(models.Model):
 
     # 时间信息
     publish_time = fields.DatetimeField(auto_now_add=True, description="发布时间")
-    deadline = fields.DatetimeField(null=True, description="截止时间")
 
     # 状态管理
     created_at = fields.DatetimeField(auto_now_add=True, description="创建时间")

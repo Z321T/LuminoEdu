@@ -3,7 +3,7 @@ from typing import List, Tuple
 from app.core.logger import setup_logger
 from app.models.course import Course
 from app.models.course_notification import CourseNotification, NotificationConfirmation
-from app.schemas.teacher.course_notification import (
+from app.schemas.teacher.course_notification_th_sch import (
     NotificationCreateRequest, NotificationUpdateRequest,
     NotificationDetailResponse, NotificationListResponse,
     StudentConfirmationInfo
@@ -33,7 +33,6 @@ async def create_course_notification(
         content=request.content,
         priority=request.priority,
         require_confirmation=request.require_confirmation,
-        deadline=request.deadline
     )
 
     logger.info(f"通知创建成功: ID={notification.id}")
@@ -80,7 +79,6 @@ async def get_course_notifications(
             priority=notification.priority,
             require_confirmation=notification.require_confirmation,
             publish_time=notification.publish_time,
-            deadline=notification.deadline,
             confirmed_students=confirmed_count,
             total_students=total_students
         ))
@@ -134,7 +132,6 @@ async def get_notification_detail(
         priority=notification.priority,
         require_confirmation=notification.require_confirmation,
         publish_time=notification.publish_time,
-        deadline=notification.deadline,
         total_students=total_students,
         confirmed_students=confirmed_count,
         confirmation_rate=round(confirmation_rate, 2),

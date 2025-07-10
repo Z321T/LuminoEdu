@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
 
 from app.config import MEDIA_ROOT
-from app.schemas.teacher.course import (
+from app.schemas.teacher.course_th_sch import (
     CourseCreateRequest, CourseCreateResponse, CourseDeleteResponse,
     CourseBaseResponse, CourseDetailResponse,
     CourseAddStudentsResponse, CourseRemoveStudentsResponse,CourseRemoveStudentsRequest)
-from app.services.teacher.course_management import (
+from app.services.teacher.course_th_svc import (
     create_course, delete_course,
     list_courses, get_course_detail, add_students_to_course, remove_students_from_course
 )

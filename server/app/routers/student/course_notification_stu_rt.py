@@ -3,11 +3,12 @@ from typing import Optional
 
 from app.core.dependencies import auth_student_user
 from app.models.student import Student
-from app.schemas.student.course_notification import (
-    NotificationConfirmResponse
+from app.schemas.student.course_notification_stu_sch import (
+    NotificationConfirmResponse,
+    StudentNotificationDetailResponse
 )
-from app.services.student.course_notification import (
-    get_student_notifications, confirm_notification
+from app.services.student.course_notification_stu_svc import (
+    get_student_notifications, confirm_notification, get_student_notification_detail
 )
 
 router = APIRouter(tags=["学生端-课程通知"])
@@ -32,6 +33,23 @@ async def get_student_notifications_api(
             "page_size": page_size,
             "total_pages": (total_count + page_size - 1) // page_size
         }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/notifications/{notification_id}", response_model=StudentNotificationDetailResponse)
+async def get_student_notification_detail_api(
+        notification_id: int,
+        current_user: Student = Depends(auth_student_user)
+):
+    """获取学生的通知详情"""
+    try:
+        notification_detail = await get_student_notification_detail(
+            current_user.id, notification_id
+        )
+        return notification_detail
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

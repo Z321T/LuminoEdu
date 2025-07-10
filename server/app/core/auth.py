@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from app.core.security import verify_token
-from app.services.auth import auth_user_by_role_and_id
+from app.services.auth_svc import auth_user_by_role_and_id
 
 # 创建OAuth2认证方案
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")

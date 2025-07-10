@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import jwt
-from app.schemas.auth import TokenPayload
+from app.schemas.auth_sch import TokenPayload
 from pydantic import ValidationError
 from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 

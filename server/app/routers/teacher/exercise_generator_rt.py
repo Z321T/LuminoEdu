@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, Request, Depends, Query
 from fastapi.responses import FileResponse
 from typing import Optional
 
-from app.schemas.teacher.exercise_generator import ExerciseGenerateRequest
-from app.services.teacher.exercise_generator import ExerciseGenerator, get_exercise_file_content_service, \
+from app.schemas.teacher.exercise_generator_sch import ExerciseGenerateRequest
+from app.services.teacher.exercise_generator_svc import ExerciseGenerator, get_exercise_file_content_service, \
     download_exercise_file_service, list_generated_exercises_service, delete_exercise_file_service
 from app.core.logger import setup_logger
 from app.core.dependencies import auth_teacher_user
