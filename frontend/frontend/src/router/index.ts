@@ -6,6 +6,8 @@ import home_teacher from '@/views/home_teacher.vue'
 import exercise_generate from '@/views/exercise_gernerate.vue'
 import exercise_history from '@/views/exercise_history.vue' // 新增导入
 import admin_home from '@/views/admin_home.vue'
+import CreateTeacher from '@/views/CreateTeacher.vue'
+import CreateStudent from '@/views/CreateStudent.vue'
 const routes: Array<RouteRecordRaw> = [
   {
       path: '/login',
@@ -37,7 +39,19 @@ const routes: Array<RouteRecordRaw> = [
     name: 'admin_home',
     component: admin_home,
   },
+  {
+    path: '/admin/create-teacher',
+    name: 'CreateTeacher',
+    component: CreateTeacher,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
 
+ {
+    path: '/admin/create-student',
+    name: 'CreateStudent',
+    component: CreateStudent,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
 ]
 
 const router = createRouter({
