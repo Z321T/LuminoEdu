@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, File, UploadFile
 from fastapi.responses import FileResponse
 
 from app.core.dependencies import auth_teacher_user
@@ -25,7 +25,7 @@ async def generate_ppt_outline_endpoint(
         current_user: Teacher = Depends(auth_teacher_user)
 ):
     """
-    生成PPT大纲 (第一步)
+    生成PPT的md格式大纲(第一步)
     """
     try:
         logger.info(f"教师 {current_user.username}(教工号:{current_user.staff_id}) 请求生成PPT大纲: {request.title}")
@@ -97,14 +97,22 @@ async def delete_ppt_outline(
 
 @router.post("/generate_from_outline", response_model=PPTGenerationResponse)
 async def generate_ppt_from_outline_endpoint(
-        request: PPTGenerationFromOutlineRequest,
+        title: str,
+        file: UploadFile = File(...),
         current_user: Teacher = Depends(auth_teacher_user)
 ):
     """
-    从修改后的大纲生成PPT (第二步)
+    从md格式大纲生成PPT (第二步)
     """
     try:
         logger.info(f"教师 {current_user.username}(教工号:{current_user.staff_id}) 从大纲生成PPT")
+        # 读取上传的md文件内容
+        outline_md = (await file.read()).decode("utf-8")
+        # 构造请求对象
+        request = PPTGenerationFromOutlineRequest(
+            title=title,
+            outline_md=outline_md
+        )
         response = await generate_ppt_from_outline(request, current_user.staff_id)
         return response
     except Exception as e:

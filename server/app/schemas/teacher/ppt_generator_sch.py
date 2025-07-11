@@ -22,7 +22,7 @@ class PPTSlide(BaseModel):
 
 class PPTGenerationResponse(BaseModel):
     """PPT生成响应模型"""
-    title: str
+    title: str = Field(..., max_length=30, description="PPT标题")
     slides: List[PPTSlide]
     filename: Optional[str] = None
 
@@ -35,6 +35,6 @@ class PPTOutlineResponse(BaseModel):
 
 class PPTGenerationFromOutlineRequest(BaseModel):
     """基于大纲生成PPT的请求模型"""
-    title: str
-    outline_md: str  # 用户修改后的Markdown大纲
+    title: str = Field(..., max_length=30, description="PPT标题")
+    outline_md: str = Field(..., description="Markdown格式的PPT大纲内容")
     design_preference: Optional[str] = None  # 设计偏好，如"简洁"、"多彩"等

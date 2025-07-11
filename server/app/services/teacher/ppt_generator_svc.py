@@ -1,9 +1,16 @@
+import re
+
 from datetime import datetime
 from typing import Dict, List
 
 from fastapi import HTTPException
 from openai import OpenAI
+
 from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN
+from pptx.enum.shapes import MSO_SHAPE
 
 from app.config import DEEPSEEK_API_KEY, SERVER_DIR
 from app.core.logger import setup_logger
@@ -95,6 +102,7 @@ async def generate_ppt_outline(request: PPTGenerationRequest, staff_id: str) -> 
         raise Exception(f"生成PPT大纲失败: {str(e)}")
 
 
+
 async def generate_ppt_from_outline(
         request: PPTGenerationFromOutlineRequest,
         staff_id: str
@@ -132,6 +140,7 @@ async def generate_ppt_from_outline(
     except Exception as e:
         logger.error(f"从大纲生成PPT失败: {str(e)}")
         raise Exception(f"从大纲生成PPT失败: {str(e)}")
+
 
 
 def parse_markdown_outline(outline_md: str) -> List[Dict[str, str]]:
@@ -199,25 +208,88 @@ def parse_markdown_outline(outline_md: str) -> List[Dict[str, str]]:
     return slides
 
 
+
 def create_pptx(slides_data: List[Dict[str, str]], file_name: str) -> str:
     """创建基本的PPT文件"""
     try:
         # 创建演示文稿
         prs = Presentation()
+        slide_width = prs.slide_width
+        slide_height = prs.slide_height
 
         for slide_data in slides_data:
-            # 添加幻灯片（使用标题和内容布局）
-            slide_layout = prs.slide_layouts[1]  # 使用标题和内容布局
-            slide = prs.slides.add_slide(slide_layout)
+            # 新建空白幻灯片
+            slide = prs.slides.add_slide(prs.slide_layouts[6])
 
-            # 设置标题
-            if slide.shapes.title:
-                slide.shapes.title.text = slide_data["title"]
+            # 标题文本框（左上角）
+            left = Inches(0.5)
+            top = Inches(0.4)
+            width = slide_width - Inches(1)
+            height = Inches(1)
+            title_box = slide.shapes.add_textbox(left, top, width, height)
+            title_tf = title_box.text_frame
+            title_tf.text = slide_data["title"]
+            title_p = title_tf.paragraphs[0]
+            title_p.font.size = Pt(32)
+            title_p.font.bold = True
+            title_p.font.name = "微软雅黑"
+            title_p.font.color.rgb = RGBColor(31, 56, 100)
+            title_p.alignment = PP_ALIGN.LEFT
 
-            # 设置内容
-            if len(slide.placeholders) > 1:
-                content_placeholder = slide.placeholders[1]
-                content_placeholder.text = slide_data["content"]
+            # 内容文本框（标题下方）
+            content_top = top + height + Inches(0.1)
+            content_height = slide_height - content_top - Inches(0.5)
+            content_box = slide.shapes.add_textbox(left, content_top, width, content_height)
+            content_tf = content_box.text_frame
+            content_tf.word_wrap = True
+
+            # 处理内容，支持列表、加粗、代码块
+            lines = slide_data["content"].splitlines()
+            in_code = False
+            code_buf = []
+            for line in lines:
+                line = line.rstrip()
+                # 代码块处理
+                if re.match(r"^```", line):
+                    if in_code:
+                        # 结束代码块，插入代码
+                        _add_code_block(slide, code_buf, left, content_top, width)
+                        code_buf = []
+                        in_code = False
+                    else:
+                        in_code = True
+                    continue
+                if in_code:
+                    code_buf.append(line)
+                    continue
+                if not line.strip():
+                    continue
+                # 无序列表
+                if re.match(r"^[-*+]\s+", line):
+                    p = content_tf.add_paragraph()
+                    p.text = line[2:].strip()
+                    p.level = 0
+                    p.font.size = Pt(20)
+                    p.font.name = "微软雅黑"
+                # 有序列表
+                elif re.match(r"^\d+\.\s+", line):
+                    p = content_tf.add_paragraph()
+                    p.text = line.split(".", 1)[1].strip()
+                    p.level = 0
+                    p.font.size = Pt(20)
+                    p.font.name = "微软雅黑"
+                # 加粗
+                elif line.startswith("**") and line.endswith("**"):
+                    p = content_tf.add_paragraph()
+                    p.text = line.replace("**", "")
+                    p.font.size = Pt(22)
+                    p.font.bold = True
+                    p.font.name = "微软雅黑"
+                else:
+                    p = content_tf.add_paragraph()
+                    p.text = line.replace("**", "")
+                    p.font.size = Pt(20)
+                    p.font.name = "微软雅黑"
 
             # 添加备注
             if slide_data.get("note"):
@@ -233,6 +305,34 @@ def create_pptx(slides_data: List[Dict[str, str]], file_name: str) -> str:
     except Exception as e:
         logger.error(f"创建PPT失败: {str(e)}")
         raise Exception(f"创建PPT失败: {str(e)}")
+
+
+
+def _add_code_block(slide, code_lines, left, top, width):
+    """在幻灯片上添加代码块文本框（灰色背景，等宽字体）"""
+    from pptx.util import Pt, Inches
+    from pptx.dml.color import RGBColor
+    from pptx.enum.shapes import MSO_SHAPE
+
+    code_text = "\n".join(code_lines)
+    # 估算高度
+    height = Pt(20) * (len(code_lines) + 1) + Inches(0.2)
+    code_box = slide.shapes.add_shape(
+        MSO_SHAPE.RECTANGLE, left, top + Inches(1), width, height
+    )
+    code_box.fill.solid()
+    code_box.fill.fore_color.rgb = RGBColor(240, 240, 240)
+    code_box.line.color.rgb = RGBColor(200, 200, 200)
+    code_tf = code_box.text_frame
+    code_tf.word_wrap = True
+    p = code_tf.paragraphs[0]
+    p.text = code_text
+    p.font.size = Pt(16)
+    p.font.name = "Consolas"
+    p.font.color.rgb = RGBColor(60, 60, 60)
+
+
+
 
 async def list_ppt_outlines_service(staff_id: str):
     """
@@ -278,6 +378,7 @@ async def list_ppt_outlines_service(staff_id: str):
     return {"outlines": outlines}
 
 
+
 async def download_ppt_outline_service(file_name: str, staff_id: str):
     """
     处理PPT大纲下载的权限验证和文件检查
@@ -305,6 +406,7 @@ async def download_ppt_outline_service(file_name: str, staff_id: str):
     return file_path
 
 
+
 async def list_ppt_files_service(staff_id: str):
     """
     列出教师的所有PPT文件
@@ -328,6 +430,7 @@ async def list_ppt_files_service(staff_id: str):
             })
 
     return {"files": files}
+
 
 
 async def download_ppt_service(file_name: str, staff_id: str):
@@ -357,6 +460,7 @@ async def download_ppt_service(file_name: str, staff_id: str):
     return file_path
 
 
+
 async def delete_ppt_outline_service(file_name: str, staff_id: str) -> None:
     """
     删除PPT大纲文件
@@ -384,6 +488,7 @@ async def delete_ppt_outline_service(file_name: str, staff_id: str) -> None:
     except Exception as e:
         logger.error(f"删除大纲文件失败: {str(e)}")
         raise Exception(f"删除大纲文件失败: {str(e)}")
+
 
 
 async def delete_ppt_file_service(file_name: str, staff_id: str) -> None:
