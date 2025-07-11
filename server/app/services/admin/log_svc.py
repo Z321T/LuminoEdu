@@ -22,6 +22,7 @@ SERVICE_DESCRIPTIONS = {
     # 管理员端服务
     "user_management_service": "用户管理日志",
     "log_management_service": "日志管理服务日志",
+    "model_management_service": "模型管理服务日志",
     # 教师端服务
     "exercise_generator_service": "习题生成服务日志",
     "exercise_generator_api": "习题生成服务相关API请求日志",
@@ -33,6 +34,9 @@ SERVICE_DESCRIPTIONS = {
     # 学生端服务
     "student_notification_service": "学生课程通知服务日志",
     "student_course_service": "学生课程服务日志",
+    # 向量处理服务
+    "document_vectorization_service": "文档向量化服务日志",
+    "document_vectorization_api": "文档向量化服务相关API请求日志",
 }
 
 def format_file_size(size_bytes: int) -> str:

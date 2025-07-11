@@ -1,8 +1,18 @@
 from fastapi import APIRouter
-from app.routers.teacher import exercise_generator_rt, ppt_generator_rt, course_th_rt, course_material_th_rt , course_notification_th_rt
+from app.routers.teacher import (
+    exercise_generator_rt, ppt_generator_rt,
+    course_th_rt, course_material_th_rt , course_notification_th_rt,
+    document_vectorization_rt
+)
 
 # 教师专用路由
 teacher_router = APIRouter()
+
+# 教师端文档向量化路由
+teacher_router.include_router(
+    document_vectorization_rt.router,
+    prefix="/document_vectorization",
+)
 
 # 教师端练习生成器路由
 teacher_router.include_router(

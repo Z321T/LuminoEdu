@@ -3,8 +3,13 @@ from fastapi.responses import FileResponse
 from typing import Optional
 
 from app.schemas.teacher.exercise_generator_sch import ExerciseGenerateRequest
-from app.services.teacher.exercise_generator_svc import ExerciseGenerator, get_exercise_file_content_service, \
-    download_exercise_file_service, list_generated_exercises_service, delete_exercise_file_service
+from app.services.teacher.exercise_generator_svc import (
+    generate_exercises,
+    get_exercise_file_content_service,
+    download_exercise_file_service,
+    list_generated_exercises_service,
+    delete_exercise_file_service
+)
 from app.core.logger import setup_logger
 from app.core.dependencies import auth_teacher_user
 from app.models.teacher import Teacher
@@ -16,12 +21,16 @@ router = APIRouter(tags=["教师端-习题生成"])
 
 
 @router.post("/generate")
-async def generate_exercises(
+async def generate_exercises_endpoint(
         request: ExerciseGenerateRequest,
         current_user: Teacher = Depends(auth_teacher_user)
 ):
     """
     生成习题并返回文件名
+
+    支持两种生成模式：
+    1. **基于文档生成**：使用document_id参数，基于已向量化的文档内容生成习题
+    2. **基于自定义内容生成**：使用content参数，基于用户提供的内容生成习题
 
     习题类型枚举(types):
     - 1 = 选择题
@@ -31,22 +40,39 @@ async def generate_exercises(
     """
     logger.info(f"教师 {current_user.username}(教工号:{current_user.staff_id}) 请求生成习题: {request.title}")
 
-    generator = ExerciseGenerator()
+    # 验证参数
+    if not request.document_id and not request.content:
+        raise HTTPException(
+            status_code=400,
+            detail="请提供文档ID或自定义内容中的至少一项"
+        )
+
     try:
-        result = await generator.generate_exercises(
+        result = await generate_exercises(
             content=request.content,
             staff_id=current_user.staff_id,
             title=request.title,
             count=request.count,
-            types=request.types
+            types=request.types,
+            document_id=request.document_id,
+            use_knowledge_matching=request.use_knowledge_matching
         )
 
-        logger.info(f"习题生成成功: 标题='{request.title}', 生成数量={result["exercises_count"]}")
+        logger.info(
+            f"习题生成成功: 标题='{request.title}', "
+            f"生成数量={result['exercises_count']}, "
+            f"使用知识点匹配={result.get('used_knowledge_matching', False)}"
+        )
 
         return {
             "md_filename": result["md_filename"],
             "json_filename": result["json_filename"],
-            "exercise_count": result["exercises_count"]
+            "exercise_count": result["exercises_count"],
+            "document_id": result.get("document_id"),
+            "used_knowledge_matching": result.get("used_knowledge_matching", False),
+            "message": "习题生成成功" + (
+                "，已整合文档知识点" if result.get("used_knowledge_matching") else ""
+            )
         }
     except Exception as e:
         logger.error(f"习题生成失败: {str(e)}", exc_info=True)
