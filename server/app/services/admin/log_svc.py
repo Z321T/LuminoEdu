@@ -31,12 +31,15 @@ SERVICE_DESCRIPTIONS = {
     "course_management_service": "课程管理服务日志",
     "course_material_service": "课程资料管理服务日志",
     "course_notification_service": "课程通知服务日志",
+    "th_document_vectorization_api": "文档向量化服务相关API请求日志-教师",
     # 学生端服务
     "student_notification_service": "学生课程通知服务日志",
     "student_course_service": "学生课程服务日志",
+    "student_exercise_generator_api": "学生习题生成服务相关API请求日志",
+    "student_ppt_generator_api": "学生PPT生成服务相关API请求日志",
+    "stu_document_vectorization_api": "文档向量化服务相关API请求日志-学生",
     # 向量处理服务
     "document_vectorization_service": "文档向量化服务日志",
-    "document_vectorization_api": "文档向量化服务相关API请求日志",
 }
 
 def format_file_size(size_bytes: int) -> str:
