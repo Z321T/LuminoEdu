@@ -243,8 +243,8 @@ export default {
         { path: '/admin', icon: '🏠', label: '首页概览' },
         { path: '/admin/create-teacher', icon: '📊', label: 'Excel导入教师' },
         { path: '/admin/create-student', icon: '👨‍🎓', label: '创建学生' },
-        { path: '/admin/teachers', icon: '📋', label: '教师管理' },
-        { path: '/admin/students', icon: '📝', label: '学生管理' },
+        { path: '/admin/teacher-management', icon: '📋', label: '教师管理' },
+        { path: '/admin/student-management', icon: '📝', label: '学生管理' },
       ],
       recentActivities: []
     };

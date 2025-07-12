@@ -8,6 +8,8 @@ import exercise_history from '@/views/exercise_history.vue' // 新增导入
 import admin_home from '@/views/admin_home.vue'
 import CreateTeacher from '@/views/CreateTeacher.vue'
 import CreateStudent from '@/views/CreateStudent.vue'
+import teacher_management  from '@/views/teacher_management.vue'
+import student_management from '@/views/student_management.vue'
 const routes: Array<RouteRecordRaw> = [
   {
       path: '/login',
@@ -52,6 +54,19 @@ const routes: Array<RouteRecordRaw> = [
     component: CreateStudent,
     meta: { requiresAuth: true, role: 'admin' }
   },
+  {
+    path: '/admin/student-management',
+    name: 'student_management',
+    component: student_management,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/teacher-management',
+    name: 'teacher_management',
+    component: teacher_management,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+
 ]
 
 const router = createRouter({

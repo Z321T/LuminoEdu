@@ -2,6 +2,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
+## 学生列表
 # 学生基本信息（列表显示）
 class StudentBasicInfo(BaseModel):
     id: int
@@ -15,6 +16,7 @@ class StudentListResponse(BaseModel):
     page: int
     page_size: int
     students: List[StudentBasicInfo]
+
 
 # 学生详细信息
 class StudentDetailResponse(StudentBasicInfo):
@@ -36,6 +38,8 @@ class StudentUpdateFields(BaseModel):
     intro: Optional[str] = None
     contact_email: Optional[str] = None
 
+
+## 教师列表
 # 教师基本信息（列表显示）
 class TeacherBasicInfo(BaseModel):
     id: int
@@ -49,6 +53,7 @@ class TeacherListResponse(BaseModel):
     page: int
     page_size: int
     teachers: List[TeacherBasicInfo]
+
 
 # 教师详细信息
 class TeacherDetailResponse(TeacherBasicInfo):
@@ -77,3 +82,19 @@ class UserUpdateResponse(BaseModel):
 # 密码重置请求
 class UserPasswordResetRequest(BaseModel):
     new_password: str = Field(..., min_length=6, description="新密码")
+
+
+## 批量删除用户
+# 批量删除学生请求
+class StudentBatchDeleteRequest(BaseModel):
+    student_ids: List[str] = Field(..., description="要删除的学生学号列表")
+
+# 批量删除教师请求
+class TeacherBatchDeleteRequest(BaseModel):
+    staff_ids: List[str] = Field(..., description="要删除的教师工号列表")
+
+# 批量删除响应
+class BatchDeleteResponse(BaseModel):
+    success: bool = Field(..., description="是否成功")
+    deleted: int = Field(..., description="删除成功数量")
+    message: str = Field(..., description="结果消息")

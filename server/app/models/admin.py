@@ -11,7 +11,7 @@ class Admin(UserBase):
     permissions = fields.TextField(null=True, description="权限描述")
 
     class Meta:
-        table = "admins"
+        table = "admin"
         table_description = "管理员信息表"
 
     def __init__(self, **kwargs):

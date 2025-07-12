@@ -15,33 +15,13 @@ class Teacher(UserBase):
     office_location = fields.CharField(max_length=100, null=True, description="办公室位置")
 
     class Meta:
-        table = "teachers"
+        table = "teacher"
         table_description = "教师信息表"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # 确保教师角色设置正确
         self.role = UserRole.TEACHER
-    #
-    # async def get_courses(self):
-    #     """
-    #     获取该教师所教授的所有课程
-    #     需要在Course模型中实现相应的关联
-    #     """
-    #     from app.models.course import Course
-    #     return await Course.filter(teacher=self)
-    #
-    # async def get_students(self):
-    #     """
-    #     获取该教师所有课程中的学生
-    #     需要Course和Student模型中实现相应的关联
-    #     """
-    #     courses = await self.get_courses()
-    #     students = set()
-    #     for course in courses:
-    #         course_students = await course.students.all()
-    #         students.update(course_students)
-    #     return list(students)
 
     class PydanticMeta:
         # 定义API文档中要排除的字段

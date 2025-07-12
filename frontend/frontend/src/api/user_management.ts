@@ -218,6 +218,7 @@ export const getTeacherList = async (
 
     try {
       const response = await api.get(`/admin/user_management/list_teachers?${params}`)
+      console.log();
       return response.data
     } catch (error: any) {
       // 如果是500错误且还有重试次数，进行重试
@@ -271,10 +272,10 @@ export interface TeacherDetail {
 /**
  * 获取单个教师详细信息
  */
-export const getTeacherDetail = async (teacherId: string): Promise<TeacherDetail> => {
+export const getTeacherDetail = async (staff_id: string): Promise<TeacherDetail> => {
   try {
     // 确保 teacherId 为字符串类型
-    const id = String(teacherId)
+    const id = String(staff_id)
     const response = await api.get(`/admin/user_management/teacher_detail/${id}`)
     console.log("@@",response.data);
     return response.data
