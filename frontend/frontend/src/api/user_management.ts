@@ -337,52 +337,9 @@ export const updateTeacher = async (teacherId: string, updateData: Partial<Teach
   }
 }
 
-/**
- * 重置教师密码 - 修复API路径
- */
-export const resetTeacherPassword = async (teacherId: string, newPassword: string): Promise<void> => {
-  try {
-    console.log('📤 请求重置教师密码:', teacherId)
-    
-    const response = await api.post(`/admin/user_management/reset_teacher_password/${teacherId}`, {
-      new_password: newPassword
-    })
-    
-    console.log('📥 教师密码重置成功:', response.data)
-    
-  } catch (error: any) {
-    console.error('❌ 重置教师密码失败:', error)
-    
-    if (!error.response) {
-      throw new Error(`网络错误: ${error.message}`)
-    }
-    
-    const status = error.response.status
-    const errorData = error.response.data
-    
-    if (status === 401) throw new Error('认证失败，请重新登录')
-    if (status === 403) throw new Error('权限不足，无法重置密码')
-    if (status === 404) throw new Error('教师不存在')
-    if (status === 422) throw new Error('密码格式不正确')
-    if (status === 500) throw new Error('服务器内部错误，请稍后重试')
-    
-    const errorMessage = errorData?.detail || errorData?.message || error.message || '未知错误'
-    throw new Error(`重置教师密码失败: ${errorMessage}`)
-  }
-}
 
-/**
- * 测试连接 - 修复API路径
- */
-export const testConnection = async (): Promise<boolean> => {
-  try {
-    const response = await api.get('/admin/user_management/list_teachers?page=1&page_size=1')
-    return response.status === 200
-  } catch (error) {
-    console.error('❌ 连接测试失败:', error)
-    return false
-  }
-}
+
+
 
 
 
@@ -608,5 +565,671 @@ export const getStudentList = async (
       default:
         throw new Error(errorData?.message || `获取学生列表失败(${status})`)
     }
+  }
+}
+
+// 添加学生详情接口
+export interface StudentDetail {
+  id: number
+  username: string
+  student_id: string
+  college: string      // 注意这里是 college 而不是 department
+  created_at: string
+  major: string
+  grade: string
+  enrollment_year: number  // 注意这里是 number 类型
+  intro: string
+  contact_email: string
+}
+
+/**
+ * 获取单个学生详细信息
+ */
+export const getStudentDetail = async (studentId: string): Promise<StudentDetail> => {
+  try {
+    const id = String(studentId)
+    console.log('📤 开始获取学生详情, ID:', id)
+    
+    const response = await api.get(`/admin/user_management/student_detail/${id}`)
+    console.log('📥 获取学生详情成功:', response.data)
+    return response.data
+
+  } catch (error: any) {
+    if (!error.response) {
+      throw new Error(`网络错误: ${error.message}`)
+    }
+    
+    const status = error.response.status
+    const errorData = error.response.data
+    
+    switch (status) {
+      case 400:
+        throw new Error('请求参数无效')
+      case 401:
+        throw new Error('认证失败，请重新登录')
+      case 403:
+        throw new Error('权限不足，无法访问该学生信息')
+      case 404:
+        throw new Error(`未找到ID为 ${studentId} 的学生记录`)
+      case 500:
+        throw new Error(`服务器错误: ${errorData?.detail || '获取学生信息失败'}`)
+      default:
+        throw new Error(errorData?.message || `获取学生信息失败(${status})`)
+    }
+  }
+}
+
+// 更新学生请求接口
+export interface UpdateStudentRequest {
+  username: string
+  student_id: string
+  college: string
+  major: string
+  grade: string
+  enrollment_year: number
+  intro: string
+  contact_email: string
+}
+
+// 更新学生响应接口
+export interface UpdateStudentResponse {
+  status: string
+  message: string
+  user_id: string
+}
+
+/**
+ * 更新学生信息
+ */
+export const updateStudent = async (studentId: string, data: UpdateStudentRequest): Promise<UpdateStudentResponse> => {
+  try {
+    console.log('📤 开始更新学生信息:', { studentId, data })
+    
+    const response = await api.put(`/admin/user_management/update_student/${studentId}`, data)
+    
+    console.log('📥 更新学生信息成功:', response.data)
+    return response.data
+
+  } catch (error: any) {
+    if (!error.response) {
+      throw new Error(`网络错误: ${error.message}`)
+    }
+    
+    const status = error.response.status
+    const errorData = error.response.data
+    
+    switch (status) {
+      case 400:
+        throw new Error(`参数验证失败: ${errorData?.detail || '请检查输入'}`)
+      case 401:
+        throw new Error('认证失败，请重新登录')
+      case 403:
+        throw new Error('权限不足，无法更新该学生信息')
+      case 404:
+        throw new Error(`未找到ID为 ${studentId} 的学生记录`)
+      case 500:
+        throw new Error(`服务器错误: ${errorData?.detail || '更新学生信息失败'}`)
+      default:
+        throw new Error(errorData?.message || `更新学生信息失败(${status})`)
+    }
+  }
+}
+
+
+// 更新教师请求接口
+export interface UpdateTeacherRequest {
+  username: string
+  staff_id: string
+  department: string
+  expertise: string
+  intro: string
+  contact_email: string
+  office_location: string
+}
+
+// 更新教师响应接口
+export interface UpdateTeacherResponse {
+  status: string
+  message: string
+  user_id: string
+}
+
+/**
+ * 更新教师信息
+ */
+export const updateTeacherInfo = async (teacherId: string, data: UpdateTeacherRequest): Promise<UpdateTeacherResponse> => {
+  try {
+    console.log('📤 开始更新教师信息:', { teacherId, data })
+    
+    const response = await api.put(`/admin/user_management/update_teacher/${teacherId}`, data)
+    
+    console.log('📥 更新教师信息成功:', response.data)
+    return response.data
+
+  } catch (error: any) {
+    if (!error.response) {
+      throw new Error(`网络错误: ${error.message}`)
+    }
+    
+    const status = error.response.status
+    const errorData = error.response.data
+    
+    switch (status) {
+      case 400:
+        throw new Error(`参数验证失败: ${errorData?.detail || '请检查输入'}`)
+      case 401:
+        throw new Error('认证失败，请重新登录')
+      case 403:
+        throw new Error('权限不足，无法更新该教师信息')
+      case 404:
+        throw new Error(`未找到ID为 ${teacherId} 的教师记录`)
+      case 500:
+        throw new Error(`服务器错误: ${errorData?.detail || '更新教师信息失败'}`)
+      default:
+        throw new Error(errorData?.message || `更新教师信息失败(${status})`)
+    }
+  }
+}
+
+// 重置学生密码请求接口
+export interface ResetStudentPasswordRequest {
+  new_password: string
+}
+
+// 重置学生密码响应接口
+export interface ResetStudentPasswordResponse {
+  status: string
+  message: string
+  user_id: string
+}
+
+/**
+ * 重置学生密码
+ */
+export const resetStudentPassword = async (studentId: string, newPassword: string): Promise<ResetStudentPasswordResponse> => {
+  try {
+    console.log('📤 开始重置学生密码:', { studentId })
+    
+    const data: ResetStudentPasswordRequest = {
+      new_password: newPassword
+    }
+    
+    const response = await api.post(`/admin/user_management/reset_password/${studentId}`, data)
+    
+    console.log('📥 重置学生密码成功:', response.data)
+    return response.data
+
+  } catch (error: any) {
+    if (!error.response) {
+      throw new Error(`网络错误: ${error.message}`)
+    }
+    
+    const status = error.response.status
+    const errorData = error.response.data
+    
+    switch (status) {
+      case 400:
+        throw new Error(`参数验证失败: ${errorData?.detail || '请检查密码格式'}`)
+      case 401:
+        throw new Error('认证失败，请重新登录')
+      case 403:
+        throw new Error('权限不足，无法重置该学生密码')
+      case 404:
+        throw new Error(`未找到ID为 ${studentId} 的学生记录`)
+      case 500:
+        throw new Error(`服务器错误: ${errorData?.detail || '重置密码失败'}`)
+      default:
+        throw new Error(errorData?.message || `重置学生密码失败(${status})`)
+    }
+  }
+}
+
+
+// 重置教师密码请求接口
+export interface ResetTeacherPasswordRequest {
+  new_password: string
+}
+
+// 重置教师密码响应接口
+export interface ResetTeacherPasswordResponse {
+  status: string
+  message: string
+  user_id: string
+}
+
+/**
+ * 重置教师密码
+ */
+export const resetTeacherPassword = async (teacherId: string, newPassword: string): Promise<ResetTeacherPasswordResponse> => {
+  try {
+    console.log('📤 开始重置教师密码:', { teacherId })
+    
+    const data: ResetTeacherPasswordRequest = {
+      new_password: newPassword
+    }
+    
+    const response = await api.post(`/admin/user_management/reset_teacher_password/${teacherId}`, data)
+    
+    console.log('📥 重置教师密码成功:', response.data)
+    return response.data
+
+  } catch (error: any) {
+    if (!error.response) {
+      throw new Error(`网络错误: ${error.message}`)
+    }
+    
+    const status = error.response.status
+    const errorData = error.response.data
+    
+    switch (status) {
+      case 400:
+        throw new Error(`参数验证失败: ${errorData?.detail || '请检查密码格式'}`)
+      case 401:
+        throw new Error('认证失败，请重新登录')
+      case 403:
+        throw new Error('权限不足，无法重置该教师密码')
+      case 404:
+        throw new Error(`未找到ID为 ${teacherId} 的教师记录`)
+      case 405:
+        throw new Error('请求方法不被允许，请联系技术支持')
+      case 500:
+        throw new Error(`服务器错误: ${errorData?.detail || '重置密码失败'}`)
+      default:
+        throw new Error(errorData?.message || `重置教师密码失败(${status})`)
+    }
+  }
+}
+
+
+
+// 批量删除学生请求接口
+export interface DeleteStudentsRequest {
+  student_ids: string[]
+}
+
+// 批量删除学生响应接口
+export interface DeleteStudentsResponse {
+  success: boolean
+  deleted: number
+  message: string
+}
+
+/**
+ * 批量删除学生
+ */
+export const deleteStudents = async (studentIds: string[]): Promise<DeleteStudentsResponse> => {
+  try {
+    console.log('📤 开始批量删除学生:', { studentIds })
+    
+    if (!studentIds || studentIds.length === 0) {
+      throw new Error('请选择要删除的学生')
+    }
+    
+    const data: DeleteStudentsRequest = {
+      student_ids: studentIds
+    }
+    
+    const response = await api.delete('/admin/user_management/batch_delete_students', {
+      data: data
+    })
+    
+    console.log('📥 批量删除学生成功:', response.data)
+    return response.data
+
+  } catch (error: any) {
+    if (!error.response) {
+      throw new Error(`网络错误: ${error.message}`)
+    }
+    
+    const status = error.response.status
+    const errorData = error.response.data
+    
+    switch (status) {
+      case 400:
+        throw new Error(`参数验证失败: ${errorData?.detail || '请检查学生ID列表'}`)
+      case 401:
+        throw new Error('认证失败，请重新登录')
+      case 403:
+        throw new Error('权限不足，无法删除学生')
+      case 404:
+        throw new Error('部分学生不存在')
+      case 500:
+        throw new Error(`服务器错误: ${errorData?.detail || '批量删除失败'}`)
+      default:
+        throw new Error(errorData?.message || `批量删除学生失败(${status})`)
+    }
+  }
+}
+
+
+// 批量删除教师请求接口
+export interface DeleteTeachersRequest {
+  teacher_ids: string[]
+}
+
+// 批量删除教师响应接口
+export interface DeleteTeachersResponse {
+  success: boolean
+  deleted: number
+  message: string
+}
+
+/**
+ * 批量删除教师
+ */
+export const deleteTeachers = async (teacherIds: string[]): Promise<DeleteTeachersResponse> => {
+  try {
+    console.log('📤 开始批量删除教师:', { teacherIds })
+    
+    if (!teacherIds || teacherIds.length === 0) {
+      throw new Error('请选择要删除的教师')
+    }
+    
+    const data: DeleteTeachersRequest = {
+      teacher_ids: teacherIds
+    }
+    
+    const response = await api.delete('/admin/user_management/batch_delete_teachers', {
+      data: data
+    })
+    
+    console.log('📥 批量删除教师成功:', response.data)
+    return response.data
+
+  } catch (error: any) {
+    if (!error.response) {
+      throw new Error(`网络错误: ${error.message}`)
+    }
+    
+    const status = error.response.status
+    const errorData = error.response.data
+    
+    switch (status) {
+      case 400:
+        throw new Error(`参数验证失败: ${errorData?.detail || '请检查教师ID列表'}`)
+      case 401:
+        throw new Error('认证失败，请重新登录')
+      case 403:
+        throw new Error('权限不足，无法删除教师')
+      case 404:
+        throw new Error('部分教师不存在')
+      case 500:
+        throw new Error(`服务器错误: ${errorData?.detail || '批量删除失败'}`)
+      default:
+        throw new Error(errorData?.message || `批量删除教师失败(${status})`)
+    }
+  }
+}
+
+
+// 获取日志文件内容请求参数接口
+export interface GetLogFileContentRequest {
+  service_name: string
+  file_name: string
+}
+
+// 获取日志文件内容响应接口
+export interface GetLogFileContentResponse {
+  content: string[]
+  file_name: string
+  service_name: string
+}
+
+/**
+ * 获取指定日志文件的内容
+ */
+export const getLogFileContent = async (params: GetLogFileContentRequest): Promise<GetLogFileContentResponse> => {
+  try {
+    console.log('📤 开始获取日志文件内容:', params)
+    
+    if (!params.service_name) {
+      throw new Error('服务名称不能为空')
+    }
+    
+    if (!params.file_name) {
+      throw new Error('文件名称不能为空')
+    }
+    
+    // 构建查询参数
+    const queryParams = new URLSearchParams({
+      service_name: params.service_name,
+      file_name: params.file_name
+    })
+    
+    const response = await api.get(`/admin/log_management/file_content?${queryParams}`, {
+      timeout: 30000 // 读取文件内容可能需要较长时间
+    })
+    
+    console.log('📥 获取日志文件内容成功:', {
+      fileName: response.data.file_name,
+      serviceName: response.data.service_name,
+      lineCount: response.data.content?.length || 0
+    })
+    
+    return response.data
+
+  } catch (error: any) {
+    if (!error.response) {
+      if (error.code === 'ECONNABORTED') {
+        throw new Error('读取文件超时，文件较大，请稍后重试')
+      }
+      throw new Error(`网络错误: ${error.message}`)
+    }
+    
+    const status = error.response.status
+    const errorData = error.response.data
+    
+    switch (status) {
+      case 400:
+        throw new Error(`参数验证失败: ${errorData?.detail || '请检查服务名称和文件名'}`)
+      case 401:
+        throw new Error('认证失败，请重新登录')
+      case 403:
+        throw new Error('权限不足，无法访问该日志文件')
+      case 404:
+        throw new Error(`未找到文件: ${params.file_name}`)
+      case 413:
+        throw new Error('文件过大，无法直接查看，请下载后查看')
+      case 500:
+        throw new Error(`服务器错误: ${errorData?.detail || '读取文件内容失败'}`)
+      default:
+        throw new Error(errorData?.message || `获取日志文件内容失败(${status})`)
+    }
+  }
+}
+
+/**
+ * 搜索日志文件内容
+ */
+export const searchLogFileContent = async (
+  serviceName: string, 
+  fileName: string, 
+  keyword: string,
+  caseSensitive: boolean = false
+): Promise<{ lines: Array<{lineNumber: number, content: string, matches: number}>, totalMatches: number }> => {
+  try {
+    console.log('📤 开始搜索日志文件内容:', { serviceName, fileName, keyword, caseSensitive })
+    
+    const response = await getLogFileContent({ service_name: serviceName, file_name: fileName })
+    const content = response.content
+    
+    const searchKeyword = caseSensitive ? keyword : keyword.toLowerCase()
+    const results: Array<{lineNumber: number, content: string, matches: number}> = []
+    let totalMatches = 0
+    
+    content.forEach((line, index) => {
+      const searchLine = caseSensitive ? line : line.toLowerCase()
+      const matches = (searchLine.match(new RegExp(searchKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length
+      
+      if (matches > 0) {
+        results.push({
+          lineNumber: index + 1,
+          content: line,
+          matches: matches
+        })
+        totalMatches += matches
+      }
+    })
+    
+    console.log('📥 搜索日志文件内容完成:', { 
+      lineCount: results.length, 
+      totalMatches 
+    })
+    
+    return { lines: results, totalMatches }
+
+  } catch (error: any) {
+    console.error('❌ 搜索日志文件内容失败:', error)
+    throw error
+  }
+}
+
+// 工具函数：解析日志行
+export const parseLogLine = (line: string): {
+  timestamp?: string,
+  level?: string,
+  module?: string,
+  message?: string,
+  raw: string
+} => {
+  try {
+    // 常见的日志格式正则
+    const patterns = [
+      // 2024-01-01 12:00:00 [INFO] module: message
+      /^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s*\[(\w+)\]\s*(\w+):\s*(.+)$/,
+      // 2024-01-01T12:00:00Z INFO module: message  
+      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)\s+(\w+)\s+(\w+):\s*(.+)$/,
+      // [2024-01-01 12:00:00] INFO module - message
+      /^\[(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\]\s+(\w+)\s+(\w+)\s*-\s*(.+)$/
+    ]
+    
+    for (const pattern of patterns) {
+      const match = line.match(pattern)
+      if (match) {
+        return {
+          timestamp: match[1],
+          level: match[2],
+          module: match[3],
+          message: match[4],
+          raw: line
+        }
+      }
+    }
+    
+    // 如果没有匹配到任何格式，返回原始内容
+    return { raw: line }
+    
+  } catch (error) {
+    return { raw: line }
+  }
+}
+
+// 工具函数：按日志级别过滤内容
+export const filterLogContentByLevel = (content: string[], level: string): string[] => {
+  if (!level || level === 'ALL') return content
+  
+  return content.filter(line => {
+    const parsed = parseLogLine(line)
+    return parsed.level?.toLowerCase() === level.toLowerCase()
+  })
+}
+
+// 工具函数：按时间范围过滤内容
+export const filterLogContentByTime = (
+  content: string[], 
+  startTime?: string, 
+  endTime?: string
+): string[] => {
+  if (!startTime && !endTime) return content
+  
+  const start = startTime ? new Date(startTime) : null
+  const end = endTime ? new Date(endTime) : null
+  
+  return content.filter(line => {
+    const parsed = parseLogLine(line)
+    if (!parsed.timestamp) return true // 保留无时间戳的行
+    
+    try {
+      const lineTime = new Date(parsed.timestamp)
+      
+      if (start && lineTime < start) return false
+      if (end && lineTime > end) return false
+      
+      return true
+    } catch (error) {
+      return true // 时间解析失败时保留该行
+    }
+  })
+}
+
+// 工具函数：高亮关键词
+export const highlightKeywords = (
+  text: string, 
+  keywords: string[], 
+  caseSensitive: boolean = false
+): string => {
+  if (!keywords.length) return text
+  
+  let result = text
+  
+  keywords.forEach(keyword => {
+    if (!keyword.trim()) return
+    
+    const flags = caseSensitive ? 'g' : 'gi'
+    const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(`(${escapedKeyword})`, flags)
+    
+    result = result.replace(regex, '<mark class="log-highlight">$1</mark>')
+  })
+  
+  return result
+}
+
+// 工具函数：统计日志级别分布
+export const analyzeLogContent = (content: string[]): {
+  totalLines: number,
+  levelStats: Record<string, number>,
+  timeRange: { start?: string, end?: string },
+  moduleStats: Record<string, number>
+} => {
+  const levelStats: Record<string, number> = {}
+  const moduleStats: Record<string, number> = {}
+  let earliest: Date | null = null
+  let latest: Date | null = null
+  
+  content.forEach(line => {
+    const parsed = parseLogLine(line)
+    
+    // 统计级别
+    if (parsed.level) {
+      const level = parsed.level.toUpperCase()
+      levelStats[level] = (levelStats[level] || 0) + 1
+    }
+    
+    // 统计模块
+    if (parsed.module) {
+      moduleStats[parsed.module] = (moduleStats[parsed.module] || 0) + 1
+    }
+    
+    // 统计时间范围
+    if (parsed.timestamp) {
+      try {
+        const time = new Date(parsed.timestamp)
+        if (!earliest || time < earliest) earliest = time
+        if (!latest || time > latest) latest = time
+      } catch (error) {
+        // 忽略时间解析错误
+      }
+    }
+  })
+  
+  return {
+    totalLines: content.length,
+    levelStats,
+    timeRange: {
+      start: earliest?.toISOString(),
+      end: latest?.toISOString()
+    },
+    moduleStats
   }
 }
