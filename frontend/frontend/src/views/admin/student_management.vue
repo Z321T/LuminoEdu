@@ -349,6 +349,8 @@ export default {
       showQuickTip: false,
       quickTipMessage: '',
       adminMenuItems: [
+        { path: '/admin/log_management', icon: '📝', label: '日志管理' },
+        { path: '/admin/teacher-management', icon: '👨‍🏫', label: '教师管理' },
         { path: '/admin/student-management', icon: '👨‍🎓', label: '学生管理' }
       ],
 

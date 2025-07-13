@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx'
 
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000', // 确保使用正确的API基础路径
+  baseURL: 'http://localhost:8000', // 确保使用正确的API基础路径
   timeout: 60000, // AI生成需要较长时间
 })
 
@@ -125,7 +125,7 @@ export const downloadTeacherTemplate = async (): Promise<Blob> => {
   try {
     console.log('📤 请求下载教师Excel模板')
     
-    const response = await api.get('/admin/user_management/teacher_template', {
+    const response = await api.get('/admin/user_management/download_teacher_template', {
       responseType: 'blob'
     })
 
@@ -351,7 +351,7 @@ export const downloadStudentTemplate = async (): Promise<Blob> => {
   try {
     console.log('📤 请求下载学生Excel模板')
     
-    const response = await api.get('/admin/user_management/student_template', {
+    const response = await api.get('/admin/user_management/download_student_template', {
       responseType: 'blob'
     })
 

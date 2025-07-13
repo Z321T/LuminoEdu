@@ -12,7 +12,7 @@
     <div class="main-layout">
       <!-- 页面头部 -->
       <PageHeader
-        :title="pageTitle"
+        :title="'Excel导入学生'"
         :showMobileMenu="true"
         @toggleMobileMenu="toggleMobileMenu"
       >
@@ -45,7 +45,7 @@
 
       <!-- 内容区域 -->
       <main class="content-area">
-        <!-- 创建教师内容 -->
+        <!-- 创建学生内容 -->
         <div class="create-teacher">
           <!-- 调试面板 -->
           <div
@@ -72,7 +72,7 @@
               </div>
 
               <div class="debug-section">
-                <h4>📊 教师统计</h4>
+                <h4>📊 学生统计</h4>
                 <pre>{{ debugTeacherStats }}</pre>
               </div>
 
@@ -142,10 +142,10 @@
                 <div class="header-content">
                   <h2 class="card-title">
                     <span class="title-icon">📊</span>
-                    Excel 批量导入教师
+                    Excel 批量导入学生
                   </h2>
                   <p class="card-description">
-                    支持 Excel (.xlsx, .xls) 和 CSV 文件格式，单次最多导入 1000 名教师
+                    支持 Excel (.xlsx, .xls) 和 CSV 文件格式，单次最多导入 1000 名学生
                   </p>
                 </div>
               </div>
@@ -267,7 +267,7 @@
                           class="btn-icon loading"
                         >⏳</span>
                         <span class="btn-text">
-                          {{ isUploading ? '正在导入...' : '开始导入教师' }}
+                          {{ isUploading ? '正在导入...' : '开始导入学生' }}
                         </span>
                       </button>
 
@@ -343,86 +343,6 @@
                 </button>
               </div>
             </div>
-            <!-- 添加搜索和教师列表部分 -->
-            <div class="teachers-table-card">
-              <div class="table-header">
-                <h3 class="table-title">
-                  <span class="table-icon">👨‍🏫</span>
-                  教师列表
-                </h3>
-
-                <!-- 搜索框 -->
-                <div class="search-box">
-                  <input
-                    v-model="searchKeyword"
-                    type="text"
-                    placeholder="搜索教师姓名/工号/院系..."
-                    @input="handleSearch"
-                  />
-                </div>
-              </div>
-
-              <!-- 教师列表表格 -->
-              <div class="table-container">
-                <table class="teachers-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>姓名</th>
-                      <th>工号</th>
-                      <th>所属院系</th>
-                      <th>操作</th> <!-- 新增列 -->
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-if="loading">
-                      <td
-                        colspan="5"
-                        class="loading-row"
-                      >加载中...</td>
-                    </tr>
-                    <tr v-else-if="teachers.length === 0">
-                      <td
-                        colspan="5"
-                        class="no-data"
-                      >暂无教师数据</td>
-                    </tr>
-                    <tr
-                      v-for="teacher in teachers"
-                      :key="teacher.id"
-                    >
-                      <td>{{teacher.id}}</td>
-                      <td>{{teacher.username}}</td>
-                      <td>{{teacher.staff_id}}</td>
-                      <td>{{teacher.department}}</td>
-                      <td>
-                        <button
-                          @click="showTeacherDetail(teacher.id)"
-                          class="detail-btn"
-                        >
-                          查看详情
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- 分页控件 -->
-              <div class="pagination">
-                <button
-                  :disabled="currentPage <= 1"
-                  @click="handlePageChange(currentPage - 1)"
-                >上一页</button>
-                <span class="page-info">
-                  第 {{currentPage}} 页 / 共 {{totalPages}} 页
-                </span>
-                <button
-                  :disabled="currentPage >= totalPages"
-                  @click="handlePageChange(currentPage + 1)"
-                >下一页</button>
-              </div>
-            </div>
           </div>
         </div>
       </main>
@@ -447,56 +367,6 @@
         </div>
       </div>
     </transition>
-
-    <!-- 教师详情弹窗 -->
-    <el-dialog
-      v-model="showDetailDialog"
-      title="教师详细信息"
-      width="600px"
-    >
-      <div
-        v-if="currentTeacher"
-        class="teacher-detail"
-      >
-        <div class="detail-item">
-          <label>姓名：</label>
-          <span>{{currentTeacher.username}}</span>
-        </div>
-        <div class="detail-item">
-          <label>工号：</label>
-          <span>{{currentTeacher.staff_id}}</span>
-        </div>
-        <div class="detail-item">
-          <label>院系：</label>
-          <span>{{currentTeacher.department}}</span>
-        </div>
-        <div class="detail-item">
-          <label>专业领域：</label>
-          <span>{{currentTeacher.expertise || '暂无'}}</span>
-        </div>
-        <div class="detail-item">
-          <label>个人简介：</label>
-          <p>{{currentTeacher.intro || '暂无'}}</p>
-        </div>
-        <div class="detail-item">
-          <label>联系邮箱：</label>
-          <span>{{currentTeacher.contact_email || '暂无'}}</span>
-        </div>
-        <div class="detail-item">
-          <label>办公地点：</label>
-          <span>{{currentTeacher.office_location || '暂无'}}</span>
-        </div>
-        <div class="detail-item">
-          <label>创建时间：</label>
-          <span>{{formatDate(currentTeacher.created_at)}}</span>
-        </div>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="showDetailDialog = false">关闭</el-button>
-        </span>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -504,14 +374,12 @@
 import PageHeader from '@/components/layout/PageHeader.vue';
 import SideBar from '@/components/layout/SideBar.vue';
 import {
-  getTeacherList,
-  createTeachers,
-  downloadTeacherTemplate,
-  getTeacherDetail
+  downloadStudentTemplate,
+  createStudents
 } from '@/api/user_management'
 
 export default {
-  name: 'CreateTeacher',
+  name: 'CreateStudent',
   components: {
     PageHeader,
     SideBar
@@ -520,24 +388,14 @@ export default {
 
   data () {
     return {
-      // 添加列表相关的数据
-      teachers: [],
-      currentPage: 1,
-      pageSize: 20,
-      total: 0,
-      loading: false,
-      searchKeyword: '',
-      searchTimer: null,
       // 侧边栏相关
       mobileMenuOpen: false,
       showQuickTip: false,
       quickTipMessage: '',
       adminMenuItems: [
-        { path: '/admin', icon: '🏠', label: '首页概览' },
-        { path: '/admin/create-teacher', icon: '📊', label: 'Excel导入教师' },
-        { path: '/admin/create-student', icon: '👨‍🎓', label: '创建学生' },
-        { path: '/admin/teachers', icon: '📋', label: '教师管理' },
-        { path: '/admin/students', icon: '📝', label: '学生管理' },
+        { path: '/admin/log_management', icon: '📝', label: '日志管理' },
+        { path: '/admin/teacher-management', icon: '👨‍🏫', label: '教师管理' },
+        { path: '/admin/student-management', icon: '👨‍🎓', label: '学生管理' }
       ],
 
       // 文件上传相关
@@ -553,7 +411,6 @@ export default {
       errorMessage: '',
 
       // 数据相关
-      teachers: [],
       uploadHistory: [],
 
       // 调试相关
@@ -561,24 +418,13 @@ export default {
       apiLogs: [],
       debugMode: process.env.NODE_ENV === 'development',
       apiError: false,
-      apiErrorMessage: '',
-
-      // 教师详情相关
-      showDetailDialog: false,
-      currentTeacher: null,
+      apiErrorMessage: ''
     };
   },
 
   computed: {
-    totalPages () {
-      return Math.ceil(this.total / this.pageSize)
-    },
     username () {
       return localStorage.getItem('username') || '管理员';
-    },
-
-    pageTitle () {
-      return 'Excel导入教师';
     },
 
     isFileValid () {
@@ -594,12 +440,12 @@ export default {
     },
 
     teacherCount () {
-      const count = this.data?.teachers?.length || this.teachers.length || 0;
+      const count = this.data?.teachers?.length || 0;
       return count;
     },
 
     subjectStats () {
-      const teachersList = this.data?.teachers || this.teachers || [];
+      const teachersList = this.data?.teachers || [];
       const stats = {};
       teachersList.forEach(teacher => {
         const subject = teacher.subject;
@@ -640,447 +486,366 @@ export default {
         dataSource: this.data?.teachers ? 'props' : 'local',
         totalCount: this.teacherCount,
         subjectDistribution: this.subjectStats,
-        localTeachersCount: this.teachers.length,
-        propsTeachersCount: this.data?.teachers?.length || 0,
         uploadHistoryCount: this.uploadHistory.length
       }, null, 2);
     }
   },
 
-  async mounted () {
-    console.log('📊 CreateTeacher组件已挂载');
-    await this.loadTeachers();
+  mounted () {
+    console.log('📊 CreateStudent组件已挂载');
     this.loadUploadHistory();
   },
 
   methods: {
-    // 加载教师列表
-    async loadTeachers () {
-      try {
-        this.loading = true
-        const response = await getTeacherList(
-          this.currentPage,
-          this.pageSize,
-          this.searchKeyword
-        )
-
-        this.teachers = response.teachers
-        this.total = response.total
-        this.currentPage = response.page
-        this.pageSize = response.page_size
-
-      } catch (error) {
-        this.errorMessage = error.message
-      } finally {
-        this.loading = false
+    // 侧边栏相关方法
+    handleMenuClick (item) {
+      console.log('🔄 菜单点击:', item.label);
+      if (item.path !== this.$route.path) {
+        this.$router.push(item.path);
       }
+      this.closeMobileMenu();
+      this.showQuickTipMessage(`已切换到 ${item.label}`);
     },
 
-    // 处理搜索
-    handleSearch () {
-      if (this.searchTimer) {
-        clearTimeout(this.searchTimer)
-      }
-
-      this.searchTimer = setTimeout(() => {
-        this.currentPage = 1 // 重置到第一页
-        this.loadTeachers()
-      }, 300)
+    toggleMobileMenu () {
+      this.mobileMenuOpen = !this.mobileMenuOpen;
+      console.log('📱 切换移动端菜单:', this.mobileMenuOpen);
     },
 
-    // 处理分页
-    handlePageChange (page) {
-      this.currentPage = page
-      this.loadTeachers()
+    closeMobileMenu () {
+      this.mobileMenuOpen = false;
     },
 
-    // 显示教师详情
-    async showTeacherDetail (teacherId) {
-      try {
-        this.currentTeacher = await getTeacherDetail(teacherId.toString())
-        this.showDetailDialog = true
-      } catch (error) {
-        this.errorMessage = error.message
-      }
-    }
-  },
-  formatDate (dateString) {
-    if (!dateString) return '-'
-    const date = new Date(dateString)
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  },
-  // 侧边栏相关方法
-  handleMenuClick (item) {
-    console.log('🔄 菜单点击:', item.label);
-    if (item.path !== this.$route.path) {
-      this.$router.push(item.path);
-    }
-    this.closeMobileMenu();
-    this.showQuickTipMessage(`已切换到 ${item.label}`);
-  },
-
-  toggleMobileMenu () {
-    this.mobileMenuOpen = !this.mobileMenuOpen;
-    console.log('📱 切换移动端菜单:', this.mobileMenuOpen);
-  },
-
-  closeMobileMenu () {
-    this.mobileMenuOpen = false;
-  },
-
-  showQuickTipMessage (message) {
-    this.quickTipMessage = message;
-    this.showQuickTip = true;
-    setTimeout(() => {
-      this.showQuickTip = false;
-    }, 2000);
-  },
-
-  // 退出登录
-  logout () {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('username');
-    localStorage.removeItem('authToken');
-    this.$router.push('/admin/login');
-    this.showQuickTipMessage('👋 已安全退出');
-  },
-
-  // 返回首页
-  goBack () {
-    this.$router.push('/admin');
-  },
-
-  // 调试相关
-  toggleDebug () {
-    this.showDebug = !this.showDebug;
-  },
-
-  logDebug (action, data = {}) {
-    if (!this.debugMode) return;
-    const timestamp = new Date().toISOString();
-    console.log(`[CreateTeacher Debug] ${timestamp} - ${action}:`, data);
-  },
-
-  // 文件处理方法
-  handleFileSelect (event) {
-    const files = event.target.files;
-    if (files.length > 0) {
-      this.selectedFile = files[0];
-
-      // 🎯 添加调试信息
-      console.log('📁 文件选择调试信息:', {
-        name: this.selectedFile.name,
-        size: this.selectedFile.size,
-        type: this.selectedFile.type,
-        lastModified: this.selectedFile.lastModified,
-        extension: this.selectedFile.name.split('.').pop()?.toLowerCase(),
-        // 🎯 添加更多调试信息
-        constructor: this.selectedFile.constructor.name,
-        toString: this.selectedFile.toString(),
-        isFile: this.selectedFile instanceof File,
-        isBlob: this.selectedFile instanceof Blob
-      });
-
-      this.logDebug('文件选择', {
-        fileName: this.selectedFile.name,
-        fileSize: this.selectedFile.size,
-        fileType: this.selectedFile.type
-      });
-
-      // 🎯 清除之前的错误信息
-      this.errorMessage = '';
-    }
-  },
-
-  // 🎯 修复拖拽处理
-  handleDrop (event) {
-    event.preventDefault();
-    this.isDragOver = false;
-    const files = event.dataTransfer.files;
-    if (files.length > 0) {
-      this.selectedFile = files[0];
-
-      // 🎯 添加调试信息
-      console.log('📁 文件拖拽调试信息:', {
-        name: this.selectedFile.name,
-        size: this.selectedFile.size,
-        type: this.selectedFile.type,
-        lastModified: this.selectedFile.lastModified,
-        extension: this.selectedFile.name.split('.').pop()?.toLowerCase()
-      });
-
-      this.logDebug('文件拖拽', {
-        fileName: this.selectedFile.name,
-        fileSize: this.selectedFile.size,
-        fileType: this.selectedFile.type
-      });
-
-      // 🎯 清除之前的错误信息
-      this.errorMessage = '';
-    }
-  },
-
-  handleDragOver (event) {
-    event.preventDefault();
-    this.isDragOver = true;
-  },
-
-  handleDragLeave () {
-    this.isDragOver = false;
-  },
-
-  handleDragEnter (event) {
-    event.preventDefault();
-    this.isDragOver = true;
-  },
-
-  removeFile () {
-    this.selectedFile = null;
-    this.logDebug('文件移除');
-  },
-
-  formatFileSize (bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  },
-
-  // 模板和上传相关
-  async downloadTemplate () {
-    try {
-      const blob = await downloadStudentTemplate()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = '学生导入模板.xlsx'
-      a.click()
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error('下载模板失败:', error)
-    }
-  },
-
-  previewTemplate () {
-
-    const element = document.querySelector('.teachers-table-card');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  },
-
-  // 🎯 修复批量上传方法
-  async handleBatchUpload () {
-    if (!this.selectedFile || !this.isFileValid) {
-      this.errorMessage = '请选择有效的文件';
-      return;
-    }
-
-    this.isUploading = true;
-    this.uploadProgress = 0;
-    this.errorMessage = '';
-
-    // 🎯 修复：在方法开始时声明 progressInterval
-    let progressInterval = null;
-
-    try {
-      console.log('🎯 开始批量上传 - 文件验证:', {
-        fileName: this.selectedFile.name,
-        fileSize: this.selectedFile.size,
-        fileType: this.selectedFile.type
-      });
-
-      this.logDebug('开始批量上传', { fileName: this.selectedFile.name });
-
-      // 🎯 修复：模拟上传进度
-      progressInterval = setInterval(() => {
-        if (this.uploadProgress < 90) {
-          this.uploadProgress += Math.random() * 10;
-        }
-      }, 200);
-
-      // 🎯 调用API
-      const result = await createTeachers(this.selectedFile);
-
-      // 🎯 修复：清除进度条
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
-
-      this.uploadProgress = 100;
-
-      // 处理结果
-      this.uploadResult = {
-        total: result.total || 0,
-        success_count: result.success_count || 0,
-        failed_count: result.failed_count || 0,
-        failed_records: result.failed_records || []
-      };
-
-      this.logDebug('批量上传成功', this.uploadResult);
-
-      // 显示成功消息
-      if (this.uploadResult.failed_count === 0) {
-        this.successMessage = `✅ 导入完成！成功导入 ${this.uploadResult.success_count} 名教师`;
-      } else {
-        this.successMessage = `⚠️ 导入完成！成功: ${this.uploadResult.success_count}，失败: ${this.uploadResult.failed_count}`;
-      }
-
-      this.showSuccess = true;
+    showQuickTipMessage (message) {
+      this.quickTipMessage = message;
+      this.showQuickTip = true;
       setTimeout(() => {
-        this.showSuccess = false;
-      }, 3000);
+        this.showQuickTip = false;
+      }, 2000);
+    },
 
-      // 保存到历史记录
-      this.saveUploadHistory({
-        timestamp: new Date().toISOString(),
-        filename: this.selectedFile.name,
-        result: this.uploadResult
-      });
+    // 退出登录
+    logout () {
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('username');
+      localStorage.removeItem('authToken');
+      this.$router.push('/admin/login');
+      this.showQuickTipMessage('👋 已安全退出');
+    },
 
-      // 刷新数据
-      await this.refreshData();
+    // 返回首页
+    goBack () {
+      this.$router.push('/admin');
+    },
 
-    } catch (error) {
-      // 🎯 修复：在错误处理中也要清除进度条
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
+    // 调试相关
+    toggleDebug () {
+      this.showDebug = !this.showDebug;
+    },
+
+    logDebug (action, data = {}) {
+      if (!this.debugMode) return;
+      const timestamp = new Date().toISOString();
+      console.log(`[CreateStudent Debug] ${timestamp} - ${action}:`, data);
+    },
+
+    // 文件处理方法
+    handleFileSelect (event) {
+      const files = event.target.files;
+      if (files.length > 0) {
+        this.selectedFile = files[0];
+
+        // 🎯 添加调试信息
+        console.log('📁 文件选择调试信息:', {
+          name: this.selectedFile.name,
+          size: this.selectedFile.size,
+          type: this.selectedFile.type,
+          lastModified: this.selectedFile.lastModified,
+          extension: this.selectedFile.name.split('.').pop()?.toLowerCase(),
+          // 🎯 添加更多调试信息
+          constructor: this.selectedFile.constructor.name,
+          toString: this.selectedFile.toString(),
+          isFile: this.selectedFile instanceof File,
+          isBlob: this.selectedFile instanceof Blob
+        });
+
+        this.logDebug('文件选择', {
+          fileName: this.selectedFile.name,
+          fileSize: this.selectedFile.size,
+          fileType: this.selectedFile.type
+        });
+
+        // 🎯 清除之前的错误信息
+        this.errorMessage = '';
       }
+    },
 
-      console.error('🎯 批量上传失败:', error);
-      this.logDebug('批量上传失败', { error: error.message });
-      this.errorMessage = error.message || '导入失败，请重试';
+    // 🎯 修复拖拽处理
+    handleDrop (event) {
+      event.preventDefault();
+      this.isDragOver = false;
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        this.selectedFile = files[0];
 
-    } finally {
-      // 🎯 修复：确保进度条被清除
-      if (progressInterval) {
-        clearInterval(progressInterval);
+        // 🎯 添加调试信息
+        console.log('📁 文件拖拽调试信息:', {
+          name: this.selectedFile.name,
+          size: this.selectedFile.size,
+          type: this.selectedFile.type,
+          lastModified: this.selectedFile.lastModified,
+          extension: this.selectedFile.name.split('.').pop()?.toLowerCase()
+        });
+
+        this.logDebug('文件拖拽', {
+          fileName: this.selectedFile.name,
+          fileSize: this.selectedFile.size,
+          fileType: this.selectedFile.type
+        });
+
+        // 🎯 清除之前的错误信息
+        this.errorMessage = '';
       }
-      this.isUploading = false;
-    }
-  },
+    },
 
-  // 保存上传历史记录
-  saveUploadHistory (record) {
-    this.uploadHistory.unshift(record);
-    // 只保留最近10条记录
-    if (this.uploadHistory.length > 10) {
-      this.uploadHistory = this.uploadHistory.slice(0, 10);
-    }
-    localStorage.setItem('teacherUploadHistory', JSON.stringify(this.uploadHistory));
-  },
+    handleDragOver (event) {
+      event.preventDefault();
+      this.isDragOver = true;
+    },
 
-  clearResults () {
-    this.uploadResult = null;
-    this.selectedFile = null;
-    this.uploadProgress = 0;
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.logDebug('清空结果');
-  },
+    handleDragLeave () {
+      this.isDragOver = false;
+    },
 
-  clearError () {
-    this.errorMessage = '';
-  },
+    handleDragEnter (event) {
+      event.preventDefault();
+      this.isDragOver = true;
+    },
 
-  // 🎯 优化的错误报告下载方法
-  async downloadErrorReport () {
-    try {
-      if (!this.uploadResult || !this.uploadResult.failed_records || this.uploadResult.failed_records.length === 0) {
-        this.errorMessage = '没有错误记录可下载';
+    removeFile () {
+      this.selectedFile = null;
+      this.logDebug('文件移除');
+    },
+
+    formatFileSize (bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    },
+
+    // 模板和上传相关
+    async downloadTemplate () {
+      try {
+        // 使用学生模板下载函数
+        const blob = await downloadStudentTemplate()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = '学生导入模板.xlsx'
+        link.click()
+        window.URL.revokeObjectURL(url)
+
+        this.successMessage = '📥 学生模板下载成功'
+        this.showSuccess = true
+        setTimeout(() => {
+          this.showSuccess = false;
+        }, 2000);
+      } catch (error) {
+        this.errorMessage = error.message || '模板下载失败'
+      }
+    },
+
+    previewTemplate () {
+      this.logDebug('预览模板');
+      const element = document.querySelector('.template-preview');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    },
+
+    // 🎯 批量上传方法
+    async handleBatchUpload () {
+      if (!this.selectedFile || !this.isFileValid) {
+        this.errorMessage = '请选择有效的文件';
         return;
       }
 
-      const errorData = this.uploadResult.failed_records.map((record, index) => ({
-        序号: index + 1,
-        教师姓名: record.username || '未知用户',
-        状态: record.success ? '成功' : '失败',
-        错误原因: record.error || '未知错误',
-        时间: new Date().toLocaleString()
-      }));
+      this.isUploading = true;
+      this.uploadProgress = 0;
+      this.errorMessage = '';
 
-      const csvContent = this.convertToCSV(errorData);
-      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `教师导入错误报告_${new Date().toISOString().split('T')[0]}.csv`;
-      link.click();
-      window.URL.revokeObjectURL(url);
+      // 在方法开始时声明 progressInterval
+      let progressInterval = null;
 
-      this.logDebug('错误报告下载成功');
-      this.successMessage = '📋 错误报告已下载';
-      this.showSuccess = true;
-      setTimeout(() => {
-        this.showSuccess = false;
-      }, 2000);
-    } catch (error) {
-      this.logDebug('错误报告下载失败', { error: error.message });
-      this.errorMessage = '下载错误报告失败';
-    }
-  },
-
-  convertToCSV (data) {
-    if (!data || data.length === 0) return '';
-
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map(row =>
-      Object.values(row).map(value => `"${value}"`).join(',')
-    );
-
-    return [headers, ...rows].join('\n');
-  },
-
-  // 数据加载
-  async loadTeachers () {
-    try {
-      this.logDebug('开始加载教师数据');
-
-      // 🎯 调用TypeScript API
-      const teachers = await getTeachers();
-      this.teachers = teachers || [];
-
-      this.logDebug('教师数据加载成功', { count: this.teachers.length });
-    } catch (error) {
-      this.logDebug('教师数据加载失败', { error: error.message });
-      this.teachers = [];
-    }
-  },
-
-  loadUploadHistory () {
-    const history = localStorage.getItem('teacherUploadHistory');
-    if (history) {
       try {
-        this.uploadHistory = JSON.parse(history);
+        console.log('🎯 开始批量上传 - 文件验证:', {
+          fileName: this.selectedFile.name,
+          fileSize: this.selectedFile.size,
+          fileType: this.selectedFile.type
+        });
+
+        this.logDebug('开始批量上传', { fileName: this.selectedFile.name });
+
+        // 模拟上传进度
+        progressInterval = setInterval(() => {
+          if (this.uploadProgress < 90) {
+            this.uploadProgress += Math.random() * 10;
+          }
+        }, 200);
+
+        // 调用API
+        const result = await createStudents(this.selectedFile);
+
+        // 清除进度条
+        if (progressInterval) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+
+        this.uploadProgress = 100;
+
+        // 处理结果
+        this.uploadResult = {
+          total: result.total || 0,
+          success_count: result.success_count || 0,
+          failed_count: result.failed_count || 0,
+          failed_records: result.failed_records || []
+        };
+
+        this.logDebug('批量上传成功', this.uploadResult);
+
+        // 显示成功消息
+        if (this.uploadResult.failed_count === 0) {
+          this.successMessage = `✅ 导入完成！成功导入 ${this.uploadResult.success_count} 名学生`;
+        } else {
+          this.successMessage = `⚠️ 导入完成！成功: ${this.uploadResult.success_count}，失败: ${this.uploadResult.failed_count}`;
+        }
+
+        this.showSuccess = true;
+        setTimeout(() => {
+          this.showSuccess = false;
+        }, 3000);
+
+        // 保存到历史记录
+        this.saveUploadHistory({
+          timestamp: new Date().toISOString(),
+          filename: this.selectedFile.name,
+          result: this.uploadResult
+        });
+
+        // 刷新数据
+        this.$emit('dataUpdated');
+
       } catch (error) {
-        this.uploadHistory = [];
+        // 在错误处理中也要清除进度条
+        if (progressInterval) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+
+        console.error('🎯 批量上传失败:', error);
+        this.logDebug('批量上传失败', { error: error.message });
+        this.errorMessage = error.message || '导入失败，请重试';
+
+      } finally {
+        // 确保进度条被清除
+        if (progressInterval) {
+          clearInterval(progressInterval);
+        }
+        this.isUploading = false;
+      }
+    },
+
+    // 保存上传历史记录
+    saveUploadHistory (record) {
+      this.uploadHistory.unshift(record);
+      // 只保留最近10条记录
+      if (this.uploadHistory.length > 10) {
+        this.uploadHistory = this.uploadHistory.slice(0, 10);
+      }
+      localStorage.setItem('studentUploadHistory', JSON.stringify(this.uploadHistory));
+    },
+
+    clearResults () {
+      this.uploadResult = null;
+      this.selectedFile = null;
+      this.uploadProgress = 0;
+      this.errorMessage = '';
+      this.successMessage = '';
+      this.logDebug('清空结果');
+    },
+
+    clearError () {
+      this.errorMessage = '';
+    },
+
+    // 优化的错误报告下载方法
+    async downloadErrorReport () {
+      try {
+        if (!this.uploadResult || !this.uploadResult.failed_records || this.uploadResult.failed_records.length === 0) {
+          this.errorMessage = '没有错误记录可下载';
+          return;
+        }
+
+        const errorData = this.uploadResult.failed_records.map((record, index) => ({
+          序号: index + 1,
+          学生姓名: record.username || '未知用户',
+          状态: record.success ? '成功' : '失败',
+          错误原因: record.error || '未知错误',
+          时间: new Date().toLocaleString()
+        }));
+
+        const csvContent = this.convertToCSV(errorData);
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `学生导入错误报告_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+
+        this.logDebug('错误报告下载成功');
+        this.successMessage = '📋 错误报告已下载';
+        this.showSuccess = true;
+        setTimeout(() => {
+          this.showSuccess = false;
+        }, 2000);
+      } catch (error) {
+        this.logDebug('错误报告下载失败', { error: error.message });
+        this.errorMessage = '下载错误报告失败';
+      }
+    },
+
+    convertToCSV (data) {
+      if (!data || data.length === 0) return '';
+
+      const headers = Object.keys(data[0]).join(',');
+      const rows = data.map(row =>
+        Object.values(row).map(value => `"${value}"`).join(',')
+      );
+
+      return [headers, ...rows].join('\n');
+    },
+
+    loadUploadHistory () {
+      const history = localStorage.getItem('studentUploadHistory');
+      if (history) {
+        try {
+          this.uploadHistory = JSON.parse(history);
+        } catch (error) {
+          this.uploadHistory = [];
+        }
       }
     }
-  },
-
-  // 添加数据更新后的处理
-  async refreshData () {
-    // 重新加载教师数据
-    await this.loadTeachers();
-
-    // 通知父组件或全局状态更新
-    this.$emit('dataUpdated');
   }
-}
+};
 </script>
 
 <style scoped>
-/* 🎯 基础布局样式 */
+/* 基础布局样式 */
 .admin-layout {
   width: 100vw;
   height: 100vh;
@@ -1754,7 +1519,7 @@ export default {
   }
 }
 
-/* 🎯 优化的结果卡片样式 */
+/* 优化的结果卡片样式 */
 .result-card {
   background: white;
   border-radius: 12px;
@@ -1835,7 +1600,7 @@ export default {
   font-weight: 500;
 }
 
-/* 🎯 优化的失败记录样式 */
+/* 优化的失败记录样式 */
 .failed-records {
   padding: 20px;
   border-top: 1px solid #e2e8f0;
@@ -1929,38 +1694,6 @@ export default {
   color: #667eea;
 }
 
-.template-table-container {
-  overflow-x: auto;
-  margin-bottom: 20px;
-}
-
-.template-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.template-table th,
-.template-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.template-table th {
-  background: #f7fafc;
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.example-row {
-  background: #f9fafb;
-}
-
-.example-row:hover {
-  background: #f0f7ff;
-}
-
 .template-notes {
   background: #f7fafc;
   padding: 20px;
@@ -2037,7 +1770,7 @@ export default {
   transform: translateY(20px);
 }
 
-/* 🎯 响应式设计 */
+/* 响应式设计 */
 @media (max-width: 1200px) {
   .main-layout {
     margin-left: 260px;
@@ -2097,163 +1830,5 @@ export default {
   .user-actions {
     gap: 10px;
   }
-}
-
-/* 教师列表表格样式 */
-.teachers-table-card {
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  margin-top: 20px;
-}
-
-.table-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 20px;
-}
-
-.table-icon {
-  font-size: 24px;
-  color: #667eea;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-.teachers-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.teachers-table th,
-.teachers-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.teachers-table th {
-  background: #f7fafc;
-  font-weight: 600;
-  color: #2d3748;
-  white-space: nowrap;
-}
-
-.teachers-table tr:hover {
-  background: #f0f7ff;
-}
-
-.no-data {
-  text-align: center;
-  color: #a0aec0;
-  padding: 30px !important;
-  font-style: italic;
-}
-
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.search-box input {
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  width: 250px;
-  font-size: 14px;
-}
-
-.search-box input:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-.loading-row {
-  text-align: center;
-  padding: 20px;
-  color: #718096;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 20px;
-}
-
-.pagination button {
-  padding: 8px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  background: white;
-  color: #4a5568;
-  cursor: pointer;
-}
-
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination button:hover:not(:disabled) {
-  background: #f7fafc;
-  border-color: #cbd5e0;
-}
-
-.page-info {
-  color: #4a5568;
-  font-size: 14px;
-}
-
-/* 详情按钮样式 */
-.detail-btn {
-  padding: 4px 8px;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.3s ease;
-}
-
-.detail-btn:hover {
-  background: #5a67d8;
-  transform: translateY(-1px);
-}
-
-/* 教师详情样式 */
-.teacher-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.detail-item {
-  display: flex;
-  gap: 12px;
-}
-
-.detail-item label {
-  font-weight: 600;
-  color: #4a5568;
-  min-width: 80px;
-}
-
-.detail-item p {
-  margin: 0;
-  color: #2d3748;
-  line-height: 1.5;
 }
 </style>
