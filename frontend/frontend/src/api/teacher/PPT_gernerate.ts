@@ -1,7 +1,34 @@
-import axios from 'axios';
+import axios from 'axios'
 
-// API基础URL
-const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:8000';
+// 创建 axios 实例
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  timeout: 60000,
+})
+
+// 请求拦截器 - 添加认证信息
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// 响应拦截器 - 处理认证错误
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
 
 // PPT生成请求接口
 export interface PPTGenerateRequest {

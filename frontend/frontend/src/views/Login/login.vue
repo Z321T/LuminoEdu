@@ -23,7 +23,7 @@
             <div class="logo-icon">🎓</div>
             <h1 class="brand-title">LuminoEdu</h1>
           </div>
-          <p class="brand-subtitle">智能教育平台</p>
+          <p class="brand-subtitle">数字化教学平台</p>
         </div>
 
         <!-- 登录表单 -->
@@ -68,21 +68,6 @@
               />
             </el-form-item>
 
-            <div class="form-options">
-              <el-checkbox
-                v-model="remember"
-                class="remember-me"
-              >
-                <span class="checkbox-text">记住我</span>
-              </el-checkbox>
-              <router-link
-                to="/forgot-password"
-                class="forgot-password"
-              >
-                忘记密码？
-              </router-link>
-            </div>
-
             <el-button
               type="primary"
               @click="submitForm"
@@ -93,17 +78,6 @@
               <span class="btn-text">{{ loading ? '登录中...' : '登录' }}</span>
             </el-button>
           </el-form>
-
-          <!-- 底部链接 -->
-          <div class="form-footer">
-            <span class="footer-text">还没有账户？</span>
-            <router-link
-              to="/register"
-              class="register-link"
-            >
-              立即注册
-            </router-link>
-          </div>
         </div>
       </div>
 
@@ -112,24 +86,21 @@
         <div class="decoration-content">
           <div class="feature-showcase">
             <div class="feature-item">
-              <div class="feature-icon">✨</div>
               <div class="feature-text">
-                <h3>智能管理</h3>
-                <p>高效的课程管理系统</p>
+                <h3>AI辅助教学</h3>
+                <p>大模型支持的教学助手</p>
               </div>
             </div>
             <div class="feature-item">
-              <div class="feature-icon">📊</div>
               <div class="feature-text">
-                <h3>数据可视化</h3>
-                <p>直观的学习数据分析</p>
+                <h3>教学资源制作</h3>
+                <p>基于大模型的资源制作服务</p>
               </div>
             </div>
             <div class="feature-item">
-              <div class="feature-icon">🤝</div>
               <div class="feature-text">
-                <h3>互动协作</h3>
-                <p>师生之间无缝沟通</p>
+                <h3>课程发布</h3>
+                <p>师生之间便捷的资源传递渠道</p>
               </div>
             </div>
           </div>
@@ -147,19 +118,11 @@ import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 import { login } from '@/api/login'
 
-// 常量定义
-const STORAGE_KEYS = {
-  REMEMBER_ME: 'rememberMe',
-  SAVED_USERNAME: 'savedUsername',
-  SAVED_PASSWORD: 'savedPassword',
-}
-
 const router = useRouter()
 const http = inject<AxiosInstance>('axios')
 
 const loading = ref(false)
 const loginFormRef = ref(null)
-const remember = ref(false)
 
 const loginForm = reactive({
   user_id: '',
@@ -177,115 +140,58 @@ const rules = reactive({
   ],
 })
 
-// 加密存储密码
-const encryptPassword = (password: string): string => {
-  // 简单的加密方式，你可以使用更安全的加密库
-  return btoa(password)
-}
-
-// 解密存储的密码
-const decryptPassword = (encryptedPassword: string): string => {
-  try {
-    return atob(encryptedPassword)
-  } catch (error) {
-    console.error('密码解密失败:', error)
-    return ''
-  }
-}
-
-// 保存登录信息到本地存储
-const saveLoginInfo = () => {
-  if (remember.value) {
-    localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true')
-    localStorage.setItem(STORAGE_KEYS.SAVED_USERNAME, loginForm.user_id)
-    localStorage.setItem(STORAGE_KEYS.SAVED_PASSWORD, encryptPassword(loginForm.password))
-
-    console.log('登录信息已保存')
-  } else {
-    // 如果不记住密码，清除保存的信息
-    localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME)
-    localStorage.removeItem(STORAGE_KEYS.SAVED_USERNAME)
-    localStorage.removeItem(STORAGE_KEYS.SAVED_PASSWORD)
-
-    console.log('登录信息已清除')
-  }
-}
-
-// 从本地存储加载登录信息
-const loadSavedLoginInfo = () => {
-  const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME)
-
-  if (rememberMe === 'true') {
-    const savedUsername = localStorage.getItem(STORAGE_KEYS.SAVED_USERNAME)
-    const savedPassword = localStorage.getItem(STORAGE_KEYS.SAVED_PASSWORD)
-
-    if (savedUsername && savedPassword) {
-      loginForm.user_id = savedUsername
-      loginForm.password = decryptPassword(savedPassword)
-      remember.value = true
-
-      console.log('已加载保存的登录信息')
-      ElMessage.info('已为您自动填入上次保存的登录信息')
-    }
-  }
-}
-
-// 清除保存的登录信息
-const clearSavedLoginInfo = () => {
-  localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME)
-  localStorage.removeItem(STORAGE_KEYS.SAVED_USERNAME)
-  localStorage.removeItem(STORAGE_KEYS.SAVED_PASSWORD)
-}
-
 const submitForm = async () => {
   if (!loginFormRef.value) return
 
   await loginFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
       loading.value = true
-
       try {
         const data = await login(loginForm, http)
-        const { access_token, user_id, role, username } = data
 
-        // 登录成功后保存token和用户信息
-        localStorage.setItem('token', access_token)
-        localStorage.setItem('userInfo', JSON.stringify({ user_id, role, username }))
+        console.log('登录响应数据:', data)
 
-        // 处理记住密码功能
-        saveLoginInfo()
+        // 保存认证信息
+        if (data.access_token) {
+          localStorage.setItem('token', data.access_token)
+          localStorage.setItem('token_type', data.token_type || 'Bearer')
+          localStorage.setItem('user_id', data.user_id || loginForm.user_id)
+          localStorage.setItem('username', data.username || loginForm.user_id)
+          localStorage.setItem('role', data.role || 'student')
 
-        ElMessage.success('登录成功！欢迎回来')
-
-        // 延迟跳转，让用户看到成功消息
-        setTimeout(async () => {
-          try {
-            let targetRoute
-            if (role === 'teacher') {
-              targetRoute = '/home_teacher'
-            } else if (role === 'student') {
-              targetRoute = '/home_student'
-            } else if (role === 'admin') {
-              targetRoute = '/admin_home' // 跳转到管理员界面
-            } else {
-              throw new Error('未知角色，无法跳转')
-            }
-
-            await router.push(targetRoute)
-            console.log(`成功跳转到 ${targetRoute}`)
-          } catch (error) {
-            console.error('跳转失败:', error)
-            await router.push('/login')
-            ElMessage.error(error.detail || error.message || '登录失败，请重试')
-          }
-        }, 1000)
-
-        // 登录失败时，如果密码错误，可以选择清除保存的密码
-        if (remember.value && (error.message?.includes('密码') || error.detail?.includes('密码'))) {
-          ElMessage.warning('密码可能已过期，已清除保存的密码')
-          clearSavedLoginInfo()
-          remember.value = false
+          console.log('用户信息已保存:', {
+            token: !!data.access_token,
+            role: data.role,
+            user_id: data.user_id,
+          })
         }
+
+        ElMessage.success('登录成功！')
+
+        // 根据角色跳转
+        if (data.role === 'student') {
+          router.push('/home_student')
+        } else if (data.role === 'teacher') {
+          router.push('/home_teacher')
+        } else if (data.role === 'admin') {
+          router.push('/admin/log_management')
+        } else {
+          ElMessage.error('未知用户角色，无法跳转')
+        }
+      } catch (error: any) {
+        console.error('登录失败:', error)
+
+        // 处理后端返回的 detail 字段
+        let msg = '登录失败'
+        if (Array.isArray(error.detail)) {
+          msg = error.detail.map((d: any) => d.msg || d).join('; ')
+        } else if (typeof error.detail === 'string') {
+          msg = error.detail
+        } else if (error.message) {
+          msg = error.message
+        }
+
+        ElMessage.error(msg)
       } finally {
         loading.value = false
       }
@@ -293,18 +199,23 @@ const submitForm = async () => {
   })
 }
 
-// 监听记住我复选框的变化
-const handleRememberChange = () => {
-  if (!remember.value) {
-    // 如果取消勾选记住我，清除保存的信息
-    clearSavedLoginInfo()
-    ElMessage.info('已清除保存的登录信息')
-  }
-}
-
-// 组件挂载时加载保存的登录信息
+// 检查是否已登录
 onMounted(() => {
-  loadSavedLoginInfo()
+  const token = localStorage.getItem('token')
+  const role = localStorage.getItem('role')
+
+  if (token && role) {
+    console.log('检测到已登录状态，重定向到对应页面')
+
+    // 如果已登录，直接跳转到对应页面
+    if (role === 'admin') {
+      router.push('/admin/log_management')
+    } else if (role === 'teacher') {
+      router.push('/home_teacher')
+    } else if (role === 'student') {
+      router.push('/home_student')
+    }
+  }
 })
 </script>
 
