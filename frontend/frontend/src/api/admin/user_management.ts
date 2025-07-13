@@ -1,5 +1,4 @@
 import axios from 'axios'
-import * as XLSX from 'xlsx' 
 
 // 创建 axios 实例
 const api = axios.create({
@@ -9,26 +8,26 @@ const api = axios.create({
 
 // 请求拦截器 - 添加认证信息
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
+    (config) => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+      return config
+    },
+    (error) => Promise.reject(error)
 )
 
 // 响应拦截器 - 处理认证错误
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+    (response) => response,
+    (error) => {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token')
+        window.location.href = '/login'
+      }
+      return Promise.reject(error)
     }
-    return Promise.reject(error)
-  }
 )
 // 类型定义
 export interface CreateTeachersRequest {
@@ -67,9 +66,9 @@ export const createTeachers = async (file: File): Promise<CreateTeachersResponse
     if (!file.name) throw new Error('文件名不能为空')
 
     const fileExtension = file.name.split('.').pop()?.toLowerCase()
-    const validExtensions = ['xlsx', 'xls', 'csv']
+    const validExtensions = ['xlsx', 'xls']
     if (!validExtensions.includes(fileExtension || '')) {
-      throw new Error('文件格式不支持。请上传Excel文件(.xlsx, .xls)或CSV文件(.csv)')
+      throw new Error('文件格式不支持。请上传Excel文件(.xlsx, .xls)')
     }
     if (file.size > 10 * 1024 * 1024) throw new Error('文件过大，请确保文件大小不超过10MB')
     if (file.size === 0) throw new Error('文件不能为空')
@@ -123,62 +122,22 @@ export const createTeachers = async (file: File): Promise<CreateTeachersResponse
  */
 export const downloadTeacherTemplate = async (): Promise<Blob> => {
   try {
-    console.log('📤 请求下载教师Excel模板')
-    
+    console.log('请求下载教师Excel模板')
+
     const response = await api.get('/admin/user_management/download_teacher_template', {
       responseType: 'blob'
     })
 
-    console.log('📥 教师Excel模板下载成功')
-    
-    const blob = new Blob([response.data], { 
-      type: response.headers['content-type'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-    })
-    
-    return blob
-    
-  } catch (error: any) {
-    console.error('❌ 下载教师Excel模板失败，生成本地Excel模板:', error)
-    
-    // 创建工作簿和工作表
-    const wb = XLSX.utils.book_new()
-    
-    // 定义模板数据
-    const templateData = [
-      ['姓名', '密码', '教工号', '所属院系'],
-      ['张三', '123456', 'T001', '数学系'],
-      ['李四', '123456', 'T002', '语文系'],
-      ['王五', '123456', 'T003', '英语系'],
-      ['赵六', '123456', 'T004', '物理系'],
-      ['孙七', '123456', 'T005', '化学系'],
-      ['钱八', '123456', 'T006', '生物系'],
-      ['周九', '123456', 'T007', '历史系'],
-      ['吴十', '123456', 'T008', '地理系'],
-      ['', '', '', ''] // 空行供用户填写
-    ]
-    
-    // 创建工作表
-    const ws = XLSX.utils.aoa_to_sheet(templateData)
-    
-    // 设置列宽
-    const wscols = [
-      {wch: 15}, // 姓名列宽
-      {wch: 15}, // 密码列宽
-      {wch: 15}, // 教工号列宽
-      {wch: 20}  // 所属院系列宽
-    ]
-    ws['!cols'] = wscols
-    
-    // 将工作表添加到工作簿
-    XLSX.utils.book_append_sheet(wb, ws, '教师导入模板')
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
- console.log('✅ 使用本地生成的教师Excel模板（.xlsx格式）')
-return blob
-    
-    
-   
+    console.log('教师Excel模板下载成功')
 
+    const blob = new Blob([response.data], {
+      type: response.headers['content-type'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+
+    return blob
+
+  } catch (error: any) {
+    console.error('下载教师Excel模板失败:', error)
   }
 }
 
@@ -200,10 +159,10 @@ export interface TeacherListResponse {
  * 获取教师列表 - 修复API路径
  */
 export const getTeacherList = async (
-  page: number = 1,
-  pageSize: number = 20,
-  search?: string,
-  retryCount: number = 3
+    page: number = 1,
+    pageSize: number = 20,
+    search?: string,
+    retryCount: number = 3
 ): Promise<TeacherListResponse> => {
   try {
     // 构建查询参数
@@ -211,7 +170,7 @@ export const getTeacherList = async (
       page: page.toString(),
       page_size: pageSize.toString()
     })
-    
+
     if (search) {
       params.append('search', search)
     }
@@ -223,7 +182,7 @@ export const getTeacherList = async (
     } catch (error: any) {
       // 如果是500错误且还有重试次数，进行重试
       if (error.response?.status === 500 && retryCount > 0) {
-        console.log(`🔄 搜索请求失败，${retryCount}秒后重试...`)
+        console.log(`搜索请求失败，${retryCount}秒后重试...`)
         await new Promise(resolve => setTimeout(resolve, 1000))
         return getTeacherList(page, pageSize, search, retryCount - 1)
       }
@@ -234,10 +193,10 @@ export const getTeacherList = async (
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error('搜索参数无效，请检查输入')
@@ -274,9 +233,7 @@ export interface TeacherDetail {
  */
 export const getTeacherDetail = async (staff_id: string): Promise<TeacherDetail> => {
   try {
-    // 确保 teacherId 为字符串类型
-    const id = String(staff_id)
-    const response = await api.get(`/admin/user_management/teacher_detail/${id}`)
+    const response = await api.get(`/admin/user_management/teacher_detail/${staff_id}`)
     console.log("@@",response.data);
     return response.data
 
@@ -284,10 +241,10 @@ export const getTeacherDetail = async (staff_id: string): Promise<TeacherDetail>
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error('请求参数无效')
@@ -310,37 +267,32 @@ export const getTeacherDetail = async (staff_id: string): Promise<TeacherDetail>
  */
 export const updateTeacher = async (teacherId: string, updateData: Partial<Teacher>): Promise<void> => {
   try {
-    console.log('📤 请求更新教师信息:', teacherId, updateData)
-    
+    console.log('请求更新教师信息:', teacherId, updateData)
+
     const response = await api.put(`/admin/user_management/update_teacher/${teacherId}`, updateData)
-    
-    console.log('📥 教师信息更新成功:', response.data)
-    
+
+    console.log('教师信息更新成功:', response.data)
+
   } catch (error: any) {
-    console.error('❌ 更新教师信息失败:', error)
-    
+    console.error('更新教师信息失败:', error)
+
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     if (status === 401) throw new Error('认证失败，请重新登录')
     if (status === 403) throw new Error('权限不足，无法更新教师信息')
     if (status === 404) throw new Error('教师不存在')
     if (status === 422) throw new Error('输入数据格式错误')
     if (status === 500) throw new Error('服务器内部错误，请稍后重试')
-    
+
     const errorMessage = errorData?.detail || errorData?.message || error.message || '未知错误'
     throw new Error(`更新教师信息失败: ${errorMessage}`)
   }
 }
-
-
-
-
-
 
 
 
@@ -349,81 +301,31 @@ export const updateTeacher = async (teacherId: string, updateData: Partial<Teach
  */
 export const downloadStudentTemplate = async (): Promise<Blob> => {
   try {
-    console.log('📤 请求下载学生Excel模板')
-    
+    console.log('请求下载学生Excel模板')
+
     const response = await api.get('/admin/user_management/download_student_template', {
       responseType: 'blob'
     })
 
-    console.log('📥 学生Excel模板下载成功')
-    
-    const blob = new Blob([response.data], { 
-      type: response.headers['content-type'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+    console.log('学生Excel模板下载成功')
+
+    const blob = new Blob([response.data], {
+      type: response.headers['content-type'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     })
-    
+
     return blob
-    
+
   } catch (error: any) {
-    console.error('❌ 下载学生Excel模板失败，生成本地Excel模板:', error)
-    
-    // 创建工作簿和工作表
-    const wb = XLSX.utils.book_new()
-    
-    // 定义模板数据 - 学生版本
-    const templateData = [
-      ['姓名', '密码', '学号', '学院', '专业', '年级', '入学年份'],
-      ['张三', '123456', 'S001', '计算机学院', '软件工程', '2023级', '2023'],
-      ['李四', '123456', 'S002', '信息学院', '通信工程', '2023级', '2023'],
-      ['王五', '123456', 'S003', '经管学院', '工商管理', '2023级', '2023'],
-      ['赵六', '123456', 'S004', '外国语学院', '英语', '2023级', '2023'], 
-      ['孙七', '123456', 'S005', '艺术学院', '数字媒体', '2023级', '2023'],
-      ['', '', '', '', '', '', ''] // 空行供用户填写
-    ]
-    
-    // 创建工作表
-    const ws = XLSX.utils.aoa_to_sheet(templateData)
-    
-    // 设置列宽
-    const wscols = [
-      {wch: 15}, // 姓名列宽
-      {wch: 15}, // 密码列宽 
-      {wch: 15}, // 学号列宽
-      {wch: 20}, // 学院列宽
-      {wch: 20}, // 专业列宽
-      {wch: 12}, // 年级列宽
-      {wch: 12}  // 入学年份列宽
-    ]
-    ws['!cols'] = wscols
-    
-    // 将工作表添加到工作簿
-    XLSX.utils.book_append_sheet(wb, ws, '学生导入模板')
-    
-    // 生成Excel二进制数据
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-    
-    // 转换为Blob
-    const blob = new Blob([excelBuffer], { 
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-    })
-    
-    console.log('✅ 使用本地生成的学生Excel模板（.xlsx格式）')
-    return blob
+    console.error('下载学生Excel模板失败:', error)
   }
 }
 
-/**
- * 验证Excel文件是否包含所需列
- */
-export const validateStudentExcel = (headers: string[]): boolean => {
-  const required_columns = ['姓名', '密码', '学号', '学院', '专业', '年级', '入学年份']
-  return required_columns.every(col => headers.includes(col))
-}
 
 
 // 添加学生相关的接口类型定义
 export interface CreateStudentsResponse {
   total: number
-  success_count: number 
+  success_count: number
   failed_count: number
   failed_records: Array<{
     username: string
@@ -514,10 +416,10 @@ export interface StudentListResponse {
  * 获取学生列表 - 支持分页和搜索
  */
 export const getStudentList = async (
-  page: number = 1,
-  pageSize: number = 20,
-  search?: string,
-  retryCount: number = 3
+    page: number = 1,
+    pageSize: number = 20,
+    search?: string,
+    retryCount: number = 3
 ): Promise<StudentListResponse> => {
   try {
     // 构建查询参数
@@ -525,7 +427,7 @@ export const getStudentList = async (
       page: page.toString(),
       page_size: pageSize.toString()
     })
-    
+
     if (search) {
       params.append('search', search)
     }
@@ -547,10 +449,10 @@ export const getStudentList = async (
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error('搜索参数无效，请检查输入')
@@ -589,7 +491,7 @@ export const getStudentDetail = async (studentId: string): Promise<StudentDetail
   try {
     const id = String(studentId)
     console.log('📤 开始获取学生详情, ID:', id)
-    
+
     const response = await api.get(`/admin/user_management/student_detail/${id}`)
     console.log('📥 获取学生详情成功:', response.data)
     return response.data
@@ -598,10 +500,10 @@ export const getStudentDetail = async (studentId: string): Promise<StudentDetail
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error('请求参数无效')
@@ -644,9 +546,9 @@ export interface UpdateStudentResponse {
 export const updateStudent = async (studentId: string, data: UpdateStudentRequest): Promise<UpdateStudentResponse> => {
   try {
     console.log('📤 开始更新学生信息:', { studentId, data })
-    
+
     const response = await api.put(`/admin/user_management/update_student/${studentId}`, data)
-    
+
     console.log('📥 更新学生信息成功:', response.data)
     return response.data
 
@@ -654,10 +556,10 @@ export const updateStudent = async (studentId: string, data: UpdateStudentReques
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error(`参数验证失败: ${errorData?.detail || '请检查输入'}`)
@@ -700,9 +602,9 @@ export interface UpdateTeacherResponse {
 export const updateTeacherInfo = async (teacherId: string, data: UpdateTeacherRequest): Promise<UpdateTeacherResponse> => {
   try {
     console.log('📤 开始更新教师信息:', { teacherId, data })
-    
+
     const response = await api.put(`/admin/user_management/update_teacher/${teacherId}`, data)
-    
+
     console.log('📥 更新教师信息成功:', response.data)
     return response.data
 
@@ -710,10 +612,10 @@ export const updateTeacherInfo = async (teacherId: string, data: UpdateTeacherRe
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error(`参数验证失败: ${errorData?.detail || '请检查输入'}`)
@@ -749,13 +651,13 @@ export interface ResetStudentPasswordResponse {
 export const resetStudentPassword = async (studentId: string, newPassword: string): Promise<ResetStudentPasswordResponse> => {
   try {
     console.log('📤 开始重置学生密码:', { studentId })
-    
+
     const data: ResetStudentPasswordRequest = {
       new_password: newPassword
     }
-    
+
     const response = await api.post(`/admin/user_management/reset_password/${studentId}`, data)
-    
+
     console.log('📥 重置学生密码成功:', response.data)
     return response.data
 
@@ -763,10 +665,10 @@ export const resetStudentPassword = async (studentId: string, newPassword: strin
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error(`参数验证失败: ${errorData?.detail || '请检查密码格式'}`)
@@ -803,13 +705,13 @@ export interface ResetTeacherPasswordResponse {
 export const resetTeacherPassword = async (teacherId: string, newPassword: string): Promise<ResetTeacherPasswordResponse> => {
   try {
     console.log('📤 开始重置教师密码:', { teacherId })
-    
+
     const data: ResetTeacherPasswordRequest = {
       new_password: newPassword
     }
-    
+
     const response = await api.post(`/admin/user_management/reset_teacher_password/${teacherId}`, data)
-    
+
     console.log('📥 重置教师密码成功:', response.data)
     return response.data
 
@@ -817,10 +719,10 @@ export const resetTeacherPassword = async (teacherId: string, newPassword: strin
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error(`参数验证失败: ${errorData?.detail || '请检查密码格式'}`)
@@ -860,19 +762,19 @@ export interface DeleteStudentsResponse {
 export const deleteStudents = async (studentIds: string[]): Promise<DeleteStudentsResponse> => {
   try {
     console.log('📤 开始批量删除学生:', { studentIds })
-    
+
     if (!studentIds || studentIds.length === 0) {
       throw new Error('请选择要删除的学生')
     }
-    
+
     const data: DeleteStudentsRequest = {
       student_ids: studentIds
     }
-    
+
     const response = await api.delete('/admin/user_management/batch_delete_students', {
       data: data
     })
-    
+
     console.log('📥 批量删除学生成功:', response.data)
     return response.data
 
@@ -880,10 +782,10 @@ export const deleteStudents = async (studentIds: string[]): Promise<DeleteStuden
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error(`参数验证失败: ${errorData?.detail || '请检查学生ID列表'}`)
@@ -920,19 +822,19 @@ export interface DeleteTeachersResponse {
 export const deleteTeachers = async (teacherIds: string[]): Promise<DeleteTeachersResponse> => {
   try {
     console.log('📤 开始批量删除教师:', { teacherIds })
-    
+
     if (!teacherIds || teacherIds.length === 0) {
       throw new Error('请选择要删除的教师')
     }
-    
+
     const data: DeleteTeachersRequest = {
       teacher_ids: teacherIds
     }
-    
+
     const response = await api.delete('/admin/user_management/batch_delete_teachers', {
       data: data
     })
-    
+
     console.log('📥 批量删除教师成功:', response.data)
     return response.data
 
@@ -940,10 +842,10 @@ export const deleteTeachers = async (teacherIds: string[]): Promise<DeleteTeache
     if (!error.response) {
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error(`参数验证失败: ${errorData?.detail || '请检查教师ID列表'}`)
@@ -981,31 +883,31 @@ export interface GetLogFileContentResponse {
 export const getLogFileContent = async (params: GetLogFileContentRequest): Promise<GetLogFileContentResponse> => {
   try {
     console.log('📤 开始获取日志文件内容:', params)
-    
+
     if (!params.service_name) {
       throw new Error('服务名称不能为空')
     }
-    
+
     if (!params.file_name) {
       throw new Error('文件名称不能为空')
     }
-    
+
     // 构建查询参数
     const queryParams = new URLSearchParams({
       service_name: params.service_name,
       file_name: params.file_name
     })
-    
+
     const response = await api.get(`/admin/log_management/file_content?${queryParams}`, {
       timeout: 30000 // 读取文件内容可能需要较长时间
     })
-    
+
     console.log('📥 获取日志文件内容成功:', {
       fileName: response.data.file_name,
       serviceName: response.data.service_name,
       lineCount: response.data.content?.length || 0
     })
-    
+
     return response.data
 
   } catch (error: any) {
@@ -1015,10 +917,10 @@ export const getLogFileContent = async (params: GetLogFileContentRequest): Promi
       }
       throw new Error(`网络错误: ${error.message}`)
     }
-    
+
     const status = error.response.status
     const errorData = error.response.data
-    
+
     switch (status) {
       case 400:
         throw new Error(`参数验证失败: ${errorData?.detail || '请检查服务名称和文件名'}`)
@@ -1042,25 +944,25 @@ export const getLogFileContent = async (params: GetLogFileContentRequest): Promi
  * 搜索日志文件内容
  */
 export const searchLogFileContent = async (
-  serviceName: string, 
-  fileName: string, 
-  keyword: string,
-  caseSensitive: boolean = false
+    serviceName: string,
+    fileName: string,
+    keyword: string,
+    caseSensitive: boolean = false
 ): Promise<{ lines: Array<{lineNumber: number, content: string, matches: number}>, totalMatches: number }> => {
   try {
     console.log('📤 开始搜索日志文件内容:', { serviceName, fileName, keyword, caseSensitive })
-    
+
     const response = await getLogFileContent({ service_name: serviceName, file_name: fileName })
     const content = response.content
-    
+
     const searchKeyword = caseSensitive ? keyword : keyword.toLowerCase()
     const results: Array<{lineNumber: number, content: string, matches: number}> = []
     let totalMatches = 0
-    
+
     content.forEach((line, index) => {
       const searchLine = caseSensitive ? line : line.toLowerCase()
       const matches = (searchLine.match(new RegExp(searchKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length
-      
+
       if (matches > 0) {
         results.push({
           lineNumber: index + 1,
@@ -1070,12 +972,12 @@ export const searchLogFileContent = async (
         totalMatches += matches
       }
     })
-    
-    console.log('📥 搜索日志文件内容完成:', { 
-      lineCount: results.length, 
-      totalMatches 
+
+    console.log('📥 搜索日志文件内容完成:', {
+      lineCount: results.length,
+      totalMatches
     })
-    
+
     return { lines: results, totalMatches }
 
   } catch (error: any) {
@@ -1102,7 +1004,7 @@ export const parseLogLine = (line: string): {
       // [2024-01-01 12:00:00] INFO module - message
       /^\[(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\]\s+(\w+)\s+(\w+)\s*-\s*(.+)$/
     ]
-    
+
     for (const pattern of patterns) {
       const match = line.match(pattern)
       if (match) {
@@ -1115,10 +1017,10 @@ export const parseLogLine = (line: string): {
         }
       }
     }
-    
+
     // 如果没有匹配到任何格式，返回原始内容
     return { raw: line }
-    
+
   } catch (error) {
     return { raw: line }
   }
@@ -1127,7 +1029,7 @@ export const parseLogLine = (line: string): {
 // 工具函数：按日志级别过滤内容
 export const filterLogContentByLevel = (content: string[], level: string): string[] => {
   if (!level || level === 'ALL') return content
-  
+
   return content.filter(line => {
     const parsed = parseLogLine(line)
     return parsed.level?.toLowerCase() === level.toLowerCase()
@@ -1136,25 +1038,25 @@ export const filterLogContentByLevel = (content: string[], level: string): strin
 
 // 工具函数：按时间范围过滤内容
 export const filterLogContentByTime = (
-  content: string[], 
-  startTime?: string, 
-  endTime?: string
+    content: string[],
+    startTime?: string,
+    endTime?: string
 ): string[] => {
   if (!startTime && !endTime) return content
-  
+
   const start = startTime ? new Date(startTime) : null
   const end = endTime ? new Date(endTime) : null
-  
+
   return content.filter(line => {
     const parsed = parseLogLine(line)
     if (!parsed.timestamp) return true // 保留无时间戳的行
-    
+
     try {
       const lineTime = new Date(parsed.timestamp)
-      
+
       if (start && lineTime < start) return false
       if (end && lineTime > end) return false
-      
+
       return true
     } catch (error) {
       return true // 时间解析失败时保留该行
@@ -1164,24 +1066,24 @@ export const filterLogContentByTime = (
 
 // 工具函数：高亮关键词
 export const highlightKeywords = (
-  text: string, 
-  keywords: string[], 
-  caseSensitive: boolean = false
+    text: string,
+    keywords: string[],
+    caseSensitive: boolean = false
 ): string => {
   if (!keywords.length) return text
-  
+
   let result = text
-  
+
   keywords.forEach(keyword => {
     if (!keyword.trim()) return
-    
+
     const flags = caseSensitive ? 'g' : 'gi'
     const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(`(${escapedKeyword})`, flags)
-    
+
     result = result.replace(regex, '<mark class="log-highlight">$1</mark>')
   })
-  
+
   return result
 }
 
@@ -1196,21 +1098,21 @@ export const analyzeLogContent = (content: string[]): {
   const moduleStats: Record<string, number> = {}
   let earliest: Date | null = null
   let latest: Date | null = null
-  
+
   content.forEach(line => {
     const parsed = parseLogLine(line)
-    
+
     // 统计级别
     if (parsed.level) {
       const level = parsed.level.toUpperCase()
       levelStats[level] = (levelStats[level] || 0) + 1
     }
-    
+
     // 统计模块
     if (parsed.module) {
       moduleStats[parsed.module] = (moduleStats[parsed.module] || 0) + 1
     }
-    
+
     // 统计时间范围
     if (parsed.timestamp) {
       try {
@@ -1222,7 +1124,7 @@ export const analyzeLogContent = (content: string[]): {
       }
     }
   })
-  
+
   return {
     totalLines: content.length,
     levelStats,

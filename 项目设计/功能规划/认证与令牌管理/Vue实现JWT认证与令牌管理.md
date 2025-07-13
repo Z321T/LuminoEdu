@@ -148,7 +148,7 @@ const router = createRouter({
   routes: [
     {
       path: '/login',
-      component: () => import('@/views/Login.vue'),
+      component: () => import('@/views/login.vue'),
       meta: { requiresAuth: false }
     },
     {
@@ -197,7 +197,7 @@ export default router
 ## 5. 登录组件实现
 
 ```vue
-<!-- src/views/Login.vue -->
+<!-- src/views/login.vue -->
 <template>
   <div class="login-container">
     <el-form :model="loginForm" status-icon ref="loginFormRef">

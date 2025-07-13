@@ -1,7 +1,7 @@
 <template>
   <div class="admin-layout">
     <!-- 侧边栏 -->
-    <Sidebar :menu-items="adminMenuItems" />
+    <Sidebar :menuItems="adminMenuItems" />
 
     <!-- 主体内容 -->
     <div class="main">
@@ -11,8 +11,8 @@
           <div class="header-user">
             <span>欢迎，{{ username }}</span>
             <button
-              class="logout-btn"
-              @click="handleLogout"
+                class="logout-btn"
+                @click="handleLogout"
             >退出登录</button>
           </div>
         </template>
@@ -24,13 +24,13 @@
           <div class="filter-group">
             <label>选择服务：</label>
             <select
-              v-model="selectedService"
-              @change="loadLogFiles"
+                v-model="selectedService"
+                @change="loadLogFiles"
             >
               <option
-                v-for="service in logServices"
-                :key="service.name"
-                :value="service.name"
+                  v-for="service in logServices"
+                  :key="service.name"
+                  :value="service.name"
               >
                 {{ service.description }} ({{ service.name }})
               </option>
@@ -40,23 +40,23 @@
           <div class="filter-group">
             <label>开始日期：</label>
             <input
-              type="date"
-              v-model="fileStartDate"
-              @change="loadLogFiles"
+                type="date"
+                v-model="fileStartDate"
+                @change="loadLogFiles"
             />
             <label>结束日期：</label>
             <input
-              type="date"
-              v-model="fileEndDate"
-              @change="loadLogFiles"
+                type="date"
+                v-model="fileEndDate"
+                @change="loadLogFiles"
             />
           </div>
           <!-- 导出按钮 -->
           <div class="export-section">
             <button
-              @click="handleExportLogs"
-              class="export-btn"
-              :disabled="exporting || !selectedService"
+                @click="handleExportLogs"
+                class="export-btn"
+                :disabled="exporting || !selectedService"
             >
               <span v-if="exporting">导出中...</span>
               <span v-else>导出全部日志</span>
@@ -68,17 +68,17 @@
             <div v-else-if="logFiles.length === 0">暂无日志文件</div>
             <ul v-else>
               <li
-                v-for="file in logFiles"
-                :key="file.name"
-                class="file-item"
+                  v-for="file in logFiles"
+                  :key="file.name"
+                  class="file-item"
               >
                 <span class="file-name">{{ file.name }}</span>
                 <span class="file-date">{{ formatFileDate(file.date) }}</span>
                 <span class="file-size">{{ formatFileSize(file.size) }}</span>
                 <div class="file-actions">
                   <button
-                    @click="viewFile(file)"
-                    class="view-btn"
+                      @click="viewFile(file)"
+                      class="view-btn"
                   >查看</button>
                 </div>
               </li>
@@ -90,29 +90,29 @@
 
     <!-- 文件内容查看模态框 -->
     <div
-      v-if="showContentModal"
-      class="modal-overlay"
+        v-if="showContentModal"
+        class="modal-overlay"
     >
       <div class="modal-content">
         <div class="modal-header">
           <h3>{{ viewingFile?.name }}</h3>
           <button
-            @click="closeContentModal"
-            class="close-btn"
+              @click="closeContentModal"
+              class="close-btn"
           >&times;</button>
         </div>
         <div class="modal-body">
           <div
-            v-if="loadingContent"
-            class="content-loading"
+              v-if="loadingContent"
+              class="content-loading"
           >加载中...</div>
           <pre
-            v-else-if="fileContent.length"
-            class="file-content"
+              v-else-if="fileContent.length"
+              class="file-content"
           >{{ fileContent.join('\n') }}</pre>
           <div
-            v-else
-            class="empty-content"
+              v-else
+              class="empty-content"
           >文件内容为空</div>
         </div>
       </div>
@@ -129,7 +129,6 @@ import {
   getLogServices,
   getLogFiles,
   getLogFileContent,
-  // downloadLogFile,
   formatFileDate,
   formatFileSize,
   exportServiceLogs,
@@ -140,9 +139,10 @@ const router = useRouter()
 const username = ref(localStorage.getItem('username') || '管理员')
 
 const adminMenuItems = [
-  { path: '/admin/log_management', icon: '📝', label: '日志管理' },
-  { path: '/admin/teacher-management', icon: '👨‍🏫', label: '教师管理' },
-  { path: '/admin/student-management', icon: '👨‍🎓', label: '学生管理' },
+  { path: '/admin/log_management', label: '日志管理' },
+  { path: '/admin/teacher_management', label: '教师管理' },
+  { path: '/admin/student_management', label: '学生管理' },
+  { path: '/admin/model_management', label: '模型管理' },
 ]
 
 const logServices = ref<{ name: string; description: string }[]>([])
@@ -233,9 +233,9 @@ const handleExportLogs = async () => {
 
     // 调用导出函数
     const blob = await exportServiceLogs(
-      selectedService.value,
-      fileStartDate.value,
-      fileEndDate.value
+        selectedService.value,
+        fileStartDate.value,
+        fileEndDate.value
     )
 
     // 下载文件

@@ -24,6 +24,7 @@ import CreateTeacher from '@/views/admin/CreateTeacher.vue'
 import CreateStudent from '@/views/admin/CreateStudent.vue'
 import teacher_management from '@/views/admin/teacher_management.vue'
 import student_management from '@/views/admin/student_management.vue'
+import model_management from '@/views/admin/model_management.vue'
 
 
 const routes: Array<RouteRecordRaw> = [
@@ -156,33 +157,39 @@ const routes: Array<RouteRecordRaw> = [
         meta: { requiresAuth: true, role: 'admin' }
     },
     {
-        path: '/admin/create-teacher',
+        path: '/admin/create_teacher',
         name: 'CreateTeacher',
         component: CreateTeacher,
         meta: { requiresAuth: true, role: 'admin' }
     },
     {
-        path: '/admin/create-student',
+        path: '/admin/create_student',
         name: 'CreateStudent',
         component: CreateStudent,
         meta: { requiresAuth: true, role: 'admin' }
     },
     {
-        path: '/admin/student-management',
+        path: '/admin/student_management',
         name: 'student_management',
         component: student_management,
         meta: { requiresAuth: true, role: 'admin' }
     },
     {
-        path: '/admin/teacher-management',
+        path: '/admin/teacher_management',
         name: 'teacher_management',
         component: teacher_management,
         meta: { requiresAuth: true, role: 'admin' }
     },
+    {
+        path: '/admin/model_management',
+        name: 'model_management',
+        component: model_management,
+        meta: { requiresAuth: true, role: 'admin' }
+    }
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes,
 })
 

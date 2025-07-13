@@ -1,44 +1,16 @@
 <template>
   <div class="admin-layout">
     <!-- 侧边栏 -->
-    <SideBar
-      :menuItems="adminMenuItems"
-      :activeItem="$route.path"
-      :class="{ 'mobile-open': mobileMenuOpen }"
-      @menuClick="handleMenuClick"
-    />
+    <SideBar :menuItems="adminMenuItems" />
 
     <!-- 主要内容区域 -->
     <div class="main-layout">
       <!-- 页面头部 -->
-      <PageHeader
-        :title="pageTitle"
-        :showMobileMenu="true"
-        @toggleMobileMenu="toggleMobileMenu"
-      >
+      <PageHeader title="管理系统">
         <template #actions>
-          <!-- 导入学生按钮 -->
-          <button
-            @click="goToCreateStudent"
-            class="import-btn"
-          >
-            <span class="btn-icon">📥</span>
-            <span>批量导入学生</span>
-          </button>
-
-          <!-- 用户信息和退出 -->
-          <div class="user-actions">
-            <div class="user-info">
-              <span class="user-avatar">👤</span>
-              <span class="username">{{ username }}</span>
-            </div>
-            <button
-              @click="logout"
-              class="logout-btn"
-            >
-              <span class="logout-icon">🚪</span>
-              <span>退出</span>
-            </button>
+          <div class="header-user">
+            <span>欢迎，{{ username }}</span>
+            <button class="logout-btn" @click="handleLogout">退出登录</button>
           </div>
         </template>
       </PageHeader>
@@ -48,138 +20,82 @@
         <div class="students-table-card">
           <div class="table-header">
             <h3 class="table-title">
-              <span class="table-icon">👨‍🎓</span>
               学生列表
             </h3>
-
             <div class="header-actions">
-              <!-- 批量操作按钮 -->
-              <div
-                v-if="selectedStudents.length > 0"
-                class="batch-actions"
-              >
-                <span class="selected-count">已选择 {{selectedStudents.length}}
-                  个学生</span>
-                <button
-                  @click="showDeleteConfirm"
-                  class="delete-btn"
-                >
-                  <span class="btn-icon">🗑️</span>
+              <div v-if="selectedStudents.length > 0" class="batch-actions">
+                <span class="selected-count">已选择 {{ selectedStudents.length }} 个学生</span>
+                <button class="delete-btn" @click="showDeleteConfirm">
                   <span>批量删除</span>
                 </button>
               </div>
-
-              <!-- 搜索框 -->
-              <div class="search-box">
-                <input
-                  v-model="searchKeyword"
-                  type="text"
-                  placeholder="搜索学生姓名/学号/院系/专业..."
-                  @input="handleSearch"
-                />
-              </div>
+              <!-- 在表格头部或合适位置添加 -->
+              <button class="import-btn" @click="goToCreateStudent">
+                导入学生
+              </button>
             </div>
           </div>
-
-          <!-- 学生列表表格 -->
           <div class="table-container">
             <table class="students-table">
               <thead>
-                <tr>
-                  <th>
-                    <input
+              <tr>
+                <th>
+                  <input
                       type="checkbox"
                       @change="toggleAllSelection"
                       :checked="isAllSelected"
                       :indeterminate="isIndeterminate"
-                    />
-                  </th>
-                  <th>ID</th>
-                  <th>姓名</th>
-                  <th>学号</th>
-                  <th>学院</th>
-                  <th>专业</th>
-                  <th>年级</th>
-                  <th>入学年份</th>
-                  <th>操作</th>
-                </tr>
+                  />
+                </th>
+                <th>姓名</th>
+                <th>学号</th>
+                <th>学院</th>
+                <th>操作</th>
+              </tr>
               </thead>
               <tbody>
-                <tr v-if="loading">
-                  <td
-                    colspan="9"
-                    class="loading-row"
-                  >加载中...</td>
-                </tr>
-                <tr v-else-if="students.length === 0">
-                  <td
-                    colspan="9"
-                    class="no-data"
-                  >暂无学生数据</td>
-                </tr>
-                <tr
-                  v-for="student in students"
-                  :key="student.id"
-                >
-                  <td>
-                    <input
+              <tr v-if="loading">
+                <td colspan="9" class="loading-row">加载中...</td>
+              </tr>
+              <tr v-else-if="students.length === 0">
+                <td colspan="9" class="no-data">暂无学生数据</td>
+              </tr>
+              <tr v-for="student in students" :key="student.id">
+                <td>
+                  <input
                       type="checkbox"
                       :value="student.student_id"
                       @change="toggleStudentSelection(student.student_id)"
                       :checked="selectedStudents.includes(student.student_id)"
-                    />
-                  </td>
-                  <td>{{student.id}}</td>
-                  <td>{{student.username}}</td>
-                  <td>{{student.student_id}}</td>
-                  <td>{{student.department}}</td>
-                  <td>{{student.major}}</td>
-                  <td>{{student.grade}}</td>
-                  <td>{{student.enrollment_year}}</td>
-                  <td>
-                    <button
-                      @click="showStudentDetail(student.id)"
-                      class="detail-btn"
-                    >
-                      查看详情
-                    </button>
-                  </td>
-                </tr>
+                  />
+                </td>
+                <td>{{ student.username }}</td>
+                <td>{{ student.student_id }}</td>
+                <td>{{ student.college }}</td>
+                <td>
+                  <button class="detail-btn" @click="showStudentDetail(student.student_id)">
+                    查看详情
+                  </button>
+                </td>
+              </tr>
               </tbody>
             </table>
           </div>
-
-          <!-- 分页控件 -->
           <div class="pagination">
-            <button
-              :disabled="currentPage <= 1"
-              @click="handlePageChange(currentPage - 1)"
-            >上一页</button>
-            <span class="page-info">
-              第 {{currentPage}} 页 / 共 {{totalPages}} 页
-            </span>
-            <button
-              :disabled="currentPage >= totalPages"
-              @click="handlePageChange(currentPage + 1)"
-            >下一页</button>
+            <button :disabled="currentPage <= 1" @click="handlePageChange(currentPage - 1)">上一页</button>
+            <span class="page-info">第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+            <button :disabled="currentPage >= totalPages" @click="handlePageChange(currentPage + 1)">下一页</button>
           </div>
         </div>
       </main>
     </div>
 
     <!-- 移动端遮罩 -->
-    <div
-      v-if="mobileMenuOpen"
-      class="mobile-overlay"
-      @click="closeMobileMenu"
-    />
+    <div v-if="mobileMenuOpen" class="mobile-overlay" @click="closeMobileMenu" />
 
     <!-- 快速提示 -->
     <transition name="tip-fade">
-      <div
-        v-if="showQuickTip"
-        class="quick-tip"
-      >
+      <div v-if="showQuickTip" class="quick-tip">
         <div class="tip-content">
           <span class="tip-icon">💡</span>
           <span>{{ quickTipMessage }}</span>
@@ -188,122 +104,74 @@
     </transition>
 
     <!-- 学生详细信息弹窗 -->
-    <el-dialog
-      v-model="showDetailDialog"
-      :title="isEditing ? '编辑学生信息' : '学生详细信息'"
-      width="600px"
-    >
-      <div
-        v-if="currentStudent"
-        class="student-detail"
-      >
-        <div
-          v-for="(field, index) in studentFields"
-          :key="index"
-          class="detail-item"
-        >
-          <label>{{field.label}}：</label>
+    <el-dialog v-model="showDetailDialog" :title="isEditing ? '编辑学生信息' : '学生详细信息'" width="600px">
+      <div v-if="currentStudent" class="student-detail">
+        <div v-for="(field, index) in studentFields" :key="index" class="detail-item">
+          <label>{{ field.label }}：</label>
           <template v-if="isEditing">
             <input
-              v-if="field.type === 'text'"
-              v-model="editForm[field.key]"
-              :type="field.inputType || 'text'"
-              class="edit-input"
+                v-if="field.type === 'text'"
+                v-model="editForm[field.key]"
+                :type="field.inputType || 'text'"
+                class="edit-input"
             />
             <textarea
-              v-else-if="field.type === 'textarea'"
-              v-model="editForm[field.key]"
-              class="edit-textarea"
+                v-else-if="field.type === 'textarea'"
+                v-model="editForm[field.key]"
+                class="edit-textarea"
             ></textarea>
           </template>
-          <span v-else>{{formatFieldValue(field.key)}}</span>
+          <span v-else>{{ formatFieldValue(field.key) }}</span>
         </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
           <template v-if="isEditing">
             <el-button @click="cancelEdit">取消</el-button>
-            <el-button
-              type="primary"
-              @click="saveStudentInfo"
-            >保存</el-button>
+            <el-button type="primary" @click="saveStudentInfo">保存</el-button>
           </template>
           <template v-else>
             <el-button @click="showDetailDialog = false">关闭</el-button>
-            <el-button
-              type="warning"
-              @click="showResetPasswordDialog"
-            >重置密码</el-button>
-            <el-button
-              type="primary"
-              @click="startEdit"
-            >编辑</el-button>
+            <el-button type="warning" @click="showResetPasswordDialog">重置密码</el-button>
+            <el-button type="primary" @click="startEdit">编辑</el-button>
           </template>
         </span>
       </template>
     </el-dialog>
 
     <!-- 重置密码弹窗 -->
-    <el-dialog
-      v-model="showPasswordDialog"
-      title="重置学生密码"
-      width="400px"
-    >
+    <el-dialog v-model="showPasswordDialog" title="重置学生密码" width="400px">
       <div class="password-form">
         <div class="form-item">
           <label>新密码：</label>
-          <input
-            v-model="newPassword"
-            type="password"
-            placeholder="请输入新密码"
-            class="password-input"
-          />
+          <input v-model="newPassword" type="password" placeholder="请输入新密码" class="password-input" />
         </div>
         <div class="form-item">
           <label>确认密码：</label>
-          <input
-            v-model="confirmPassword"
-            type="password"
-            placeholder="请确认新密码"
-            class="password-input"
-          />
+          <input v-model="confirmPassword" type="password" placeholder="请确认新密码" class="password-input" />
         </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="closePasswordDialog">取消</el-button>
-          <el-button
-            type="primary"
-            @click="resetPassword"
-          >确认重置</el-button>
+          <el-button type="primary" @click="resetPassword">确认重置</el-button>
         </span>
       </template>
     </el-dialog>
 
     <!-- 删除确认弹窗 -->
-    <el-dialog
-      v-model="showDeleteDialog"
-      title="确认删除"
-      width="500px"
-    >
+    <el-dialog v-model="showDeleteDialog" title="确认删除" width="500px">
       <div class="delete-confirm">
         <div class="warning-icon">⚠️</div>
         <div class="confirm-text">
-          <p>您确定要删除以下 <strong>{{selectedStudents.length}}</strong> 个学生吗？</p>
+          <p>您确定要删除以下 <strong>{{ selectedStudents.length }}</strong> 个学生吗？</p>
           <p class="warning-text">此操作不可撤销，请谨慎操作！</p>
           <div class="student-list">
-            <div
-              v-for="studentId in selectedStudents.slice(0, 5)"
-              :key="studentId"
-              class="student-item"
-            >
-              {{getStudentName(studentId)}} ({{studentId}})
+            <div v-for="studentId in selectedStudents.slice(0, 5)" :key="studentId" class="student-item">
+              {{ getStudentName(studentId) }} ({{ studentId }})
             </div>
-            <div
-              v-if="selectedStudents.length > 5"
-              class="more-text"
-            >
-              还有 {{selectedStudents.length - 5}} 个学生...
+            <div v-if="selectedStudents.length > 5" class="more-text">
+              还有 {{ selectedStudents.length - 5 }} 个学生...
             </div>
           </div>
         </div>
@@ -311,319 +179,232 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showDeleteDialog = false">取消</el-button>
-          <el-button
-            type="danger"
-            @click="confirmDelete"
-          >确认删除</el-button>
+          <el-button type="danger" @click="confirmDelete">确认删除</el-button>
         </span>
       </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import PageHeader from '@/components/layout/PageHeader.vue'
-import SideBar from '@/components/layout/SideBar.vue'
-import { getStudentList, updateStudent, resetStudentPassword } from '@/api/admin/user_management'
+import SideBar from '@/components/layout/Sidebar.vue'
+import { getStudentList, updateStudent, resetStudentPassword, deleteStudents } from '@/api/admin/user_management'
 
-export default {
-  name: 'student_management',
-  components: {
-    PageHeader,
-    SideBar
-  },
+const router = useRouter()
+const username = ref(localStorage.getItem('username') || '管理员')
+const mobileMenuOpen = ref(false)
+const showQuickTip = ref(false)
+const quickTipMessage = ref('')
 
-  data () {
-    return {
-      // 列表相关数据
-      students: [],
-      currentPage: 1,
-      pageSize: 20,
-      total: 0,
-      loading: false,
-      searchKeyword: '',
-      searchTimer: null,
+const students = ref<any[]>([])
+const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+const loading = ref(false)
+const searchKeyword = ref('')
 
-      // 侧边栏相关
-      mobileMenuOpen: false,
-      showQuickTip: false,
-      quickTipMessage: '',
-      adminMenuItems: [
-        { path: '/admin/log_management', icon: '📝', label: '日志管理' },
-        { path: '/admin/teacher-management', icon: '👨‍🏫', label: '教师管理' },
-        { path: '/admin/student-management', icon: '👨‍🎓', label: '学生管理' }
-      ],
+const selectedStudents = ref<string[]>([])
+const showDetailDialog = ref(false)
+const currentStudent = ref<any>(null)
+const isEditing = ref(false)
+const editForm = reactive<any>({})
+const showPasswordDialog = ref(false)
+const newPassword = ref('')
+const confirmPassword = ref('')
+const showDeleteDialog = ref(false)
 
-      // 学生详情弹窗相关
-      showDetailDialog: false,
-      currentStudent: null,
-      isEditing: false,
-      editForm: {},
-      studentFields: [
-        { key: 'username', label: '姓名', type: 'text' },
-        { key: 'student_id', label: '学号', type: 'text' },
-        { key: 'college', label: '学院', type: 'text' },
-        { key: 'major', label: '专业', type: 'text' },
-        { key: 'grade', label: '年级', type: 'text' },
-        { key: 'enrollment_year', label: '入学年份', type: 'text', inputType: 'number' },
-        { key: 'intro', label: '个人简介', type: 'textarea' },
-        { key: 'contact_email', label: '邮箱', type: 'text', inputType: 'email' }
-      ],
+const adminMenuItems = [
+  { path: '/admin/log_management', label: '日志管理' },
+  { path: '/admin/teacher_management', label: '教师管理' },
+  { path: '/admin/student_management', label: '学生管理' },
+  { path: '/admin/model_management', label: '模型管理' },
+]
 
-      // 重置密码相关
-      showPasswordDialog: false,
-      newPassword: '',
-      confirmPassword: '',
+const studentFields = [
+  { key: 'username', label: '姓名', type: 'text' },
+  { key: 'student_id', label: '学号', type: 'text' },
+  { key: 'college', label: '学院', type: 'text' },
+  { key: 'major', label: '专业', type: 'text' },
+  { key: 'grade', label: '年级', type: 'text' },
+  { key: 'enrollment_year', label: '入学年份', type: 'text', inputType: 'number' },
+  { key: 'intro', label: '个人简介', type: 'textarea' },
+  { key: 'contact_email', label: '邮箱', type: 'text', inputType: 'email' }
+]
 
-      // 批量操作相关
-      selectedStudents: [],
-      showDeleteDialog: false
-    }
-  },
+const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
+const isAllSelected = computed(() => selectedStudents.value.length === students.value.length && students.value.length > 0)
+const isIndeterminate = computed(() => selectedStudents.value.length > 0 && selectedStudents.value.length < students.value.length)
 
-  computed: {
-    totalPages () {
-      return Math.ceil(this.total / this.pageSize)
-    },
-    username () {
-      return localStorage.getItem('username') || '管理员'
-    },
-    pageTitle () {
-      return '学生管理'
-    },
-    isAllSelected () {
-      return this.selectedStudents.length === this.students.length && this.students.length > 0
-    },
-    isIndeterminate () {
-      return this.selectedStudents.length > 0 && this.selectedStudents.length < this.students.length
-    }
-  },
+onMounted(() => {
+  loadStudents()
+})
 
-  mounted () {
-    this.loadStudents()
-  },
-
-  methods: {
-    // 加载学生列表
-    async loadStudents () {
-      try {
-        this.loading = true
-        const response = await getStudentList(
-          this.currentPage,
-          this.pageSize,
-          this.searchKeyword
-        )
-
-        this.students = response.students
-        this.total = response.total
-        this.currentPage = response.page
-        this.pageSize = response.page_size
-
-      } catch (error) {
-        console.error('加载学生列表失败:', error)
-      } finally {
-        this.loading = false
-      }
-    },
-
-    // 处理搜索
-    handleSearch () {
-      if (this.searchTimer) {
-        clearTimeout(this.searchTimer)
-      }
-
-      this.searchTimer = setTimeout(() => {
-        this.currentPage = 1
-        this.loadStudents()
-      }, 300)
-    },
-
-    // 处理分页
-    handlePageChange (page) {
-      this.currentPage = page
-      this.loadStudents()
-    },
-
-    // 跳转到创建学生页面
-    goToCreateStudent () {
-      this.$router.push('/admin/create-student')
-    },
-
-    // 退出登录
-    logout () {
-      localStorage.removeItem('isLoggedIn')
-      localStorage.removeItem('token')
-      localStorage.removeItem('username')
-      this.$router.push('/login')
-      this.showQuickTipMessage('👋 已安全退出')
-    },
-
-    // 显示学生详情
-    showStudentDetail (studentId) {
-      const student = this.students.find(s => s.student_id === studentId)
-      this.currentStudent = student || null
-      this.showDetailDialog = true
-    },
-
-    // 开始编辑
-    startEdit () {
-      this.editForm = { ...this.currentStudent }
-      this.isEditing = true
-    },
-
-    // 取消编辑
-    cancelEdit () {
-      this.isEditing = false
-      this.editForm = {}
-    },
-
-    // 保存学生信息
-    async saveStudentInfo () {
-      try {
-        const data = {
-          ...this.editForm,
-          enrollment_year: Number(this.editForm.enrollment_year)
-        }
-
-        const result = await updateStudent(this.currentStudent.student_id, data)
-
-        if (result.status === 'success') {
-          this.showQuickTipMessage('✅ 更新成功')
-          this.isEditing = false
-          // 刷新列表和当前学生信息
-          await this.loadStudents()
-          this.currentStudent = { ...this.editForm }
-        }
-      } catch (error) {
-        this.showQuickTipMessage(`❌ ${error.message}`)
-      }
-    },
-
-    // 显示重置密码弹窗
-    showResetPasswordDialog () {
-      this.newPassword = ''
-      this.confirmPassword = ''
-      this.showPasswordDialog = true
-    },
-
-    // 关闭重置密码弹窗
-    closePasswordDialog () {
-      this.showPasswordDialog = false
-      this.newPassword = ''
-      this.confirmPassword = ''
-    },
-
-    // 重置密码
-    async resetPassword () {
-      try {
-        // 密码验证
-        if (!this.newPassword) {
-          this.showQuickTipMessage('❌ 请输入新密码')
-          return
-        }
-
-        if (this.newPassword.length < 6) {
-          this.showQuickTipMessage('❌ 密码长度不能少于6位')
-          return
-        }
-
-        if (this.newPassword !== this.confirmPassword) {
-          this.showQuickTipMessage('❌ 两次输入的密码不一致')
-          return
-        }
-
-        const result = await resetStudentPassword(this.currentStudent.student_id, this.newPassword)
-
-        if (result.status === 'success') {
-          this.showQuickTipMessage('✅ 密码重置成功')
-          this.closePasswordDialog()
-        }
-      } catch (error) {
-        this.showQuickTipMessage(`❌ ${error.message}`)
-      }
-    },
-
-    // 格式化字段值
-    formatFieldValue (key) {
-      const value = this.currentStudent[key]
-      if (value === null || value === undefined) return '暂无'
-      if (key === 'created_at') return this.formatDate(value)
-      return value
-    },
-
-    // 格式化日期
-    formatDate (timestamp) {
-      const date = new Date(timestamp)
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-    },
-
-    // 侧边栏相关方法
-    toggleMobileMenu () {
-      this.mobileMenuOpen = !this.mobileMenuOpen
-    },
-
-    handleMenuClick (item) {
-      if (item.path !== this.$route.path) {
-        this.$router.push(item.path)
-      }
-      this.mobileMenuOpen = false
-    },
-
-    closeMobileMenu () {
-      this.mobileMenuOpen = false
-    },
-
-    showQuickTipMessage (message) {
-      this.quickTipMessage = message
-      this.showQuickTip = true
-      setTimeout(() => {
-        this.showQuickTip = false
-      }, 2000)
-    },
-
-    // 批量操作相关方法
-    toggleStudentSelection (studentId) {
-      const index = this.selectedStudents.indexOf(studentId)
-      if (index === -1) {
-        this.selectedStudents.push(studentId)
-      } else {
-        this.selectedStudents.splice(index, 1)
-      }
-    },
-
-    toggleAllSelection () {
-      if (this.isAllSelected) {
-        this.selectedStudents = []
-      } else {
-        this.selectedStudents = this.students.map(s => s.student_id)
-      }
-    },
-
-    showDeleteConfirm () {
-      this.showDeleteDialog = true
-    },
-
-    closeDeleteConfirm () {
-      this.showDeleteDialog = false
-    },
-
-    async confirmDelete () {
-      try {
-        // TODO: 调用批量删除接口
-        this.showQuickTipMessage('✅ 批量删除成功')
-        this.selectedStudents = []
-        this.closeDeleteConfirm()
-        await this.loadStudents()
-      } catch (error) {
-        this.showQuickTipMessage(`❌ ${error.message}`)
-      }
-    },
-
-    getStudentName (studentId) {
-      const student = this.students.find(s => s.student_id === studentId)
-      return student ? student.username : '未知'
-    }
+const loadStudents = async () => {
+  try {
+    loading.value = true
+    const response = await getStudentList(currentPage.value, pageSize.value, searchKeyword.value)
+    students.value = response.students
+    total.value = response.total
+    currentPage.value = response.page
+    pageSize.value = response.page_size
+  } catch (error) {
+    showQuickTipMessage('加载学生列表失败')
+  } finally {
+    loading.value = false
   }
+}
+
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  loadStudents()
+}
+
+const goToCreateStudent = () => {
+  router.push('/admin/create_student')
+}
+
+const handleLogout = () => {
+  if (confirm('确定要退出登录吗？')) {
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('token')
+    localStorage.removeItem('username')
+    router.push('/login')
+  }
+}
+
+const showQuickTipMessage = (message: string) => {
+  quickTipMessage.value = message
+  showQuickTip.value = true
+  setTimeout(() => {
+    showQuickTip.value = false
+  }, 2000)
+}
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false
+}
+
+const showStudentDetail = (studentId: string) => {
+  const student = students.value.find(s => s.student_id === studentId)
+  currentStudent.value = student || null
+  showDetailDialog.value = true
+}
+
+const startEdit = () => {
+  Object.assign(editForm, currentStudent.value)
+  isEditing.value = true
+}
+
+const cancelEdit = () => {
+  isEditing.value = false
+  Object.keys(editForm).forEach(key => delete editForm[key])
+}
+
+const saveStudentInfo = async () => {
+  try {
+    const data = {
+      ...editForm,
+      enrollment_year: Number(editForm.enrollment_year)
+    }
+    const result = await updateStudent(currentStudent.value.student_id, data)
+    if (result.status === 'success') {
+      showQuickTipMessage('更新成功')
+      isEditing.value = false
+      await loadStudents()
+      currentStudent.value = { ...editForm }
+    }
+  } catch (error: any) {
+    showQuickTipMessage(`${error.message}`)
+  }
+}
+
+const showResetPasswordDialog = () => {
+  newPassword.value = ''
+  confirmPassword.value = ''
+  showPasswordDialog.value = true
+}
+
+const closePasswordDialog = () => {
+  showPasswordDialog.value = false
+  newPassword.value = ''
+  confirmPassword.value = ''
+}
+
+const resetPassword = async () => {
+  try {
+    if (!newPassword.value) {
+      showQuickTipMessage('请输入新密码')
+      return
+    }
+    if (newPassword.value.length < 6) {
+      showQuickTipMessage('密码长度不能少于6位')
+      return
+    }
+    if (newPassword.value !== confirmPassword.value) {
+      showQuickTipMessage('两次输入的密码不一致')
+      return
+    }
+    const result = await resetStudentPassword(currentStudent.value.student_id, newPassword.value)
+    if (result.status === 'success') {
+      showQuickTipMessage('密码重置成功')
+      closePasswordDialog()
+    }
+  } catch (error: any) {
+    showQuickTipMessage(`${error.message}`)
+  }
+}
+
+const formatFieldValue = (key: string) => {
+  const value = currentStudent.value?.[key]
+  if (value === null || value === undefined) return '暂无'
+  return value
+}
+
+const toggleStudentSelection = (studentId: string) => {
+  const index = selectedStudents.value.indexOf(studentId)
+  if (index === -1) {
+    selectedStudents.value.push(studentId)
+  } else {
+    selectedStudents.value.splice(index, 1)
+  }
+}
+
+const toggleAllSelection = () => {
+  if (isAllSelected.value) {
+    selectedStudents.value = []
+  } else {
+    selectedStudents.value = students.value.map(s => s.student_id)
+  }
+}
+
+const showDeleteConfirm = () => {
+  showDeleteDialog.value = true
+}
+
+const closeDeleteConfirm = () => {
+  showDeleteDialog.value = false
+}
+
+const confirmDelete = async () => {
+  try {
+    if (selectedStudents.value.length === 0) return
+    await deleteStudents(selectedStudents.value)
+    showQuickTipMessage('批量删除成功')
+    selectedStudents.value = []
+    closeDeleteConfirm()
+    await loadStudents()
+  } catch (error: any) {
+    showQuickTipMessage(`${error.message}`)
+  }
+}
+
+const getStudentName = (studentId: string) => {
+  const student = students.value.find(s => s.student_id === studentId)
+  return student ? student.username : '未知'
 }
 </script>
 
@@ -640,13 +421,23 @@ export default {
 }
 
 .main-layout {
-  margin-left: 280px;
-  width: calc(100vw - 280px);
+  margin-left: 240px;
+  width: calc(100vw - 240px);
   height: 100vh;
   display: flex;
   flex-direction: column;
   background: #f8fafc;
   position: relative;
+}
+
+.header-user {
+  position: absolute;
+  top: 24px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
 }
 
 .content-area {
@@ -685,11 +476,6 @@ export default {
   font-weight: 600;
   color: #2d3748;
   margin: 0;
-}
-
-.table-icon {
-  font-size: 24px;
-  color: #667eea;
 }
 
 /* 搜索框样式 */
@@ -809,71 +595,26 @@ export default {
   transform: translateY(-1px);
 }
 
-/* 用户信息和退出按钮样式 */
-.user-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-left: 24px;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.user-avatar {
-  font-size: 20px;
-}
-
-.username {
-  color: #2d3748;
-  font-weight: 500;
-}
-
 .logout-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  color: #4a5568;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-  background: #edf2f7;
-  color: #e53e3e;
+  background: #c0392b;
+  color: #fff;
 }
 
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .main-layout {
-    margin-left: 0;
-    width: 100vw;
-  }
-
-  .table-header {
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .search-box input {
-    width: 100%;
-  }
-
-  .user-actions {
-    margin-left: 0;
-    margin-top: 16px;
-  }
-}
-
-/* 加载和空数据状态样式 */
-.loading-row,
+/* 空数据状态样式 */
 .no-data {
   text-align: center;
   padding: 32px;
@@ -881,213 +622,29 @@ export default {
   font-style: italic;
 }
 
-/* 快速提示样式 */
-.tip-fade-enter-active,
-.tip-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.tip-fade-enter-from,
-.tip-fade-leave-to {
-  opacity: 0;
-}
-
-.quick-tip {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-}
-
-.tip-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  background: #2d3748;
-  color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.tip-icon {
-  font-size: 16px;
-}
-
-/* 学生详情弹窗样式 */
-.student-detail {
-  margin-top: 20px;
-}
-
-.detail-item {
-  margin-bottom: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.detail-item label {
-  flex: 0 0 100px;
-  font-weight: 500;
-  color: #2d3748;
-}
-
-.detail-item span,
-.detail-item p {
-  flex: 1;
-  margin-left: 16px;
-  color: #4a5568;
-  line-height: 1.6;
-}
-
-/* 编辑学生信息样式 */
-.edit-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.edit-input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.edit-textarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 14px;
-  resize: vertical;
-  transition: all 0.3s ease;
-}
-
-.edit-textarea:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-/* 重置密码弹窗样式 */
-.password-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.password-input {
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.password-input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.password-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.form-item label {
-  min-width: 80px;
-  color: #4a5568;
-  font-weight: 500;
-}
-
-.password-input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.password-input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-/* 删除确认弹窗样式 */
-.delete-confirm {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.warning-icon {
-  font-size: 28px;
-  color: #e53e3e;
-}
-
-.confirm-text {
-  flex: 1;
-  color: #4a5568;
-  line-height: 1.6;
-}
-
-.student-list {
-  margin-top: 8px;
-  padding-left: 24px;
-  border-left: 2px solid #e2e8f0;
-}
-
-.student-item {
-  color: #2d3748;
-  font-weight: 500;
-}
-
-.more-text {
-  color: #718096;
-  margin-top: 4px;
-}
-
-/* 批量操作样式 */
-.batch-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.selected-count {
-  color: #4a5568;
-  font-size: 14px;
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .main-layout {
+    margin-left: 0;
+    width: 100vw;
+  }
+  .table-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .search-box input {
+    width: 100%;
+  }
 }
 
 .delete-btn {
-  padding: 6px 12px;
+  padding: 8px 16px;
   background: #e53e3e;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   transition: all 0.3s ease;
 }
 
@@ -1096,85 +653,4 @@ export default {
   transform: translateY(-1px);
 }
 
-/* 批量操作样式 */
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.batch-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.selected-count {
-  color: #667eea;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.delete-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: #e53e3e;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all 0.3s ease;
-}
-
-.delete-btn:hover {
-  background: #c53030;
-  transform: translateY(-1px);
-}
-
-/* 删除确认弹窗样式 */
-.delete-confirm {
-  display: flex;
-  gap: 16px;
-  padding: 16px;
-}
-
-.warning-icon {
-  font-size: 32px;
-  color: #f56565;
-}
-
-.confirm-text {
-  flex: 1;
-}
-
-.warning-text {
-  color: #e53e3e;
-  font-size: 14px;
-  margin: 8px 0;
-}
-
-.student-list {
-  max-height: 120px;
-  overflow-y: auto;
-  background: #f7fafc;
-  border-radius: 6px;
-  padding: 8px;
-  margin-top: 12px;
-}
-
-.student-item {
-  padding: 4px 0;
-  font-size: 14px;
-  color: #4a5568;
-}
-
-.more-text {
-  padding: 4px 0;
-  font-size: 14px;
-  color: #718096;
-  font-style: italic;
-}
 </style>

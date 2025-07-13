@@ -1,14 +1,13 @@
 import os
-import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
 
-from fastapi import UploadFile
 from app.config import COURSE_MATERIALS_DIR, MAX_FILE_SIZE, ALLOWED_FILE_EXTENSIONS
 from app.core.logger import setup_logger
 from app.models.course import Course
 from app.schemas.teacher.course_material_th_sch import MaterialInfo
+from fastapi import UploadFile
 
 logger = setup_logger("course_material_service")
 

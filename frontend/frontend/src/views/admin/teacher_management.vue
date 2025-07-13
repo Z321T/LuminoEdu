@@ -1,44 +1,19 @@
 <template>
   <div class="admin-layout">
     <!-- 侧边栏 -->
-    <SideBar
-      :menuItems="adminMenuItems"
-      :activeItem="$route.path"
-      :class="{ 'mobile-open': mobileMenuOpen }"
-      @menuClick="handleMenuClick"
-    />
+    <SideBar :menuItems="adminMenuItems" />
 
     <!-- 主要内容区域 -->
     <div class="main-layout">
       <!-- 页面头部 -->
-      <PageHeader
-        :title="pageTitle"
-        :showMobileMenu="true"
-        @toggleMobileMenu="toggleMobileMenu"
-      >
+      <PageHeader title="管理系统">
         <template #actions>
-          <!-- 导入教师按钮 -->
-          <button
-            @click="goToCreateTeacher"
-            class="import-btn"
-          >
-            <span class="btn-icon">📥</span>
-            <span>批量导入教师</span>
-          </button>
-
-          <!-- 用户信息和退出 -->
-          <div class="user-actions">
-            <div class="user-info">
-              <span class="user-avatar">👤</span>
-              <span class="username">{{ username }}</span>
-            </div>
+          <div class="header-user">
+            <span>欢迎，{{ username }}</span>
             <button
-              @click="logout"
-              class="logout-btn"
-            >
-              <span class="logout-icon">🚪</span>
-              <span>退出</span>
-            </button>
+                class="logout-btn"
+                @click="handleLogout"
+            >退出登录</button>
           </div>
         </template>
       </PageHeader>
@@ -46,39 +21,34 @@
       <!-- 内容区域 -->
       <main class="content-area">
         <div class="teachers-table-card">
-          <!-- 表格标题和搜索 -->
           <div class="table-header">
             <h3 class="table-title">
-              <span class="table-icon">👨‍🏫</span>
               教师列表
             </h3>
 
             <div class="header-actions">
               <!-- 批量操作按钮 -->
               <div
-                v-if="selectedTeachers.length > 0"
-                class="batch-actions"
+                  v-if="selectedTeachers.length > 0"
+                  class="batch-actions"
               >
                 <span class="selected-count">已选择 {{selectedTeachers.length}}
                   个教师</span>
                 <button
-                  @click="showDeleteConfirm"
-                  class="delete-btn"
+                    @click="showDeleteConfirm"
+                    class="delete-btn"
                 >
-                  <span class="btn-icon">🗑️</span>
                   <span>批量删除</span>
                 </button>
               </div>
 
               <!-- 搜索框 -->
-              <div class="search-box">
-                <input
-                  v-model="searchKeyword"
-                  type="text"
-                  placeholder="搜索教师姓名/工号/院系..."
-                  @input="handleSearch"
-                />
-              </div>
+              <button
+                  class="import-btn"
+                  @click="goToCreateTeacher"
+              >
+                导入教师
+              </button>
             </div>
           </div>
 
@@ -86,60 +56,55 @@
           <div class="table-container">
             <table class="teachers-table">
               <thead>
-                <tr>
-                  <th>
-                    <input
+              <tr>
+                <th>
+                  <input
                       type="checkbox"
                       @change="toggleAllSelection"
                       :checked="isAllSelected"
                       :indeterminate="isIndeterminate"
-                    />
-                  </th>
-                  <th>ID</th>
-                  <th>姓名</th>
-                  <th>工号</th>
-                  <th>所属院系</th>
-                  <th>操作</th>
-                </tr>
+                  />
+                </th>
+                <th>姓名</th>
+                <th>教工号</th>
+                <th>所属院系</th>
+                <th>操作</th>
+              </tr>
               </thead>
               <tbody>
-                <tr v-if="loading">
-                  <td
+              <tr v-if="loading">
+                <td
                     colspan="6"
                     class="loading-row"
-                  >加载中...</td>
-                </tr>
-                <tr v-else-if="teachers.length === 0">
-                  <td
+                >加载中...</td>
+              </tr>
+              <tr v-else-if="teachers.length === 0">
+                <td
                     colspan="6"
                     class="no-data"
-                  >暂无教师数据</td>
-                </tr>
-                <tr
-                  v-for="teacher in teachers"
-                  :key="teacher.id"
-                >
-                  <td>
-                    <input
+                >暂无教师数据</td>
+              </tr>
+              <tr v-for="teacher in teachers" :key="teacher.id">
+                <td>
+                  <input
                       type="checkbox"
                       :value="teacher.staff_id"
                       @change="toggleTeacherSelection(teacher.staff_id)"
                       :checked="selectedTeachers.includes(teacher.staff_id)"
-                    />
-                  </td>
-                  <td>{{teacher.id}}</td>
-                  <td>{{teacher.username}}</td>
-                  <td>{{teacher.staff_id}}</td>
-                  <td>{{teacher.department}}</td>
-                  <td>
-                    <button
-                      @click="showTeacherDetail(teacher.id)"
+                  />
+                </td>
+                <td>{{teacher.username}}</td>
+                <td>{{teacher.staff_id}}</td>
+                <td>{{teacher.department}}</td>
+                <td>
+                  <button
+                      @click="showTeacherDetail(teacher.staff_id)"
                       class="detail-btn"
-                    >
-                      查看详情
-                    </button>
-                  </td>
-                </tr>
+                  >
+                    查看详情
+                  </button>
+                </td>
+              </tr>
               </tbody>
             </table>
           </div>
@@ -147,15 +112,15 @@
           <!-- 分页控件 -->
           <div class="pagination">
             <button
-              :disabled="currentPage <= 1"
-              @click="handlePageChange(currentPage - 1)"
+                :disabled="currentPage <= 1"
+                @click="handlePageChange(currentPage - 1)"
             >上一页</button>
             <span class="page-info">
               第 {{currentPage}} 页 / 共 {{totalPages}} 页
             </span>
             <button
-              :disabled="currentPage >= totalPages"
-              @click="handlePageChange(currentPage + 1)"
+                :disabled="currentPage >= totalPages"
+                @click="handlePageChange(currentPage + 1)"
             >下一页</button>
           </div>
         </div>
@@ -164,31 +129,31 @@
 
     <!-- 教师详情弹窗 -->
     <el-dialog
-      v-model="showDetailDialog"
-      :title="isEditing ? '编辑教师信息' : '教师详细信息'"
-      width="600px"
+        v-model="showDetailDialog"
+        :title="isEditing ? '编辑教师信息' : '教师详细信息'"
+        width="600px"
     >
       <div
-        v-if="currentTeacher"
-        class="teacher-detail"
+          v-if="currentTeacher"
+          class="teacher-detail"
       >
         <div
-          v-for="(field, index) in teacherFields"
-          :key="index"
-          class="detail-item"
+            v-for="(field, index) in teacherFields"
+            :key="index"
+            class="detail-item"
         >
           <label>{{field.label}}：</label>
           <template v-if="isEditing">
             <input
-              v-if="field.type === 'text'"
-              v-model="editForm[field.key]"
-              :type="field.inputType || 'text'"
-              class="edit-input"
+                v-if="field.type === 'text'"
+                v-model="editForm[field.key]"
+                :type="field.inputType || 'text'"
+                class="edit-input"
             />
             <textarea
-              v-else-if="field.type === 'textarea'"
-              v-model="editForm[field.key]"
-              class="edit-textarea"
+                v-else-if="field.type === 'textarea'"
+                v-model="editForm[field.key]"
+                class="edit-textarea"
             ></textarea>
           </template>
           <span v-else>{{formatFieldValue(field.key)}}</span>
@@ -199,19 +164,19 @@
           <template v-if="isEditing">
             <el-button @click="cancelEdit">取消</el-button>
             <el-button
-              type="primary"
-              @click="saveTeacherInfo"
+                type="primary"
+                @click="saveTeacherInfo"
             >保存</el-button>
           </template>
           <template v-else>
             <el-button @click="showDetailDialog = false">关闭</el-button>
             <el-button
-              type="warning"
-              @click="showResetPasswordDialog"
+                type="warning"
+                @click="showResetPasswordDialog"
             >重置密码</el-button>
             <el-button
-              type="primary"
-              @click="startEdit"
+                type="primary"
+                @click="startEdit"
             >编辑</el-button>
           </template>
         </span>
@@ -220,27 +185,27 @@
 
     <!-- 重置密码弹窗 -->
     <el-dialog
-      v-model="showPasswordDialog"
-      title="重置教师密码"
-      width="400px"
+        v-model="showPasswordDialog"
+        title="重置教师密码"
+        width="400px"
     >
       <div class="password-form">
         <div class="form-item">
           <label>新密码：</label>
           <input
-            v-model="newPassword"
-            type="password"
-            placeholder="请输入新密码"
-            class="password-input"
+              v-model="newPassword"
+              type="password"
+              placeholder="请输入新密码"
+              class="password-input"
           />
         </div>
         <div class="form-item">
           <label>确认密码：</label>
           <input
-            v-model="confirmPassword"
-            type="password"
-            placeholder="请确认新密码"
-            class="password-input"
+              v-model="confirmPassword"
+              type="password"
+              placeholder="请确认新密码"
+              class="password-input"
           />
         </div>
       </div>
@@ -248,8 +213,8 @@
         <span class="dialog-footer">
           <el-button @click="closePasswordDialog">取消</el-button>
           <el-button
-            type="primary"
-            @click="resetPassword"
+              type="primary"
+              @click="resetPassword"
           >确认重置</el-button>
         </span>
       </template>
@@ -257,9 +222,9 @@
 
     <!-- 删除确认弹窗 -->
     <el-dialog
-      v-model="showDeleteDialog"
-      title="确认删除"
-      width="500px"
+        v-model="showDeleteDialog"
+        title="确认删除"
+        width="500px"
     >
       <div class="delete-confirm">
         <div class="warning-icon">⚠️</div>
@@ -268,15 +233,15 @@
           <p class="warning-text">此操作不可撤销，请谨慎操作！</p>
           <div class="teacher-list">
             <div
-              v-for="teacherId in selectedTeachers.slice(0, 5)"
-              :key="teacherId"
-              class="teacher-item"
+                v-for="teacherId in selectedTeachers.slice(0, 5)"
+                :key="teacherId"
+                class="teacher-item"
             >
               {{getTeacherName(teacherId)}} ({{teacherId}})
             </div>
             <div
-              v-if="selectedTeachers.length > 5"
-              class="more-text"
+                v-if="selectedTeachers.length > 5"
+                class="more-text"
             >
               还有 {{selectedTeachers.length - 5}} 个教师...
             </div>
@@ -287,8 +252,8 @@
         <span class="dialog-footer">
           <el-button @click="showDeleteDialog = false">取消</el-button>
           <el-button
-            type="danger"
-            @click="confirmDelete"
+              type="danger"
+              @click="confirmDelete"
           >确认删除</el-button>
         </span>
       </template>
@@ -296,16 +261,16 @@
 
     <!-- 移动端遮罩 -->
     <div
-      v-if="mobileMenuOpen"
-      class="mobile-overlay"
-      @click="closeMobileMenu"
+        v-if="mobileMenuOpen"
+        class="mobile-overlay"
+        @click="closeMobileMenu"
     />
 
     <!-- 快速提示 -->
     <transition name="tip-fade">
       <div
-        v-if="showQuickTip"
-        class="quick-tip"
+          v-if="showQuickTip"
+          class="quick-tip"
       >
         <div class="tip-content">
           <span class="tip-icon">💡</span>
@@ -316,329 +281,251 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import PageHeader from '@/components/layout/PageHeader.vue'
-import SideBar from '@/components/layout/SideBar.vue'
-import { getTeacherList, deleteTeachers } from '@/api/admin/user_management'
+import SideBar from '@/components/layout/Sidebar.vue'
+import { getTeacherList, deleteTeachers, updateTeacherInfo, resetTeacherPassword, getTeacherDetail } from '@/api/admin/user_management'
 
-export default {
-  name: 'teacher_management',
-  components: {
-    PageHeader,
-    SideBar
-  },
+const router = useRouter()
+const username = ref(localStorage.getItem('username') || '管理员')
 
-  data () {
-    return {
-      // 列表相关数据
-      teachers: [],
-      currentPage: 1,
-      pageSize: 20,
-      total: 0,
-      loading: false,
-      searchKeyword: '',
-      searchTimer: null,
+const adminMenuItems = [
+  { path: '/admin/log_management', label: '日志管理' },
+  { path: '/admin/teacher_management', label: '教师管理' },
+  { path: '/admin/student_management', label: '学生管理' },
+  { path: '/admin/model_management', label: '模型管理' },
+]
 
-      // 侧边栏相关
-      mobileMenuOpen: false,
-      showQuickTip: false,
-      quickTipMessage: '',
-      adminMenuItems: [
-        { path: '/admin/log_management', icon: '📝', label: '日志管理' },
-        { path: '/admin/teacher-management', icon: '👨‍🏫', label: '教师管理' },
-        { path: '/admin/student-management', icon: '👨‍🎓', label: '学生管理' }
-      ],
+// 列表相关
+const teachers = ref<any[]>([])
+const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+const loading = ref(false)
+const searchKeyword = ref('')
+let searchTimer: any = null
 
-      // 教师详情相关
-      showDetailDialog: false,
-      currentTeacher: null,
+// 侧边栏
+const mobileMenuOpen = ref(false)
+const showQuickTip = ref(false)
+const quickTipMessage = ref('')
 
-      // 编辑相关
-      isEditing: false,
-      editForm: {},
-      teacherFields: [
-        { key: 'username', label: '姓名', type: 'text' },
-        { key: 'staff_id', label: '工号', type: 'text' },
-        { key: 'department', label: '院系', type: 'text' },
-        { key: 'expertise', label: '专业领域', type: 'text' },
-        { key: 'intro', label: '个人简介', type: 'textarea' },
-        { key: 'contact_email', label: '联系邮箱', type: 'text', inputType: 'email' },
-        { key: 'office_location', label: '办公地点', type: 'text' }
-      ],
+// 教师详情
+const showDetailDialog = ref(false)
+const currentTeacher = ref<any>(null)
 
-      // 重置密码相关
-      showPasswordDialog: false,
-      newPassword: '',
-      confirmPassword: '',
+// 编辑
+const isEditing = ref(false)
+const editForm = ref<any>({})
+const teacherFields = [
+  { key: 'username', label: '姓名', type: 'text' },
+  { key: 'staff_id', label: '工号', type: 'text' },
+  { key: 'department', label: '院系', type: 'text' },
+  { key: 'expertise', label: '专业领域', type: 'text' },
+  { key: 'intro', label: '个人简介', type: 'textarea' },
+  { key: 'contact_email', label: '联系邮箱', type: 'text', inputType: 'email' },
+  { key: 'office_location', label: '办公地点', type: 'text' }
+]
 
-      // 批量操作相关
-      selectedTeachers: [],
-      showDeleteDialog: false
-    }
-  },
+// 重置密码
+const showPasswordDialog = ref(false)
+const newPassword = ref('')
+const confirmPassword = ref('')
 
-  computed: {
-    totalPages () {
-      return Math.ceil(this.total / this.pageSize)
-    },
-    username () {
-      return localStorage.getItem('username') || '管理员'
-    },
-    pageTitle () {
-      return '教师管理'
-    },
-    isAllSelected () {
-      return this.teachers.length > 0 && this.selectedTeachers.length === this.teachers.length
-    },
-    isIndeterminate () {
-      return this.selectedTeachers.length > 0 && this.selectedTeachers.length < this.teachers.length
-    }
-  },
+// 批量操作
+const selectedTeachers = ref<string[]>([])
+const showDeleteDialog = ref(false)
 
-  mounted () {
-    this.loadTeachers()
-  },
+const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
+const isAllSelected = computed(() => teachers.value.length > 0 && selectedTeachers.value.length === teachers.value.length)
+const isIndeterminate = computed(() => selectedTeachers.value.length > 0 && selectedTeachers.value.length < teachers.value.length)
 
-  methods: {
-    // 加载教师列表
-    async loadTeachers () {
-      try {
-        this.loading = true
-        const response = await getTeacherList(
-          this.currentPage,
-          this.pageSize,
-          this.searchKeyword
-        )
-
-        this.teachers = response.teachers
-        this.total = response.total
-        this.currentPage = response.page
-        this.pageSize = response.page_size
-
-      } catch (error) {
-        console.error('加载教师列表失败:', error)
-      } finally {
-        this.loading = false
-      }
-    },
-
-    // 处理搜索
-    handleSearch () {
-      if (this.searchTimer) {
-        clearTimeout(this.searchTimer)
-      }
-
-      this.searchTimer = setTimeout(() => {
-        this.currentPage = 1
-        this.loadTeachers()
-      }, 300)
-    },
-
-    // 处理分页
-    handlePageChange (page) {
-      this.currentPage = page
-      this.loadTeachers()
-    },
-
-    // 显示教师详情
-    async showTeacherDetail (teacherId) {
-      try {
-        this.currentTeacher = await getTeacherDetail(teacherId.toString())
-        this.showDetailDialog = true
-      } catch (error) {
-        console.error('获取教师详情失败:', error)
-        this.showQuickTipMessage('获取教师详情失败')
-      }
-    },
-
-    // 跳转到创建教师页面
-    goToCreateTeacher () {
-      this.$router.push('/admin/create-teacher')
-    },
-
-    // 退出登录
-    logout () {
-      localStorage.removeItem('isLoggedIn')
-      localStorage.removeItem('token')
-      localStorage.removeItem('username')
-      this.$router.push('/login')
-      this.showQuickTipMessage('👋 已安全退出')
-    },
-
-    // 侧边栏相关方法
-    toggleMobileMenu () {
-      this.mobileMenuOpen = !this.mobileMenuOpen
-    },
-
-    handleMenuClick (item) {
-      if (item.path !== this.$route.path) {
-        this.$router.push(item.path)
-      }
-      this.mobileMenuOpen = false
-    },
-
-    closeMobileMenu () {
-      this.mobileMenuOpen = false
-    },
-
-    showQuickTipMessage (message) {
-      this.quickTipMessage = message
-      this.showQuickTip = true
-      setTimeout(() => {
-        this.showQuickTip = false
-      }, 2000)
-    },
-
-    formatDate (dateString) {
-      if (!dateString) return '-'
-      const date = new Date(dateString)
-      return date.toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    },
-
-    // 编辑相关方法
-    startEdit () {
-      this.editForm = { ...this.currentTeacher }
-      this.isEditing = true
-    },
-
-    cancelEdit () {
-      this.isEditing = false
-      this.editForm = {}
-    },
-
-    async saveTeacherInfo () {
-      try {
-        const data = {
-          username: this.editForm.username,
-          staff_id: this.editForm.staff_id,
-          department: this.editForm.department,
-          expertise: this.editForm.expertise,
-          intro: this.editForm.intro,
-          contact_email: this.editForm.contact_email,
-          office_location: this.editForm.office_location
-        }
-
-        const result = await updateTeacherInfo(this.currentTeacher.staff_id, data)
-
-        if (result.status === 'success') {
-          this.showQuickTipMessage('✅ 更新成功')
-          this.isEditing = false
-          // 刷新列表和当前教师信息
-          await this.loadTeachers()
-          this.currentTeacher = { ...this.editForm }
-        }
-      } catch (error) {
-        this.showQuickTipMessage(`❌ ${error.message}`)
-      }
-    },
-
-    formatFieldValue (key) {
-      const value = this.currentTeacher[key]
-      if (value === null || value === undefined) return '暂无'
-      if (key === 'created_at') return this.formatDate(value)
-      return value
-    },
-
-    // 重置密码相关方法
-    showResetPasswordDialog () {
-      this.newPassword = ''
-      this.confirmPassword = ''
-      this.showPasswordDialog = true
-    },
-
-    closePasswordDialog () {
-      this.showPasswordDialog = false
-      this.newPassword = ''
-      this.confirmPassword = ''
-    },
-
-    async resetPassword () {
-      try {
-        // 密码验证
-        if (!this.newPassword) {
-          this.showQuickTipMessage('❌ 请输入新密码')
-          return
-        }
-
-        if (this.newPassword.length < 6) {
-          this.showQuickTipMessage('❌ 密码长度不能少于6位')
-          return
-        }
-
-        if (this.newPassword !== this.confirmPassword) {
-          this.showQuickTipMessage('❌ 两次输入的密码不一致')
-          return
-        }
-
-        const result = await resetTeacherPassword(this.currentTeacher.staff_id, this.newPassword)
-
-        if (result.status === 'success') {
-          this.showQuickTipMessage('✅ 密码重置成功')
-          this.closePasswordDialog()
-        }
-      } catch (error) {
-        this.showQuickTipMessage(`❌ ${error.message}`)
-      }
-    },
-
-    // 批量操作相关方法
-    toggleTeacherSelection (teacherId) {
-      const index = this.selectedTeachers.indexOf(teacherId)
-      if (index === -1) {
-        this.selectedTeachers.push(teacherId)
-      } else {
-        this.selectedTeachers.splice(index, 1)
-      }
-    },
-
-    toggleAllSelection () {
-      if (this.isAllSelected) {
-        this.selectedTeachers = []
-      } else {
-        this.selectedTeachers = this.teachers.map(teacher => teacher.staff_id)
-      }
-    },
-
-    showDeleteConfirm () {
-      if (this.selectedTeachers.length === 0) {
-        this.showQuickTipMessage('❌ 请先选择要删除的教师')
-        return
-      }
-      this.showDeleteDialog = true
-    },
-
-    closeDeleteConfirm () {
-      this.showDeleteDialog = false
-    },
-
-    async confirmDelete () {
-      try {
-        const result = await deleteTeachers(this.selectedTeachers)
-
-        if (result.success) {
-          this.showQuickTipMessage(`✅ 成功删除 ${result.deleted} 个教师`)
-          this.selectedTeachers = []
-          this.showDeleteDialog = false
-          // 刷新列表
-          await this.loadTeachers()
-        }
-      } catch (error) {
-        this.showQuickTipMessage(`❌ ${error.message}`)
-      }
-    },
-
-    getTeacherName (teacherId) {
-      const teacher = this.teachers.find(t => t.staff_id === teacherId)
-      return teacher ? teacher.username : teacherId
-    }
+const loadTeachers = async () => {
+  try {
+    loading.value = true
+    const response = await getTeacherList(currentPage.value, pageSize.value, searchKeyword.value)
+    teachers.value = response.teachers
+    total.value = response.total
+    currentPage.value = response.page
+    pageSize.value = response.page_size
+  } catch (error) {
+    console.error('加载教师列表失败:', error)
+  } finally {
+    loading.value = false
   }
 }
+
+const handleSearch = () => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    currentPage.value = 1
+    loadTeachers()
+  }, 300)
+}
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  loadTeachers()
+}
+
+const showTeacherDetail = async (staff_id: string) => {
+  try {
+    currentTeacher.value = await getTeacherDetail(staff_id)
+    showDetailDialog.value = true
+  } catch (error) {
+    showQuickTipMessage('获取教师详情失败')
+  }
+}
+
+const goToCreateTeacher = () => {
+  router.push('/admin/create_teacher')
+}
+
+const handleLogout = () => {
+  if (confirm('确定要退出登录吗？')) {
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('token')
+    localStorage.removeItem('username')
+    router.push('/login')
+  }
+}
+
+const showQuickTipMessage = (message: string) => {
+  quickTipMessage.value = message
+  showQuickTip.value = true
+  setTimeout(() => {
+    showQuickTip.value = false
+  }, 2000)
+}
+
+const startEdit = () => {
+  editForm.value = { ...currentTeacher.value }
+  isEditing.value = true
+}
+
+const cancelEdit = () => {
+  isEditing.value = false
+  editForm.value = {}
+}
+
+const saveTeacherInfo = async () => {
+  try {
+    const data = {
+      username: editForm.value.username,
+      staff_id: editForm.value.staff_id,
+      department: editForm.value.department,
+      expertise: editForm.value.expertise,
+      intro: editForm.value.intro,
+      contact_email: editForm.value.contact_email,
+      office_location: editForm.value.office_location
+    }
+    const result = await updateTeacherInfo(currentTeacher.value.staff_id, data)
+    if (result.status === 'success') {
+      showQuickTipMessage('更新成功')
+      isEditing.value = false
+      await loadTeachers()
+      currentTeacher.value = { ...editForm.value }
+    }
+  } catch (error: any) {
+    showQuickTipMessage(error.message)
+  }
+}
+
+const formatFieldValue = (key: string) => {
+  const value = currentTeacher.value?.[key]
+  if (value === null || value === undefined) return '暂无'
+  return value
+}
+
+const showResetPasswordDialog = () => {
+  newPassword.value = ''
+  confirmPassword.value = ''
+  showPasswordDialog.value = true
+}
+
+const closePasswordDialog = () => {
+  showPasswordDialog.value = false
+  newPassword.value = ''
+  confirmPassword.value = ''
+}
+
+const resetPassword = async () => {
+  try {
+    if (!newPassword.value) {
+      showQuickTipMessage('请输入新密码')
+      return
+    }
+    if (newPassword.value.length < 6) {
+      showQuickTipMessage('密码长度不能少于6位')
+      return
+    }
+    if (newPassword.value !== confirmPassword.value) {
+      showQuickTipMessage('两次输入的密码不一致')
+      return
+    }
+    const result = await resetTeacherPassword(currentTeacher.value.staff_id, newPassword.value)
+    if (result.status === 'success') {
+      showQuickTipMessage('密码重置成功')
+      closePasswordDialog()
+    }
+  } catch (error: any) {
+    showQuickTipMessage(error.message)
+  }
+}
+
+const toggleTeacherSelection = (teacherId: string) => {
+  const idx = selectedTeachers.value.indexOf(teacherId)
+  if (idx === -1) {
+    selectedTeachers.value.push(teacherId)
+  } else {
+    selectedTeachers.value.splice(idx, 1)
+  }
+}
+
+const toggleAllSelection = () => {
+  if (isAllSelected.value) {
+    selectedTeachers.value = []
+  } else {
+    selectedTeachers.value = teachers.value.map(t => t.staff_id)
+  }
+}
+
+const showDeleteConfirm = () => {
+  if (selectedTeachers.value.length === 0) {
+    showQuickTipMessage('请先选择要删除的教师')
+    return
+  }
+  showDeleteDialog.value = true
+}
+
+const closeDeleteConfirm = () => {
+  showDeleteDialog.value = false
+}
+
+const confirmDelete = async () => {
+  try {
+    const result = await deleteTeachers(selectedTeachers.value)
+    if (result.success) {
+      showQuickTipMessage(`成功删除 ${result.deleted} 个教师`)
+      selectedTeachers.value = []
+      showDeleteDialog.value = false
+      await loadTeachers()
+    }
+  } catch (error: any) {
+    showQuickTipMessage(error.message)
+  }
+}
+
+const getTeacherName = (teacherId: string) => {
+  const teacher = teachers.value.find(t => t.staff_id === teacherId)
+  return teacher ? teacher.username : teacherId
+}
+
+onMounted(() => {
+  loadTeachers()
+})
 </script>
 
 <style scoped>
@@ -654,13 +541,23 @@ export default {
 }
 
 .main-layout {
-  margin-left: 280px;
-  width: calc(100vw - 280px);
+  margin-left: 240px;
+  width: calc(100vw - 240px);
   height: 100vh;
   display: flex;
   flex-direction: column;
   background: #f8fafc;
   position: relative;
+}
+
+.header-user {
+  position: absolute;
+  top: 24px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
 }
 
 .content-area {
@@ -701,10 +598,6 @@ export default {
   margin: 0;
 }
 
-.table-icon {
-  font-size: 24px;
-  color: #667eea;
-}
 
 /* 搜索框样式 */
 .search-box input {
@@ -823,45 +716,24 @@ export default {
   transform: translateY(-1px);
 }
 
-/* 用户信息和退出按钮样式 */
-.user-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-left: 24px;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.user-avatar {
-  font-size: 20px;
-}
-
-.username {
-  color: #2d3748;
-  font-weight: 500;
-}
 
 .logout-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  color: #4a5568;
-  cursor: pointer;
-  transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-  background: #edf2f7;
-  color: #e53e3e;
+  background: #c0392b;
+  color: #fff;
 }
 
 /* 教师详情弹窗样式 */
@@ -915,15 +787,6 @@ export default {
 }
 
 /* 快速提示样式 */
-.tip-fade-enter-active,
-.tip-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.tip-fade-enter-from,
-.tip-fade-leave-to {
-  opacity: 0;
-}
 
 .quick-tip {
   position: fixed;
