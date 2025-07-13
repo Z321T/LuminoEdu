@@ -116,7 +116,7 @@ import type { AxiosInstance } from 'axios'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
-import { login } from '@/api/login'
+import { login } from '@/api/Login/login'
 
 const router = useRouter()
 const http = inject<AxiosInstance>('axios')

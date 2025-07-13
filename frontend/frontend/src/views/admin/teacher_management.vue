@@ -319,7 +319,7 @@
 <script>
 import PageHeader from '@/components/layout/PageHeader.vue'
 import SideBar from '@/components/layout/SideBar.vue'
-import { getTeacherList, deleteTeachers } from '@/api/user_management'
+import { getTeacherList, deleteTeachers } from '@/api/admin/user_management'
 
 export default {
   name: 'teacher_management',

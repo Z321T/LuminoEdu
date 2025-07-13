@@ -112,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ExerciseHistoryItem } from '@/api/exercise_history'
+import type { ExerciseHistoryItem } from '@/api/teacher/exercise_history'
 
 interface Props {
   items: ExerciseHistoryItem[]

@@ -7,8 +7,8 @@ import {
   extractIdFromFilename,
   validateFilename,
   type ExerciseHistoryItem,
-} from '@/api/exercise_history'
-import { downloadExerciseFile } from '@/api/exercise_generate'
+} from '@/api/teacher/exercise_history'
+import { downloadExerciseFile } from '@/api/teacher/exercise_generate'
 
 export function useExerciseHistory() {
   // 响应式数据

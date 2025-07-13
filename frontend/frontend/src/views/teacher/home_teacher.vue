@@ -59,12 +59,8 @@ const router = useRouter()
 const teacherMenuItems = [
   { path: '/home_teacher', icon: '🏠', label: '首页' },
   { path: '/exercise_generate', icon: '📝', label: '习题生成' },
+  { path: '/ppt_generate', icon: '📊', label: 'PPT生成' },
   { path: '/exercise_history', icon: '📚', label: '历史记录' },
-  { path: '/course_management', icon: '📚', label: '课程管理' },
-  { path: '/student_management', icon: '👥', label: '学生管理' },
-  { path: '/homework_review', icon: '📝', label: '作业批改' },
-  { path: '/notifications', icon: '🔔', label: '消息通知' },
-  { path: '/settings', icon: '⚙️', label: '设置' },
 ]
 
 // 统计数据

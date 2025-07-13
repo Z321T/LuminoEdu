@@ -376,7 +376,7 @@ import SideBar from '@/components/layout/SideBar.vue';
 import {
   downloadStudentTemplate,
   createStudents
-} from '@/api/user_management'
+} from '@/api/admin/user_management'
 
 export default {
   name: 'CreateStudent',

@@ -6,7 +6,7 @@ import home_student from '@/views/home_student.vue'
 import home_teacher from '@/views/teacher/home_teacher.vue'
 import exercise_generate from '@/views/teacher/exercise_gernerate.vue'
 import exercise_history from '@/views/teacher/exercise_history.vue'
-import PPT_gernerate from '@/views/teacher/PPT_gernerate.vue'
+import PPT_generate from '@/views/teacher/PPT_generate.vue'
 // admin界面
 import log_management from '@/views/admin/log_management.vue'
 import CreateTeacher from '@/views/admin/CreateTeacher.vue'
@@ -51,9 +51,9 @@ const routes: Array<RouteRecordRaw> = [
         meta: { requiresAuth: true }
     },
     {
-        path: '/PPT_gernerate',
-        name: 'PPT_gernerate',
-        component: PPT_gernerate,
+        path: '/PPT_generate',
+        name: 'PPT_generate',
+        component: PPT_generate,
         meta: { requiresAuth: true }
     },
 

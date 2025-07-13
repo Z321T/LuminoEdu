@@ -324,7 +324,7 @@
 <script>
 import PageHeader from '@/components/layout/PageHeader.vue'
 import SideBar from '@/components/layout/SideBar.vue'
-import { getStudentList, updateStudent, resetStudentPassword } from '@/api/user_management'
+import { getStudentList, updateStudent, resetStudentPassword } from '@/api/admin/user_management'
 
 export default {
   name: 'student_management',
