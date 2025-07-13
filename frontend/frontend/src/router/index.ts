@@ -1,19 +1,18 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
-// 登录界面
-import login from '@/views/login/login.vue'
-// 学生界面
+import {createRouter,createWebHistory, }from 'vue-router'
+import type{RouteRecordRaw} from 'vue-router'
+import login from '@/views/Login/login.vue'
 import home_student from '@/views/home_student.vue'
 // 教师界面
-import home_teacher from '@/views/home_teacher.vue'
-import exercise_generate from '@/views/exercise_gernerate.vue'
-import exercise_history from '@/views/exercise_history.vue'
+import home_teacher from '@/views/teacher/home_teacher.vue'
+import exercise_generate from '@/views/teacher/exercise_gernerate.vue'
+import exercise_history from '@/views/teacher/exercise_history.vue'
+import PPT_generate from '@/views/teacher/PPT_generate.vue'
 // admin界面
 import log_management from '@/views/admin/log_management.vue'
-import CreateTeacher from '@/views/CreateTeacher.vue'
-import CreateStudent from '@/views/CreateStudent.vue'
-import teacher_management from '@/views/teacher_management.vue'
-import student_management from '@/views/student_management.vue'
+import CreateTeacher from '@/views/admin/CreateTeacher.vue'
+import CreateStudent from '@/views/admin/CreateStudent.vue'
+import teacher_management from '@/views/admin/teacher_management.vue'
+import student_management from '@/views/admin/student_management.vue'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -51,6 +50,13 @@ const routes: Array<RouteRecordRaw> = [
         component: exercise_history,
         meta: { requiresAuth: true }
     },
+    {
+        path: '/PPT_generate',
+        name: 'PPT_generate',
+        component: PPT_generate,
+        meta: { requiresAuth: true }
+    },
+
     // 管理员端路由
     {
         path: '/admin/log_management',
@@ -59,25 +65,25 @@ const routes: Array<RouteRecordRaw> = [
         meta: { requiresAuth: true, role: 'admin' }
     },
     {
-        path: '/admin/create-teacher',
+        path: '/admin/create_teacher',
         name: 'CreateTeacher',
         component: CreateTeacher,
         meta: { requiresAuth: true, role: 'admin' }
     },
     {
-        path: '/admin/create-student',
+        path: '/admin/create_student',
         name: 'CreateStudent',
         component: CreateStudent,
         meta: { requiresAuth: true, role: 'admin' }
     },
     {
-        path: '/admin/student-management',
+        path: '/admin/student_management',
         name: 'student_management',
         component: student_management,
         meta: { requiresAuth: true, role: 'admin' }
     },
     {
-        path: '/admin/teacher-management',
+        path: '/admin/teacher_management',
         name: 'teacher_management',
         component: teacher_management,
         meta: { requiresAuth: true, role: 'admin' }

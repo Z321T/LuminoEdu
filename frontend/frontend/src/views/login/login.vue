@@ -116,7 +116,7 @@ import type { AxiosInstance } from 'axios'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
-import { login } from '@/api/login'
+import { login } from '@/api/Login/login'
 
 const router = useRouter()
 const http = inject<AxiosInstance>('axios')
@@ -141,79 +141,79 @@ const rules = reactive({
 })
 
 const submitForm = async () => {
-  if (!loginFormRef.value) return;
+  if (!loginFormRef.value) return
 
   await loginFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
-      loading.value = true;
+      loading.value = true
       try {
-        const data = await login(loginForm, http);
+        const data = await login(loginForm, http)
 
-        console.log('登录响应数据:', data);
+        console.log('登录响应数据:', data)
 
         // 保存认证信息
         if (data.access_token) {
-          localStorage.setItem('token', data.access_token);
-          localStorage.setItem('token_type', data.token_type || 'Bearer');
-          localStorage.setItem('user_id', data.user_id || loginForm.user_id);
-          localStorage.setItem('username', data.username || loginForm.user_id);
-          localStorage.setItem('role', data.role || 'student');
+          localStorage.setItem('token', data.access_token)
+          localStorage.setItem('token_type', data.token_type || 'Bearer')
+          localStorage.setItem('user_id', data.user_id || loginForm.user_id)
+          localStorage.setItem('username', data.username || loginForm.user_id)
+          localStorage.setItem('role', data.role || 'student')
 
           console.log('用户信息已保存:', {
             token: !!data.access_token,
             role: data.role,
-            user_id: data.user_id
-          });
+            user_id: data.user_id,
+          })
         }
 
-        ElMessage.success('登录成功！');
+        ElMessage.success('登录成功！')
 
         // 根据角色跳转
         if (data.role === 'student') {
-          router.push('/home_student');
+          router.push('/home_student')
         } else if (data.role === 'teacher') {
-          router.push('/home_teacher');
+          router.push('/home_teacher')
         } else if (data.role === 'admin') {
-          router.push('/admin/log_management');
+          router.push('/admin/log_management')
         } else {
-          ElMessage.error('未知用户角色，无法跳转');
+          ElMessage.error('未知用户角色，无法跳转')
         }
       } catch (error: any) {
-        console.error('登录失败:', error);
+        console.error('登录失败:', error)
 
         // 处理后端返回的 detail 字段
-        let msg = '登录失败';
+        let msg = '登录失败'
         if (Array.isArray(error.detail)) {
-          msg = error.detail.map((d: any) => d.msg || d).join('; ');
+          msg = error.detail.map((d: any) => d.msg || d).join('; ')
         } else if (typeof error.detail === 'string') {
-          msg = error.detail;
+          msg = error.detail
         } else if (error.message) {
-          msg = error.message;
+          msg = error.message
         }
 
-        ElMessage.error(msg);
+        ElMessage.error(msg)
       } finally {
-        loading.value = false;
+        loading.value = false
       }
     }
-  });
-};
+  })
+}
 
 // 检查是否已登录
 onMounted(() => {
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
+  const token = localStorage.getItem('token')
+  const role = localStorage.getItem('role')
 
   if (token && role) {
-    console.log('检测到已登录状态，重定向到对应页面');
+    console.log('检测到已登录状态，重定向到对应页面')
 
     // 如果已登录，直接跳转到对应页面
     if (role === 'admin') {
-      router.push('/admin/log_management');
+      router.push('/admin/log_management')
     } else if (role === 'teacher') {
-      router.push('/home_teacher');
+      router.push('/home_teacher')
     } else if (role === 'student') {
-      router.push('/home_student');
+      router.push('/home_student')
     }
   }
 })

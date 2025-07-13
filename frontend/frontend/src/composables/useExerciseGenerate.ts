@@ -5,7 +5,7 @@ import {
   convertTypeToBackend,
   downloadExerciseFile,
   type ExerciseGenerateRequest,
-} from '@/api/exercise_generate'
+} from '@/api/teacher/exercise_generate'
 
 export function useExerciseGenerate(formData: any) {
   // 生成状态

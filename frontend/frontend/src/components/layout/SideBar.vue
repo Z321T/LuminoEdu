@@ -11,7 +11,6 @@
         @click="handleMenuClick(item)"
         :data-path="item.path"
       >
-        <i class="icon">{{ item.icon }}</i>
         <span>{{ item.label }}</span>
       </li>
     </ul>
@@ -23,7 +22,6 @@ import { useRouter, useRoute } from 'vue-router'
 
 interface MenuItem {
   path: string
-  icon: string
   label: string
 }
 
@@ -33,13 +31,6 @@ const props = withDefaults(
     activeItem?: string // 新增：当前激活的菜单项
   }>(),
   {
-    menuItems: () => [
-      { path: '/home_teacher', icon: '🏠', label: '首页' },
-      { path: '/exercise_generate', icon: '📝', label: '习题生成' },
-      { path: '/exercise_history', icon: '📚', label: '历史记录' },
-      { path: '/student_management', icon: '👥', label: '学生管理' },
-      { path: '/settings', icon: '⚙️', label: '设置' },
-    ],
     activeItem: '',
   }
 )
