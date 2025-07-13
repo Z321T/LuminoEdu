@@ -60,6 +60,8 @@ const teacherMenuItems = [
   { path: '/home_teacher', icon: '🏠', label: '首页' },
   { path: '/exercise_generate', icon: '📝', label: '习题生成' },
   { path: '/ppt_generate', icon: '📊', label: 'PPT生成' },
+  { path: '/course_list', icon: '📊', label: '课程管理' },
+  { path: '/teacher/document_list', icon: '📊', label: '文档管理' },
   { path: '/exercise_history', icon: '📚', label: '历史记录' },
 ]
 

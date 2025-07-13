@@ -46,8 +46,27 @@
       <!-- 内容区域 -->
       <main class="content-area">
         <div class="ppt-generate">
-          <!-- 副标题 -->
-          <p class="subtitle">根据教学内容自动生成PPT大纲，提高备课效率</p>
+          <!-- 副标题和导航按钮区域 -->
+          <div class="subtitle-container">
+            <!-- 副标题 -->
+            <p class="subtitle">根据教学内容自动生成PPT大纲，提高备课效率</p>
+
+            <!-- 导航按钮 -->
+            <div class="nav-buttons">
+              <router-link
+                to="PPT_files"
+                class="outline-nav-btn"
+              >
+                <i class="icon-list"></i> 查看我的PPT文件
+              </router-link>
+              <router-link
+                to="PPT_outline"
+                class="outline-nav-btn"
+              >
+                <i class="icon-list"></i> 查看我的大纲
+              </router-link>
+            </div>
+          </div>
 
           <!-- 错误提示 -->
           <div
@@ -382,6 +401,78 @@
                 </div>
               </div>
             </div>
+
+            <!-- 上传自定义大纲区域 -->
+            <div class="result-card">
+              <div class="card-header">
+                <div class="header-content">
+                  <h2 class="card-title">
+                    <span class="title-icon">📤</span>
+                    上传自定义大纲
+                  </h2>
+                  <p class="card-description">
+                    上传您自己的Markdown格式大纲文件，直接生成PPT
+                  </p>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="upload-outline">
+                  <div class="upload-form">
+                    <div class="form-group">
+                      <label for="custom-title">PPT标题 <span
+                          class="required">*</span></label>
+                      <input
+                        type="text"
+                        id="custom-title"
+                        v-model="customOutlineTitle"
+                        class="form-control"
+                        placeholder="请输入PPT标题"
+                        :disabled="isUploadingOutline"
+                      />
+                    </div>
+
+                    <div class="file-upload-container">
+                      <label
+                        for="outline-file"
+                        class="file-upload-label"
+                      >
+                        <i class="icon-upload"></i>
+                        <span>{{ outlineFile ? outlineFile.name : '选择Markdown大纲文件' }}</span>
+                      </label>
+                      <input
+                        type="file"
+                        id="outline-file"
+                        accept=".md,.markdown,text/markdown"
+                        @change="handleFileChange"
+                        class="file-input"
+                        :disabled="isUploadingOutline"
+                      />
+                      <button
+                        @click="uploadOutlineFile"
+                        class="primary-btn"
+                        :disabled="!isUploadReady || isUploadingOutline"
+                      >
+                        <span
+                          v-if="isUploadingOutline"
+                          class="loading-spinner-small"
+                        ></span>
+                        <i
+                          v-else
+                          class="icon-upload"
+                        ></i>
+                        {{ isUploadingOutline ? '上传中...' : '上传并生成PPT' }}
+                      </button>
+                    </div>
+
+                    <p class="upload-hint">
+                      <i class="icon-info"></i>
+                      支持Markdown格式的大纲文件，文件内容需要符合大纲格式要求
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -447,6 +538,12 @@ export default {
     const isDownloadingPPT = ref(false);
     const pptResult = ref(null);
     const currentSlide = ref(0);
+
+    // 自定义大纲上传相关状态
+    const customOutlineTitle = ref('');
+    const outlineFile = ref(null);
+    const isUploadingOutline = ref(false);
+    const isUploadReady = ref(false);
 
     // 渲染当前幻灯片内容
     const renderedSlideContent = computed(() => {
@@ -666,22 +763,73 @@ export default {
     const downloadPPT = async () => {
       if (!pptResult.value) return;
 
-      isDownloadingPPT.value = true;
+      try {
+        // 确保文件名有效
+        console.log('@@准备下载PPT文件:', pptResult.value);
+        const filename = pptResult.value.filename || '未命名演示文稿';
+        console.log('@@下载PPT文件:', filename);
+        await downloadPPTX(pptResult.value, filename);
+
+        successMessage.value = 'PPT下载成功！';
+        showSuccess.value = true;
+      } catch (error) {
+        errorMessage.value = error.message;
+      }
+    };
+
+    // 处理文件选择
+    const handleFileChange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        outlineFile.value = file;
+        isUploadReady.value = true;
+      } else {
+        outlineFile.value = null;
+        isUploadReady.value = false;
+      }
+    };
+
+    // 上传大纲文件
+    const uploadOutlineFile = async () => {
+      if (!outlineFile.value || !customOutlineTitle.value.trim()) {
+        errorMessage.value = '请填写标题并选择文件';
+        return;
+      }
+
+      clearError();
+      isUploadingOutline.value = true;
 
       try {
-        // 下载PPTX文件
-        await downloadPPTX(pptResult.value, `${pptResult.value.title}.pptx`);
+        // 创建FormData对象
+        const formData = new FormData();
+        formData.append('file', outlineFile.value);
+        formData.append('title', customOutlineTitle.value.trim());
+
+        // 发送上传请求
+        const result = await generatePPTFromOutline(customOutlineTitle.value.trim(), outlineFile.value);
+
+        // 设置结果
+        pptResult.value = result;
+        currentSlide.value = 0;
 
         // 显示成功消息
-        successMessage.value = 'PPT下载成功！';
+        successMessage.value = 'PPT生成成功！';
         showSuccess.value = true;
         setTimeout(() => { showSuccess.value = false; }, 3000);
 
+        // 滚动到PPT预览区域
+        setTimeout(() => {
+          const pptPreview = document.querySelector('.ppt-preview');
+          if (pptPreview) {
+            pptPreview.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+
       } catch (error) {
-        errorMessage.value = error.message || '下载PPT失败，请稍后重试';
-        console.error('下载PPT错误:', error);
+        errorMessage.value = error.message || '上传大纲文件失败，请稍后重试';
+        console.error('上传大纲文件错误:', error);
       } finally {
-        isDownloadingPPT.value = false;
+        isUploadingOutline.value = false;
       }
     };
 
@@ -748,6 +896,14 @@ export default {
       renderedSlideContent,
       generatePPT,
       downloadPPT,
+
+      // 自定义大纲相关
+      customOutlineTitle,
+      outlineFile,
+      isUploadingOutline,
+      isUploadReady,
+      handleFileChange,
+      uploadOutlineFile,
 
       // 侧边栏相关
       mobileMenuOpen,
@@ -889,7 +1045,47 @@ export default {
 .subtitle {
   font-size: 16px;
   color: #718096;
-  margin: 0 0 20px 0;
+  margin: 0;
+}
+
+/* 修改subtitle样式以适应新的布局 */
+.subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+}
+
+.subtitle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.outline-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #4299e1;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(66, 153, 225, 0.3);
+}
+
+.outline-nav-btn:hover {
+  background: #3182ce;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(66, 153, 225, 0.4);
+}
+
+.icon-list:before {
+  content: '📋';
 }
 
 .main-content {
@@ -1488,5 +1684,51 @@ label {
 
 .icon-info:before {
   content: 'ℹ️';
+}
+/* 在 <style scoped> 中添加或修改 */
+.nav-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.outline-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #4299e1;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(66, 153, 225, 0.3);
+}
+
+.files-btn {
+  background: #319795;
+}
+
+.files-btn:hover {
+  background: #2c7a7b;
+}
+
+.icon-files:before {
+  content: '📁';
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .nav-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .outline-nav-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

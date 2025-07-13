@@ -14,7 +14,7 @@ from app.services.doc_vector.document_vectorization_svc import (
     search_documents
 )
 
-logger = setup_logger("document_vectorization_api")
+logger = setup_logger("th_document_vectorization_api")
 
 router = APIRouter(tags=["教师端-文档向量化"])
 

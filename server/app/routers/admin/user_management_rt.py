@@ -161,30 +161,30 @@ async def list_teachers(
 
 
 
-@router.get("/teacher_detail/{teacher_id}", response_model=TeacherDetailResponse)
-async def get_teacher(teacher_id: str):
+@router.get("/teacher_detail/{staff_id}", response_model=TeacherDetailResponse)
+async def get_teacher(staff_id: str):
     """
     获取单个教师的详细信息
     """
-    return await get_teacher_detail(teacher_id)
+    return await get_teacher_detail(staff_id)
 
 
 
-@router.put("/update_teacher/{teacher_id}", response_model=UserUpdateResponse)
-async def update_teacher(teacher_id: str, teacher_data: TeacherUpdateFields):
+@router.put("/update_teacher/{staff_id}", response_model=UserUpdateResponse)
+async def update_teacher(staff_id: str, teacher_data: TeacherUpdateFields):
     """
     更新教师信息
     """
-    return await update_teacher_info(teacher_id, teacher_data.model_dump(exclude_unset=True))
+    return await update_teacher_info(staff_id, teacher_data.model_dump(exclude_unset=True))
 
 
 
-@router.post("/reset_teacher_password/{teacher_id}", response_model=UserUpdateResponse)
-async def reset_teacher_password(teacher_id: str, password_data: UserPasswordResetRequest):
+@router.post("/reset_teacher_password/{staff_id}", response_model=UserUpdateResponse)
+async def reset_teacher_password(staff_id: str, password_data: UserPasswordResetRequest):
     """
     重置教师密码
     """
-    return await reset_teacher_password(teacher_id, password_data)
+    return await reset_teacher_password(staff_id, password_data)
 
 
 
