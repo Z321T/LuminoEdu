@@ -197,16 +197,11 @@ export const downloadPPTX = async (pptData: PPTCompleteResponse, filename: strin
     // 记录API调用开始
     console.log('开始下载PPTX文件:', filename);
     
-    // 准备文件名 - 移除扩展名和特殊字符
-    const sanitizedFilename = filename.replace(/\.pptx$/, '').replace(/[^\w\s-]/gi, '');
+  
     
     // 发送API请求并获取二进制数据
-    const response = await api.get(`/teacher/ppt/download/${sanitizedFilename}`, {
-      responseType: 'blob',
-      params: {
-        title: pptData.title,
-        // 如果需要传递其他参数，可以在这里添加
-      }
+    const response = await api.get(`/teacher/ppt/download_ppt/${filename}`, {
+      responseType: 'blob'
     });
     
     // 创建Blob对象
@@ -215,7 +210,9 @@ export const downloadPPTX = async (pptData: PPTCompleteResponse, filename: strin
     // 创建下载链接
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${sanitizedFilename}.pptx`;
+    link.download = `${filename
+
+    }.pptx`;
     
     // 触发下载
     document.body.appendChild(link);
@@ -258,5 +255,205 @@ export const getGradeList = async (): Promise<string[]> => {
   } catch (error) {
     console.error('获取年级列表失败:', error);
     return []; // 返回空数组作为默认值
+  }
+};
+
+
+// 在文件末尾添加以下接口和函数
+
+
+/**
+ * 获取当前教师的所有PPT大纲
+ * @returns Promise<PPTOutlineListItem[]> 大纲列表
+ */
+export const getAllPPTOutlines = async () => {
+  try {
+    const response = await api.get('/teacher/ppt/outlines');
+    console.log('获取大纲列表成功:', response.data);
+    return response.data || [];
+  } catch (error: any) {
+    console.error('获取大纲列表失败:', error);
+    
+    // 构建友好的错误信息
+    let errorMessage = '获取大纲列表失败';
+    
+    if (error.response) {
+      const status = error.response.status;
+      switch (status) {
+        case 401:
+          errorMessage = '未授权，请重新登录';
+          break;
+        case 403:
+          errorMessage = '权限不足，无法访问此功能';
+          break;
+        case 404:
+          errorMessage = 'API接口不存在';
+          break;
+        case 500:
+          errorMessage = '服务器错误，请稍后重试';
+          break;
+        default:
+          errorMessage = `请求失败 (${status})`;
+      }
+    } else if (error.request) {
+      errorMessage = '服务器无响应，请检查网络连接';
+    }
+    
+    throw new Error(errorMessage);
+  }
+};
+
+/**
+ * 获取指定ID的PPT大纲详情
+ * @param outlineId 大纲ID
+ * @returns Promise<PPTOutlineResponse> 大纲详情
+ */
+export const getPPTOutlineById = async (outlineId: string): Promise<PPTOutlineResponse> => {
+  try {
+    const response = await api.get(`/teacher/ppt/outlines/${outlineId}`);
+    console.log('获取大纲详情成功:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('获取大纲详情失败:', error);
+    
+    // 构建友好的错误信息
+    let errorMessage = '获取大纲详情失败';
+    
+    if (error.response) {
+      const status = error.response.status;
+      switch (status) {
+        case 401:
+          errorMessage = '未授权，请重新登录';
+          break;
+        case 403:
+          errorMessage = '权限不足，无法访问此功能';
+          break;
+        case 404:
+          errorMessage = '大纲不存在或已被删除';
+          break;
+        case 500:
+          errorMessage = '服务器错误，请稍后重试';
+          break;
+        default:
+          errorMessage = `请求失败 (${status})`;
+      }
+    } else if (error.request) {
+      errorMessage = '服务器无响应，请检查网络连接';
+    }
+    
+    throw new Error(errorMessage);
+  }
+};
+
+/**
+ * 删除指定ID的PPT大纲
+ * @param outlineId 大纲ID
+ * @returns Promise<void>
+ */
+export const deletePPTOutline = async (outlineId: string): Promise<void> => {
+  try {
+    await api.delete(`/teacher/ppt/outlines/${outlineId}`);
+    console.log('删除大纲成功:', outlineId);
+  } catch (error: any) {
+    console.error('删除大纲失败:', error);
+    
+    // 构建友好的错误信息
+    let errorMessage = '删除大纲失败';
+    
+    if (error.response) {
+      const status = error.response.status;
+      switch (status) {
+        case 401:
+          errorMessage = '未授权，请重新登录';
+          break;
+        case 403:
+          errorMessage = '权限不足，无法删除此大纲';
+          break;
+        case 404:
+          errorMessage = '大纲不存在或已被删除';
+          break;
+        case 500:
+          errorMessage = '服务器错误，请稍后重试';
+          break;
+        default:
+          errorMessage = `请求失败 (${status})`;
+      }
+    } else if (error.request) {
+      errorMessage = '服务器无响应，请检查网络连接';
+    }
+    
+    throw new Error(errorMessage);
+  }
+};
+
+// ...existing code...
+
+/**
+ * 删除指定文件名的PPT大纲
+ * @param fileName 大纲文件名
+ * @returns Promise<string> 删除成功的消息
+ */
+export const deletePPTOutlineFile = async (fileName: string): Promise<string> => {
+  try {
+    const response = await api.delete(`/teacher/ppt/outline/${fileName}`);
+    console.log('删除大纲文件成功:', fileName);
+    return response.data;
+  } catch (error: any) {
+    console.error('删除大纲文件失败:', error);
+    
+    // 构建友好的错误信息
+    let errorMessage = '删除大纲文件失败';
+    
+    if (error.response) {
+      const status = error.response.status;
+      switch (status) {
+        case 401:
+          errorMessage = '未授权，请重新登录';
+          break;
+        case 403:
+          errorMessage = '权限不足，无法删除此大纲';
+          break;
+        case 404:
+          errorMessage = '大纲文件不存在或已被删除';
+          break;
+        case 500:
+          errorMessage = '服务器错误，请稍后重试';
+          break;
+        default:
+          errorMessage = `请求失败 (${status})`;
+      }
+    } else if (error.request) {
+      errorMessage = '服务器无响应，请检查网络连接';
+    }
+    
+    throw new Error(errorMessage);
+  }
+};
+
+
+/**
+ * 获取历史生成的PPT文件列表
+ */
+export const getPPTFileList = async () => {
+  try {
+    const response = await api.get('/teacher/ppt/list_ppt');
+    console.log('获取PPT文件列表成功:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('获取PPT文件列表失败:', error);
+    throw new Error('获取PPT文件列表失败');
+  }
+};
+
+/**
+ * 删除PPT文件
+ */
+export const deletePPTFile = async (fileName: string): Promise<void> => {
+  try {
+    await api.delete(`/teacher/ppt/file/${fileName}`);
+    console.log('删除PPT文件成功:', fileName);
+  } catch (error: any) {
+    console.error('删除PPT文件失败:', error);
+    throw new Error('删除PPT文件失败');
   }
 };
