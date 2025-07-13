@@ -75,6 +75,12 @@
                 <td>{{ formatDate(notification.updated_at) }}</td>
                 <td class="actions">
                   <button
+                    @click="viewNotificationDetail(notification)"
+                    class="btn view-btn"
+                  >
+                    查看详情
+                  </button>
+                  <button
                     @click="editNotification(notification)"
                     class="btn edit-btn"
                   >
@@ -185,7 +191,7 @@ export default {
 
     // 创建新通知
     const createNotification = () => {
-      router.push(`/teacher/course/${courseId}/notification/create`)
+      router.push(`/notification_create/${courseId}`)
     }
 
     // 编辑通知
@@ -199,6 +205,11 @@ export default {
         // TODO: 实现删除通知的功能
         alert('删除功能待实现')
       }
+    }
+
+    // 查看通知详情
+    const viewNotificationDetail = (notification: CourseNotification) => {
+      router.push(`/notification_detail/${courseId}/${notification.id}/`)
     }
 
     // 移动端菜单处理
@@ -229,6 +240,7 @@ export default {
       changePage,
       toggleMobileMenu,
       handleMenuClick,
+      viewNotificationDetail,
     }
   },
 }
@@ -330,6 +342,15 @@ export default {
 
 .delete-btn:hover {
   background: #fed7d7;
+}
+
+.view-btn {
+  background: #f0fff4;
+  color: #48bb78;
+}
+
+.view-btn:hover {
+  background: #c6f6d5;
 }
 
 .pagination {

@@ -14,6 +14,10 @@ import course_create from '@/views/teacher/course_create.vue'
 import course_addstudent from '@/views/teacher/course_addstudent.vue' // 新增课程添加学生界面
 import course_detail from '@/views/teacher/course_detail.vue' // 新增课程详情界面
 import notification_list from '@/views/teacher/notification_list.vue' // 新增课程通知列表界面
+import notification_create from '@/views/teacher/notification_create.vue' // 新增课程通知创建界面
+import notification_detail from '@/views/teacher/notification_detail.vue' // 新增课程通知详情界面
+import course_material_list from '@/views/teacher/course_material_list.vue'
+import document_list from '@/views/teacher/document_list.vue'
 // admin界面
 import log_management from '@/views/admin/log_management.vue'
 import CreateTeacher from '@/views/admin/CreateTeacher.vue'
@@ -107,11 +111,39 @@ const routes: Array<RouteRecordRaw> = [
         meta: { requiresAuth: true }
     },
       {
-        path: '/notification_list',
-        name: 'course_detail',
-        component: course_detail,
+        path: '/notification_list/:courseId',
+        name: 'notification_list',
+        component:notification_list ,
         meta: { requiresAuth: true }
     },
+   {
+        path: '/notification_create/:courseId',
+        name: 'notification_create',
+        component:notification_create ,
+        meta: { requiresAuth: true }
+    },
+     {
+        path: '/notification_detail/:courseId/:notificationId',
+        name: 'notification_detail',
+        component: notification_detail,
+        meta: { requiresAuth: true }
+    },
+
+    // 添加课程资料列表路由
+    {
+        path: '/teacher/course/:courseId/materials',
+        name: 'course_material_list',
+        component: course_material_list,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+    {
+        path: '/teacher/document_list',
+        name: 'document_list',
+        component:document_list,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+
+
 
 
 

@@ -97,6 +97,18 @@
                       添加学生
                     </button>
                     <button
+                      @click="viewNotifications(course)"
+                      class="btn notify-btn"
+                    >
+                      通知
+                    </button>
+                    <button
+                      @click="viewMaterials(course)"
+                      class="btn material-btn"
+                    >
+                      资料
+                    </button>
+                    <button
                       @click="confirmDelete(course.id)"
                       class="btn delete-btn"
                     >
@@ -237,6 +249,16 @@ export default {
       router.push('/login')
     }
 
+    // 查看通知
+    const viewNotifications = (course: Course) => {
+      router.push(`/notification_list/${course.id}`)
+    }
+
+    // 查看课程资料
+    const viewMaterials = (course: Course) => {
+      router.push(`/teacher/course/${course.id}/materials`)
+    }
+
     onMounted(() => {
       loadCourses()
     })
@@ -256,6 +278,8 @@ export default {
       closeMobileMenu,
       handleMenuClick,
       logout,
+      viewNotifications,
+      viewMaterials,
     }
   },
 }
@@ -374,6 +398,11 @@ export default {
   color: #48bb78;
 }
 
+.material-btn {
+  background: #faf5ff;
+  color: #805ad5;
+}
+
 .edit-btn:hover {
   background: #bee3f8;
 }
@@ -387,6 +416,10 @@ export default {
 
 .view-btn:hover {
   background: #c6f6d5;
+}
+
+.material-btn:hover {
+  background: #e9d8fd;
 }
 
 .loading-state {
