@@ -1,5 +1,4 @@
 import json
-from pickle import FALSE
 from typing import Dict, Any, Optional
 
 from fastapi import APIRouter, Depends
@@ -50,5 +49,6 @@ async def chat_history(
         user: UserBase = Depends(auth_current_user)
 ):
     """获取聊天历史记录"""
-    history = await get_chat_history(str(user.id), chat_id, limit)
+    # 传递用户角色信息
+    history = await get_chat_history(str(user.id), user.role, chat_id, limit)
     return history

@@ -4,6 +4,11 @@ import login from '@/views/login/login.vue'
 // 学生界面
 import course from '@/views/student/course.vue'
 import course_detail_stu from '@/views/student/course_detail.vue'
+import chat_stu from '@/views/student/chat_stu.vue'
+import exercise_generate_stu from '@/views/student/exercise_generate_stu.vue'
+import document_stu from '@/views/student/document_stu.vue'
+import generate_stu from '@/views/student/generate_stu.vue'
+import profile from '@/views/student/profile.vue'
 // 教师界面
 import home_teacher from '@/views/teacher/home_teacher.vue'
 import exercise_generate from '@/views/teacher/exercise_gernerate.vue'
@@ -48,9 +53,39 @@ const routes: Array<RouteRecordRaw> = [
         meta: { requiresAuth: true, role: 'student' }
     },
     {
-        path: '/student/course_detail/:courseId',
+        path: '/student/course/:courseId',
         name: 'course_detail_stu',
         component: course_detail_stu,
+        meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+        path: '/student/chat',
+        name: 'chat_stu',
+        component: chat_stu,
+        meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+        path: '/student/exercise_generate',
+        name: 'exercise_generate_stu',
+        component: exercise_generate_stu,
+        meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+        path: '/student/exercise_generate/document',
+        name: 'document_stu',
+        component: document_stu,
+        meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+        path: '/student/exercise_generate/generate',
+        name: 'generate_stu',
+        component: generate_stu,
+        meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+        path: '/student/profile',
+        name: 'profile',
+        component: profile,
         meta: { requiresAuth: true, role: 'student' }
     },
     // 教师端路由

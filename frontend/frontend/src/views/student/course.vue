@@ -38,7 +38,7 @@
               <select v-model="statusFilter" @change="filterCourses">
                 <option value="">全部</option>
                 <option value="active">进行中</option>
-                <option value="completed">已完成</option>
+                <option value="completed">已结束</option>
                 <option value="upcoming">即将开始</option>
               </select>
             </div>
@@ -102,11 +102,9 @@ const router = useRouter()
 const username = ref(localStorage.getItem('username') || '学生')
 
 const studentMenuItems = [
-  { path: '/course', label: '我的课程' },
-  { path: '/student/assignments', label: '作业管理' },
-  { path: '/student/grades', label: '成绩查询' },
-  { path: '/student/resources', label: '学习资源' },
-  { path: '/student/notifications', label: '通知公告' },
+  { path: '/student/course', label: '我的课程' },
+  { path: '/student/chat', label: '学习助手' },
+  { path: '/student/exercise_generate', label: '习题生成' },
   { path: '/student/profile', label: '个人信息' },
 ]
 

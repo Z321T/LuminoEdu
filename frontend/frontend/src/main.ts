@@ -7,7 +7,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import axios from 'axios'
 import './style.css'; // 导入全局样式文件
-import AIChatWidget from '@/components/common/AIChatWidget.vue'
+// import AIChatWidget from '@/components/common/AIChatWidget.vue'
 
 
 axios.defaults.withCredentials=true;
@@ -40,7 +40,7 @@ const app = createApp(App)
 
 
 // 注册全局组件
-app.component('AIChatWidget', AIChatWidget)
+// app.component('AIChatWidget', AIChatWidget)
 
 app.mount('#app')
 

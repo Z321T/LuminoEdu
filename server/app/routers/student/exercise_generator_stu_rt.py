@@ -30,6 +30,11 @@ async def generate_student_exercises_endpoint(
     支持两种生成模式：
     1. **基于文档生成**：使用document_id参数，基于已向量化的文档内容生成习题
     2. **基于自定义内容生成**：使用content参数，基于用户提供的内容生成习题
+
+    习题类型枚举(types):
+    - 1 = 选择题
+    - 2 = 填空题
+    - 3 = 简答题
     """
     logger.info(f"学生 {current_user.username}(学号:{current_user.student_id}) 请求生成习题: {request.title}")
 

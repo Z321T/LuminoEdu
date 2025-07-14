@@ -15,12 +15,13 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
+    chat_id: Optional[str] = None
     max_tokens: Optional[int] = 4096
     temperature: Optional[float] = 0.7
     stream: bool = True
 
 class ChatStreamResponse(BaseModel):
-    id: str
+    chat_id: str
     content: str
     is_complete: bool = False
 

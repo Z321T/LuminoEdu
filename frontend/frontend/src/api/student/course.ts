@@ -96,7 +96,7 @@ export const formatDate = (dateString: string): string => {
 export const getStatusText = (status: string): string => {
   const statusMap: Record<string, string> = {
     active: '进行中',
-    completed: '已完成',
+    completed: '已结束',
     upcoming: '即将开始'
   }
   return statusMap[status] || status

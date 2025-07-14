@@ -24,7 +24,29 @@ async def upload_student_document(
     current_user: Student = Depends(auth_student_user)
 ):
     """
-    学生上传文档进行向量化
+    学生上传文档进行向量化处理
+
+    支持格式及特点：
+    TXT格式：
+    - 纯文本，向量化效果最佳
+    - 支持多种编码：UTF-8, GBK, GB2312, UTF-16等
+    - 无格式干扰，语义提取最准确
+
+    DOCX格式：
+    - Microsoft Word文档
+    - 自动提取纯文本内容
+    - 忽略图片、表格等复杂格式
+    - 保留段落结构
+
+    使用建议：
+    - 教学讲义、课程资料推荐使用TXT格式
+    - 现有Word文档可直接上传DOCX格式
+    - 系统会自动去除格式干扰，专注文本内容
+
+    文件限制：
+    - 支持格式：.txt, .docx
+    - 文件大小：500MB以内
+    - 内容要求：必须包含有效文本
     """
     logger.info(f"学生 {current_user.username}(学号:{current_user.student_id}) 上传文档: {title}")
 
