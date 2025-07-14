@@ -29,14 +29,14 @@
           <QuickActions :actions="quickActions" />
 
           <!-- 最近课程 -->
-          <RecentCourses :courses="recentCourses" />
+<!--          <RecentCourses :courses="recentCourses" />-->
         </div>
 
         <!-- 最新消息和待办事项 -->
-        <div class="bottom-grid">
-          <RecentMessages :messages="recentMessages" />
-          <TodoList :todos="todoList" />
-        </div>
+<!--        <div class="bottom-grid">-->
+<!--          <RecentMessages :messages="recentMessages" />-->
+<!--          <TodoList :todos="todoList" />-->
+<!--        </div>-->
       </section>
     </div>
   </div>
@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import Sidebar from '@/components/layout/Sidebar.vue'
+import Sidebar from '@/components/layout/SideBar.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
 import StatsGrid from '@/components/home/StatsGrid.vue'
 import QuickActions from '@/components/home/QuickActions.vue'
@@ -57,13 +57,13 @@ const router = useRouter()
 
 // 菜单配置
 const teacherMenuItems = [
-  { path: '/home_teacher', icon: '🏠', label: '首页' },
-  { path: '/exercise_generate', icon: '📝', label: '习题生成' },
-  { path: '/ppt_generate', icon: '📊', label: 'PPT生成' },
-  { path: '/course_list', icon: '📊', label: '课程管理' },
-  { path: '/document_list', icon: '📊', label: '文档管理' },
-  { path: '/exercise_history', icon: '📚', label: '历史记录' },
-  { path: '/user_center', icon: '📚', label: '个人中心' },
+  { path: '/home_teacher', label: '首页' },
+  { path: '/exercise_generate', label: '习题生成' },
+  { path: '/ppt_generate', label: 'PPT生成' },
+  { path: '/teacher/course', label: '课程管理' },
+  { path: '/document_list', label: '文档管理' },
+  { path: '/exercise_history', label: '历史记录' },
+  { path: '/user_center', label: '个人中心' },
 ]
 
 // 统计数据

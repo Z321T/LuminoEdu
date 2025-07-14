@@ -2,408 +2,428 @@
   <div class="teacher-layout">
     <!-- 侧边栏 -->
     <SideBar
-      :menuItems="teacherMenuItems"
-      :activeItem="$route.path"
-      :class="{ 'mobile-open': mobileMenuOpen }"
-      @menuClick="handleMenuClick"
+        :menuItems="teacherMenuItems"
+        :activeItem="'/teacher/course'"
+        @menuClick="handleMenuClick"
     />
 
-    <!-- 主要内容区域 -->
-    <div class="main-layout">
-      <!-- 页面头部 -->
-      <PageHeader
-        :title="'创建新课程'"
-        :showMobileMenu="true"
-        @toggleMobileMenu="toggleMobileMenu"
-      >
+    <!-- 主体内容 -->
+    <div class="main">
+      <!-- 顶部栏 -->
+      <PageHeader title="创建课程">
         <template #actions>
-          <div class="user-actions">
-            <div class="user-info">
-              <span class="user-avatar">👤</span>
-              <span class="username">{{ username }}</span>
-            </div>
+          <div class="header-user">
             <button
-              @click="logout"
-              class="logout-btn"
+                class="back-btn"
+                @click="goBack"
             >
-              <span class="logout-icon">🚪</span>
-              <span>退出</span>
+              <span class="back-icon">←</span>
+              返回课程列表
             </button>
+            <span>欢迎，{{ username }}</span>
+            <button class="logout-btn" @click="handleLogout">退出登录</button>
           </div>
         </template>
       </PageHeader>
 
-      <!-- 内容区域 -->
-      <main class="content-area">
+      <section class="content">
         <div class="course-create">
-          <form
-            @submit.prevent="handleSubmit"
-            class="course-form"
-          >
-            <!-- 课程名称 (必填) -->
+          <div class="create-header">
+
+            <h1>创建新课程</h1>
+          </div>
+
+          <form @submit.prevent="handleSubmit" class="course-form">
+            <!-- 课程名称 -->
             <div class="form-group">
               <label for="name">
-                课程名称
-                <span class="required-mark">*</span>
+                课程名称 <span class="required">*</span>
               </label>
               <input
-                id="name"
-                v-model="courseData.name"
-                type="text"
-                required
-                maxlength="100"
-                placeholder="请输入课程名称"
-              >
+                  id="name"
+                  v-model="formData.name"
+                  type="text"
+                  placeholder="请输入课程名称"
+                  required
+              />
             </div>
 
-            <!-- 学期 (必填) -->
+            <!-- 学期 -->
             <div class="form-group">
               <label for="semester">
-                学期
-                <span class="required-mark">*</span>
-              </label>
-              <select
-                id="semester"
-                v-model="courseData.semester"
-                required
-              >
-                <option value="">请选择学期</option>
-                <option value="2024-春季">2024年春季学期</option>
-                <option value="2024-秋季">2024年秋季学期</option>
-                <option value="2025-春季">2025年春季学期</option>
-                <option value="2025-秋季">2025年秋季学期</option>
-                <option value="2026-春季">2026年春季学期</option>
-                <option value="2026-秋季">2026年秋季学期</option>
-                <option value="2027-春季">2027年春季学期</option>
-                <option value="2027-秋季">2027年秋季学期</option>
-                <option value="2028-春季">2028年春季学期</option>
-                <option value="2028-秋季">2028年秋季学期</option>
-                <option value="2029-春季">2029年春季学期</option>
-                <option value="2029-秋季">2029年秋季学期</option>
-                <option value="2030-春季">2030年春季学期</option>
-                <option value="2030-秋季">2030年秋季学期</option>
-              </select>
-            </div>
-
-            <!-- 学分 (必填) -->
-            <div class="form-group">
-              <label for="credit">
-                学分
-                <span class="required-mark">*</span>
+                学期 <span class="required">*</span>
               </label>
               <input
-                id="credit"
-                v-model.number="courseData.credit"
-                type="number"
-                min="0"
-                max="10"
-                step="0.5"
-                required
-                placeholder="请输入课程学分（支持0.5的倍数）"
-              >
-              <span class="form-hint">支持0.5学分的增减，例如：1.0、1.5、2.0等</span>
+                  id="semester"
+                  v-model="formData.semester"
+                  type="text"
+                  placeholder="如：2024春季学期"
+                  required
+              />
             </div>
 
-            <!-- 起止时间 (可选) -->
-            <div class="form-dates">
+            <!-- 学分 -->
+            <div class="form-group">
+              <label for="credit">
+                学分 <span class="required">*</span>
+              </label>
+              <input
+                  id="credit"
+                  v-model.number="formData.credit"
+                  type="number"
+                  min="1"
+                  max="10"
+                  placeholder="请输入学分数"
+                  required
+              />
+            </div>
+
+            <!-- 日期范围 -->
+            <div class="form-row">
               <div class="form-group">
-                <label for="start_date">开始日期</label>
+                <label for="start_date">
+                  开始日期 <span class="required">*</span>
+                </label>
                 <input
-                  id="start_date"
-                  v-model="courseData.start_date"
-                  type="date"
-                >
+                    id="start_date"
+                    v-model="formData.start_date"
+                    type="date"
+                    required
+                />
               </div>
+
               <div class="form-group">
-                <label for="end_date">结束日期</label>
+                <label for="end_date">
+                  结束日期 <span class="required">*</span>
+                </label>
                 <input
-                  id="end_date"
-                  v-model="courseData.end_date"
-                  type="date"
-                >
+                    id="end_date"
+                    v-model="formData.end_date"
+                    type="date"
+                    required
+                />
               </div>
             </div>
 
-            <!-- 课程描述 (可选) -->
+            <!-- 课程描述 -->
             <div class="form-group">
               <label for="description">课程描述</label>
               <textarea
-                id="description"
-                v-model="courseData.description"
-                rows="4"
-                maxlength="1000"
-                placeholder="请输入课程描述（可选）"
+                  id="description"
+                  v-model="formData.description"
+                  rows="4"
+                  placeholder="请输入课程描述"
               ></textarea>
-              <span class="form-hint">选填，最多1000字</span>
             </div>
 
-            <!-- 提交按钮 -->
+            <!-- 表单操作 -->
             <div class="form-actions">
               <button
-                type="button"
-                class="cancel-btn"
-                @click="goBack"
+                  type="button"
+                  class="cancel-btn"
+                  @click="goBack"
               >
                 取消
               </button>
               <button
-                type="submit"
-                class="submit-btn"
-                :disabled="isSubmitting"
+                  type="submit"
+                  class="submit-btn"
+                  :disabled="isSubmitting"
               >
                 {{ isSubmitting ? '创建中...' : '创建课程' }}
               </button>
             </div>
           </form>
         </div>
-      </main>
+      </section>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { createCourse, type CreateCourseRequest } from '@/api/teacher/course_management'
-import PageHeader from '@/components/layout/PageHeader.vue'
 import SideBar from '@/components/layout/SideBar.vue'
+import PageHeader from '@/components/layout/PageHeader.vue'
+import { createCourse, type CreateCourseRequest } from '@/api/teacher/course_management'
 
-export default {
-  name: 'CourseCreate',
+const router = useRouter()
+const username = ref(localStorage.getItem('username') || '教师')
 
-  components: {
-    PageHeader,
-    SideBar,
-  },
+const teacherMenuItems = [
+  { path: '/teacher/course', label: '课程管理' },
+]
 
-  setup() {
-    const router = useRouter()
-    const isSubmitting = ref(false)
-    const username = ref(localStorage.getItem('username') || '教师用户')
-    const mobileMenuOpen = ref(false)
+const isSubmitting = ref(false)
 
-    // 课程表单数据
-    const courseData = reactive<CreateCourseRequest>({
-      name: '',
-      description: '',
-      semester: '',
-      credit: 0,
-      start_date: '',
-      end_date: '',
-    })
+const formData = reactive<CreateCourseRequest>({
+  name: '',
+  description: '',
+  semester: '',
+  credit: 1,
+  start_date: '',
+  end_date: ''
+})
 
-    // 重置表单数据
-    const resetForm = () => {
-      courseData.name = ''
-      courseData.description = ''
-      courseData.semester = ''
-      courseData.credit = 0
-      courseData.start_date = ''
-      courseData.end_date = ''
+// 提交表单
+const handleSubmit = async () => {
+  // 验证日期
+  if (formData.start_date && formData.end_date) {
+    const startDate = new Date(formData.start_date)
+    const endDate = new Date(formData.end_date)
+    if (startDate >= endDate) {
+      alert('结束日期必须晚于开始日期')
+      return
     }
+  }
 
-    // 提交表单
-    const handleSubmit = async () => {
-      if (isSubmitting.value) return
+  isSubmitting.value = true
 
-      try {
-        isSubmitting.value = true
+  try {
+    const result = await createCourse(formData)
+    alert('课程创建成功！')
+    router.push('/teacher/course')
+  } catch (error: any) {
+    alert(error.message || '创建课程失败，请稍后重试')
+  } finally {
+    isSubmitting.value = false
+  }
+}
 
-        // 处理可选字段
-        const submitData = {
-          ...courseData,
-          description: courseData.description || null,
-          start_date: courseData.start_date || null,
-          end_date: courseData.end_date || null,
-        }
+const goBack = () => {
+  router.push('/teacher/course')
+}
 
-        await createCourse(submitData)
-        alert('课程创建成功')
-        // 重置表单
-        resetForm()
-      } catch (error: any) {
-        alert(error.message || '创建失败，请稍后重试')
-      } finally {
-        isSubmitting.value = false
-      }
-    }
+const handleLogout = () => {
+  if (confirm('确定要退出登录吗？')) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('username')
+    router.push('/login')
+  }
+}
 
-    // 返回上一页
-    const goBack = () => {
-      router.back()
-    }
-
-    // 移动端菜单
-    const toggleMobileMenu = () => {
-      mobileMenuOpen.value = !mobileMenuOpen.value
-    }
-
-    const closeMobileMenu = () => {
-      mobileMenuOpen.value = false
-    }
-
-    const handleMenuClick = (item: any) => {
-      router.push(item.path)
-      closeMobileMenu()
-    }
-
-    // 退出登录
-    const logout = () => {
-      localStorage.removeItem('token')
-      localStorage.removeItem('username')
-      router.push('/login')
-    }
-
-    return {
-      courseData,
-      isSubmitting,
-      username,
-      mobileMenuOpen,
-      handleSubmit,
-      goBack,
-      toggleMobileMenu,
-      closeMobileMenu,
-      handleMenuClick,
-      logout,
-      resetForm,
-    }
-  },
+const handleMenuClick = (item: any) => {
+  router.push(item.path)
 }
 </script>
 
 <style scoped>
 .teacher-layout {
   display: flex;
-  width: 100vw;
   height: 100vh;
-  background: #f8fafc;
+  width: 100vw;
+  background: #f5f6fa;
+  overflow: hidden;
 }
 
-.main-layout {
+.main {
+  position: relative;
   flex: 1;
-  margin-left: 280px;
+  margin-left: 240px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-.content-area {
+.header-user {
+  position: absolute;
+  top: 24px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
+}
+
+.logout-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-weight: 500;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
+.content {
   flex: 1;
-  padding: 24px;
+  padding: 32px;
   overflow-y: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .course-create {
-  max-width: 800px;
+  width: 100%;
+  max-width: 1000px; /* 增大最大宽度 */
   margin: 0 auto;
+  background: #fff;
+  border-radius: 8px;
+  padding: 40px; /* 增大内边距 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.create-header {
+  margin-bottom: 32px;
+}
+
+.back-btn {
+  background: #3182ce;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-weight: 500;
+}
+
+.back-btn:hover {
+  background: #edf2f7;
+  color: #2d3748;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.back-icon {
+  font-size: 16px;
+}
+
+.create-header h1 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 28px; /* 增大标题字体 */
 }
 
 .course-form {
-  background: white;
-  padding: 32px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 28px; /* 增大间距 */
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px; /* 增大间距 */
 }
 
 .form-group {
-  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* 增大间距 */
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 8px;
   font-weight: 500;
   color: #2d3748;
+  font-size: 15px; /* 增大字体 */
+}
+
+.required {
+  color: #e53e3e;
 }
 
 .form-group input,
-.form-group select,
 .form-group textarea {
-  width: 100%;
-  padding: 8px 12px;
+  padding: 14px 16px; /* 增大内边距 */
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px; /* 增大字体 */
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
 }
 
 .form-group textarea {
   resize: vertical;
-  min-height: 100px;
-}
-
-.form-dates {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
+  min-height: 120px; /* 增大高度 */
 }
 
 .form-actions {
   display: flex;
+  gap: 20px; /* 增大间距 */
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 32px;
+  padding-top: 32px; /* 增大间距 */
+  border-top: 1px solid #f7fafc;
 }
 
 .cancel-btn,
 .submit-btn {
-  padding: 10px 24px;
+  padding: 14px 32px; /* 增大按钮 */
   border: none;
   border-radius: 6px;
+  font-size: 15px; /* 增大字体 */
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cancel-btn {
-  background: #edf2f7;
+  background: #f7fafc;
   color: #4a5568;
-}
-
-.submit-btn {
-  background: #4299e1;
-  color: white;
+  border: 1px solid #e2e8f0;
 }
 
 .cancel-btn:hover {
-  background: #e2e8f0;
+  background: #edf2f7;
+  transform: translateY(-1px);
 }
 
-.submit-btn:hover {
+.submit-btn {
   background: #3182ce;
+  color: #fff;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #2c5aa0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .submit-btn:disabled {
-  background: #90cdf4;
+  background: #a0aec0;
   cursor: not-allowed;
+  transform: none;
 }
 
-.form-hint {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: #718096;
-}
-
-.required-mark {
-  color: #e53e3e;
-  margin-left: 4px;
-}
-
-@media (max-width: 768px) {
-  .main-layout {
-    margin-left: 0;
+@media (max-width: 900px) {
+  .main {
+    margin-left: 60px;
   }
 
-  .content-area {
+  .content {
     padding: 16px;
   }
 
-  .course-form {
-    padding: 20px;
+  .course-create {
+    padding: 24px;
+    max-width: 100%;
   }
 
-  .form-dates {
+  .form-row {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .header-user {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-top: 16px;
   }
 }
 </style>
