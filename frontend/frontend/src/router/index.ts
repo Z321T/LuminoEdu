@@ -1,7 +1,9 @@
 import {createRouter,createWebHistory, }from 'vue-router'
 import type{RouteRecordRaw} from 'vue-router'
-import login from '@/views/Login/login.vue'
-import home_student from '@/views/home_student.vue'
+import login from '@/views/login/login.vue'
+// 学生界面
+import course from '@/views/student/course.vue'
+import course_detail_stu from '@/views/student/course_detail.vue'
 // 教师界面
 import home_teacher from '@/views/teacher/home_teacher.vue'
 import exercise_generate from '@/views/teacher/exercise_gernerate.vue'
@@ -39,9 +41,15 @@ const routes: Array<RouteRecordRaw> = [
     },
     // 学生端路由
     {
-        path: '/home_student',
-        name: 'home_student',
-        component: home_student,
+        path: '/student/course',
+        name: 'course',
+        component: course,
+        meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+        path: '/student/course_detail/:courseId',
+        name: 'course_detail_stu',
+        component: course_detail_stu,
         meta: { requiresAuth: true, role: 'student' }
     },
     // 教师端路由

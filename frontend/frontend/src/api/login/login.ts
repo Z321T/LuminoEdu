@@ -20,11 +20,11 @@ export function login(data: LoginData, axiosInstance: AxiosInstance): Promise<Lo
         .then((response: AxiosResponse<LoginResponse>) => {
             console.log('response status is', response.status);
             if (response.status === 200) {
-                console.log('Login successful:', response.data);
+                console.log('login successful:', response.data);
                 return response.data; // 返回解析后的响应数据
             } else {
                 // 登录失败时，构造一个包含错误信息的LoginResponse对象
-                console.log('Login failed with status:', response.data);
+                console.log('login failed with status:', response.data);
                 const errorResponse: LoginResponse = {
                     detail: '登陆失败' + response.data // 存储错误信息
                 };

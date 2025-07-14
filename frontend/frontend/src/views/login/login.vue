@@ -170,7 +170,7 @@ const submitForm = async () => {
 
         // 根据角色跳转
         if (data.role === 'student') {
-          router.push('/home_student')
+          router.push('/student/course')
         } else if (data.role === 'teacher') {
           router.push('/home_teacher')
         } else if (data.role === 'admin') {
@@ -213,7 +213,7 @@ onMounted(() => {
     } else if (role === 'teacher') {
       router.push('/home_teacher')
     } else if (role === 'student') {
-      router.push('/home_student')
+      router.push('/student/course')
     }
   }
 })

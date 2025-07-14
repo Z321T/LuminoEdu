@@ -23,7 +23,6 @@ import { useRouter, useRoute } from 'vue-router'
 
 interface MenuItem {
   path: string
-  icon: string
   label: string
 }
 
@@ -34,11 +33,11 @@ const props = withDefaults(
   }>(),
   {
     menuItems: () => [
-      { path: '/home_teacher', icon: '🏠', label: '首页' },
-      { path: '/exercise_generate', icon: '📝', label: '习题生成' },
-      { path: '/exercise_history', icon: '📚', label: '历史记录' },
-      { path: '/student_management', icon: '👥', label: '学生管理' },
-      { path: '/settings', icon: '⚙️', label: '设置' },
+      { path: '/home_teacher', label: '首页' },
+      { path: '/exercise_generate', label: '习题生成' },
+      { path: '/exercise_history', label: '历史记录' },
+      { path: '/student_management', label: '学生管理' },
+      { path: '/settings', label: '设置' },
     ],
     activeItem: '',
   }
