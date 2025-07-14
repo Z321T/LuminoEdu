@@ -7,6 +7,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import axios from 'axios'
 import './style.css'; // 导入全局样式文件
+import AIChatWidget from '@/components/common/AIChatWidget.vue'
 
 
 axios.defaults.withCredentials=true;
@@ -32,9 +33,14 @@ axiosInstance.interceptors.request.use(
 
 
 
-createApp(App)
+const app = createApp(App)
 .use(router)
 .use(ElementPlus)
 .provide("axios",axiosInstance)
-.mount('#app')
+
+
+// 注册全局组件
+app.component('AIChatWidget', AIChatWidget)
+
+app.mount('#app')
 

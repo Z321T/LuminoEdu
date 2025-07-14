@@ -8,6 +8,7 @@
         <component :is="Component" />
       </transition>
     </router-view>
+    <AIChatWidget />
   </div>
 </template>
   

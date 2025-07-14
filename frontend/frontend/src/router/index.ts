@@ -18,6 +18,7 @@ import notification_create from '@/views/teacher/notification_create.vue' // 新
 import notification_detail from '@/views/teacher/notification_detail.vue' // 新增课程通知详情界面
 import course_material_list from '@/views/teacher/course_material_list.vue'
 import document_list from '@/views/teacher/document_list.vue'
+import user_center from '@/views/teacher/user_center.vue'
 // admin界面
 import log_management from '@/views/admin/log_management.vue'
 import CreateTeacher from '@/views/admin/CreateTeacher.vue'
@@ -137,9 +138,15 @@ const routes: Array<RouteRecordRaw> = [
         meta: { requiresAuth: true, role: 'teacher' }
     },
     {
-        path: '/teacher/document_list',
+        path: '/document_list',
         name: 'document_list',
         component:document_list,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+    {
+        path: '/user_center',
+        name: 'user_center',
+        component: user_center,
         meta: { requiresAuth: true, role: 'teacher' }
     },
 
