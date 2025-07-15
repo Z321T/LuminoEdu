@@ -56,7 +56,7 @@
                 <div class="action-icon">✏️</div>
                 <h3>习题生成</h3>
                 <p>基于已上传的文档内容生成智能习题</p>
-                <button class="action-btn" @click.stop="navigateToGenerate">
+                <button class="action-btn primary" @click.stop="navigateToGenerate">
                   进入习题生成
                 </button>
               </div>
