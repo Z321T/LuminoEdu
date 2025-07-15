@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 from app.core.logger import setup_logger
-from app.models.course import Course
+from app.models.course import Course_th
 from app.models.course_notification import CourseNotification, NotificationConfirmation
 from app.schemas.teacher.course_notification_th_sch import (
     NotificationCreateRequest, NotificationUpdateRequest,
@@ -21,7 +21,7 @@ async def create_course_notification(
     logger.info(f"教师ID {teacher_id} 正在为课程ID {course_id} 创建通知: {request.title}")
 
     # 验证课程权限
-    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    course = await Course_th.filter(id=course_id, teacher_id=teacher_id).first()
     if not course:
         raise ValueError("课程不存在或无权限访问")
 
@@ -49,7 +49,7 @@ async def get_course_notifications(
     logger.info(f"教师ID {teacher_id} 正在获取课程ID {course_id} 的通知列表")
 
     # 验证课程权限
-    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    course = await Course_th.filter(id=course_id, teacher_id=teacher_id).first()
     if not course:
         raise ValueError("课程不存在或无权限访问")
 
@@ -105,7 +105,7 @@ async def get_notification_detail(
         raise ValueError("通知不存在或无权限访问")
 
     # 获取课程和学生信息
-    course = await Course.get(id=course_id).prefetch_related('students')
+    course = await Course_th.get(id=course_id).prefetch_related('students')
     total_students = await course.students.all().count()
 
     # 获取确认信息
@@ -117,7 +117,7 @@ async def get_notification_detail(
     for conf in confirmations:
         confirmation_list.append(StudentConfirmationInfo(
             student_id=conf.student.id,
-            student_name=conf.student.real_name,
+            student_name=conf.student.username,
             student_number=conf.student.student_id,
             confirmed_at=conf.confirmed_at,
         ))

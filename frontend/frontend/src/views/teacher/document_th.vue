@@ -1,9 +1,9 @@
 <template>
-  <div class="student-layout">
+  <div class="teacher-layout">
     <!-- 侧边栏 -->
     <Sidebar
-        :menuItems="studentMenuItems"
-        :activeItem="'/student/exercise_generate'"
+        :menuItems="teacherMenuItems"
+        :activeItem="'/teacher/exercise_generate'"
     />
 
     <!-- 主体内容 -->
@@ -142,7 +142,7 @@
           </div>
         </div>
 
-          <<!-- 批量操作栏 -->
+        <!-- 批量操作栏 -->
         <div v-if="selectedDocuments.size > 0" class="batch-actions">
           <span>已选择 {{ selectedDocuments.size }} 个文档</span>
           <div class="batch-buttons">
@@ -221,16 +221,17 @@ import {
   searchDocuments,
   deleteDocument as deleteDocumentAPI,
   type DocumentInfo
-} from '@/api/student/document_stu'
+} from '@/api/teacher/document_th'
 
 const router = useRouter()
-const username = ref(localStorage.getItem('username') || '学生')
+const username = ref(localStorage.getItem('username') || '教师')
 
-const studentMenuItems = [
-  { path: '/student/course', label: '我的课程' },
-  { path: '/student/chat', label: '学习助手' },
-  { path: '/student/exercise_generate', label: '习题生成' },
-  { path: '/student/profile', label: '个人信息' },
+const teacherMenuItems = [
+  { path: '/teacher/course', label: '课程管理' },
+  { path: '/teacher/chat', label: '教学助手' },
+  { path: '/teacher/exercise_generate', label: '习题生成' },
+  { path: '/teacher/ppt/generate', label: 'PPT生成' },
+  { path: '/teacher/profile', label: '个人信息' },
 ]
 
 // 状态管理
@@ -374,7 +375,6 @@ const handleFileUpload = (event: Event) => {
 
   const file = files[0]
 
-  // 检查文件类型
   const allowedTypes = ['.txt', '.docx']
   const fileExt = '.' + file.name.split('.').pop()?.toLowerCase()
 
@@ -384,7 +384,6 @@ const handleFileUpload = (event: Event) => {
     return
   }
 
-  // 检查文件大小 (500MB)
   if (file.size > 500 * 1024 * 1024) {
     alert('文件大小不能超过 500MB')
     target.value = ''
@@ -392,7 +391,7 @@ const handleFileUpload = (event: Event) => {
   }
 
   selectedFile.value = file
-  uploadTitle.value = file.name.replace(/\.[^/.]+$/, '') // 移除扩展名作为默认标题
+  uploadTitle.value = file.name.replace(/\.[^/.]+$/, '')
   showUploadDialog.value = true
   target.value = ''
 }
@@ -410,10 +409,7 @@ const confirmUpload = async () => {
 
   try {
     const result = await uploadDocument(selectedFile.value, uploadTitle.value.trim())
-
-    // 上传成功后重新加载文档列表
     await loadDocuments()
-
     closeUploadDialog()
     alert(`上传成功！文档已处理为 ${result.chunk_count} 个片段`)
   } catch (err: any) {
@@ -437,11 +433,8 @@ const deleteDocument = async (doc: DocumentInfo) => {
 
   try {
     await deleteDocumentAPI(doc.document_id)
-
-    // 删除成功后重新加载文档列表
     await loadDocuments()
     selectedDocuments.value.delete(doc.document_id)
-
     alert('删除成功')
   } catch (err: any) {
     console.error('删除失败:', err)
@@ -461,16 +454,12 @@ const batchDelete = async () => {
 
   try {
     await Promise.all(deletePromises)
-
-    // 删除成功后重新加载文档列表
     await loadDocuments()
     clearSelection()
-
     alert('批量删除成功')
   } catch (err: any) {
     console.error('批量删除失败:', err)
     alert('批量删除失败：' + err.message)
-    // 重新加载以获取最新状态
     await loadDocuments()
   }
 }
@@ -481,7 +470,7 @@ const clearSelection = () => {
 
 // 导航
 const goBack = () => {
-  router.push('/student/exercise_generate')
+  router.push('/teacher/exercise_generate')
 }
 
 const handleLogout = () => {
@@ -538,7 +527,7 @@ onMounted(() => {
   background: #c0392b;
 }
 
-.student-layout {
+.teacher-layout {
   display: flex;
   height: 100vh;
   width: 100vw;
@@ -651,11 +640,6 @@ onMounted(() => {
   font-size: 14px;
   color: #718096;
   margin-top: 4px;
-}
-
-
-.stat-value.online {
-  color: #38a169;
 }
 
 .filter-section {
@@ -876,7 +860,6 @@ onMounted(() => {
   color: white;
 }
 
-/* 上传对话框样式 */
 .upload-dialog-overlay {
   position: fixed;
   top: 0;

@@ -155,7 +155,7 @@ const submitForm = async () => {
         if (data.access_token) {
           localStorage.setItem('token', data.access_token)
           localStorage.setItem('token_type', data.token_type || 'Bearer')
-          localStorage.setItem('user_id', data.user_id || loginForm.user_id)
+          localStorage.setItem('user_id', String(data.user_id || loginForm.user_id))
           localStorage.setItem('username', data.username || loginForm.user_id)
           localStorage.setItem('role', data.role || 'student')
 
@@ -170,11 +170,11 @@ const submitForm = async () => {
 
         // 根据角色跳转
         if (data.role === 'student') {
-          router.push('/student/course')
+          await router.push('/student/course')
         } else if (data.role === 'teacher') {
-          router.push('/home_teacher')
+          await router.push('/teacher/course')
         } else if (data.role === 'admin') {
-          router.push('/admin/log_management')
+          await router.push('/admin/log_management')
         } else {
           ElMessage.error('未知用户角色，无法跳转')
         }
@@ -211,7 +211,7 @@ onMounted(() => {
     if (role === 'admin') {
       router.push('/admin/log_management')
     } else if (role === 'teacher') {
-      router.push('/home_teacher')
+      router.push('/teacher/course')
     } else if (role === 'student') {
       router.push('/student/course')
     }
@@ -466,99 +466,8 @@ onMounted(() => {
   margin-bottom: 24px;
 }
 
-.form-input :deep(.el-input__wrapper) {
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  height: 52px;
-}
-
-.form-input :deep(.el-input__wrapper:hover) {
-  border-color: rgba(102, 126, 234, 0.4);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.form-input :deep(.el-input__wrapper.is-focus) {
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 8px 25px rgba(102, 126, 234, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.form-input :deep(.el-input__inner) {
-  color: #2d3748;
-  font-size: 1rem;
-  font-weight: 500;
-  padding-left: 16px;
-}
-
-.form-input :deep(.el-input__inner::placeholder) {
-  color: rgba(160, 174, 192, 0.8);
-}
-
-.form-input :deep(.el-input__prefix-inner) {
-  color: #667eea;
-}
-
 /* 表单选项 */
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
 
-.remember-me {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-
-.remember-me:hover {
-  background: rgba(102, 126, 234, 0.1);
-}
-
-.remember-me :deep(.el-checkbox__input) {
-  margin-right: 8px;
-}
-
-.remember-me :deep(.el-checkbox__inner) {
-  border-color: rgba(102, 126, 234, 0.5);
-  background: rgba(255, 255, 255, 0.9);
-  transition: all 0.3s ease;
-}
-
-.remember-me :deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-color: #667eea;
-}
-
-.checkbox-text {
-  color: rgba(74, 85, 104, 0.9);
-  font-size: 0.9rem;
-  font-weight: 500;
-  user-select: none;
-}
-
-.forgot-password {
-  color: #667eea;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-
-.forgot-password:hover {
-  color: #5a6fd8;
-  background: rgba(102, 126, 234, 0.1);
-}
 
 /* 登录按钮 */
 .login-btn {
@@ -608,30 +517,6 @@ onMounted(() => {
   z-index: 2;
 }
 
-/* 表单底部 */
-.form-footer {
-  text-align: center;
-  color: rgba(113, 128, 150, 0.9);
-  font-size: 0.9rem;
-}
-
-.footer-text {
-  margin-right: 8px;
-}
-
-.register-link {
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 700;
-  transition: all 0.3s ease;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-
-.register-link:hover {
-  color: #5a6fd8;
-  background: rgba(102, 126, 234, 0.1);
-}
 
 /* 侧边装饰 */
 .side-decoration {
@@ -688,20 +573,6 @@ onMounted(() => {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
-.feature-icon {
-  font-size: 2.2rem;
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
 .feature-text h3 {
   font-size: 1.2rem;
   font-weight: 700;
@@ -743,12 +614,6 @@ onMounted(() => {
     padding: 16px;
   }
 
-  .feature-icon {
-    width: 50px;
-    height: 50px;
-    font-size: 1.8rem;
-  }
-
   .feature-text h3 {
     font-size: 1rem;
   }
@@ -787,10 +652,6 @@ onMounted(() => {
 
   .brand-title {
     font-size: 1.6rem;
-  }
-
-  .form-input :deep(.el-input__wrapper) {
-    height: 48px;
   }
 
   .login-btn {

@@ -1,7 +1,10 @@
 <template>
   <div class="student-layout">
     <!-- 侧边栏 -->
-    <Sidebar :menuItems="studentMenuItems" />
+    <Sidebar
+        :menuItems="studentMenuItems"
+        :activeItem="'/student/course'"
+    />
 
     <!-- 主体内容 -->
     <div class="main">
@@ -9,7 +12,7 @@
       <PageHeader title="课程详情">
         <template #actions>
           <div class="header-user">
-            <button class="back-btn" @click="goBack">返回课程列表</button>
+            <button class="back-btn" @click="goBack">返回</button>
             <span>欢迎，{{ username }}</span>
             <button class="logout-btn" @click="handleLogout">退出登录</button>
           </div>

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 
 from app.core.dependencies import auth_teacher_user
-from app.models.course import Course
+from app.models.course import Course_th
 from app.models.teacher import Teacher
 from app.schemas.teacher.course_material_th_sch import (
     MaterialUploadResponse, MaterialListResponse, MaterialDeleteResponse
@@ -59,7 +59,7 @@ async def get_materials_api(
     """获取课程资料列表"""
     try:
         # 获取课程信息
-        course = await Course.filter(id=course_id, teacher_id=current_user.id).first()
+        course = await Course_th.filter(id=course_id, teacher_id=current_user.id).first()
         if not course:
             raise HTTPException(status_code=404, detail="课程不存在或无权限访问")
 
@@ -106,7 +106,7 @@ async def download_material_api(
     """下载课程资料"""
     try:
         # 验证权限
-        course = await Course.filter(id=course_id, teacher_id=current_user.id).first()
+        course = await Course_th.filter(id=course_id, teacher_id=current_user.id).first()
         if not course:
             raise HTTPException(status_code=404, detail="课程不存在或无权限访问")
 

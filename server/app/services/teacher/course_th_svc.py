@@ -7,20 +7,20 @@ from typing import List, Tuple
 
 from app.core.logger import setup_logger
 from app.models.student import Student
-from app.models.course import Course, CourseStudent
+from app.models.course import Course_th, CourseStudent
 from app.schemas.teacher.course_th_sch import CourseCreateRequest, CourseBaseResponse, CourseDetailResponse, StudentBaseInfo
 
 # 创建课程服务的日志记录器
 logger = setup_logger("course_management_service")
 
 
-async def create_course(teacher_id: int, data: CourseCreateRequest) -> Course:
+async def create_course(teacher_id: int, data: CourseCreateRequest) -> Course_th:
     """
     创建课程
     """
     logger.info(f"教师 {teacher_id} 正在创建课程: {data.name}")
     try:
-        course = await Course.create(
+        course = await Course_th.create(
             name=data.name,
             description=data.description,
             semester=data.semester,
@@ -46,7 +46,7 @@ async def delete_course(teacher_id: int, course_id: int) -> bool:
     logger.info(f"教师 {teacher_id} 正在删除课程: 课程ID={course_id}")
 
     # 检查课程是否存在且属于该教师
-    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    course = await Course_th.filter(id=course_id, teacher_id=teacher_id).first()
     if not course:
         logger.warning(f"课程删除失败: 课程ID={course_id} 不存在或不属于教师ID={teacher_id}")
         raise ValueError("课程不存在或无权限删除")
@@ -55,7 +55,7 @@ async def delete_course(teacher_id: int, course_id: int) -> bool:
     await CourseStudent.filter(course_id=course_id).delete()
 
     # 删除课程
-    deleted_count = await Course.filter(id=course_id, teacher_id=teacher_id).delete()
+    deleted_count = await Course_th.filter(id=course_id, teacher_id=teacher_id).delete()
     if deleted_count:
         logger.info(f"课程删除成功: 课程ID={course_id}")
         return True
@@ -67,14 +67,14 @@ async def delete_course(teacher_id: int, course_id: int) -> bool:
 
 async def list_courses(teacher_id: int) -> List[CourseBaseResponse]:
     logger.info(f"教师 {teacher_id} 正在获取课程列表")
-    courses = await Course.filter(teacher_id=teacher_id).all()
+    courses = await Course_th.filter(teacher_id=teacher_id).all()
     return [CourseBaseResponse.model_validate(course, from_attributes=True) for course in courses]
 
 
 
 async def get_course_detail(teacher_id: int, course_id: int) -> CourseDetailResponse:
     logger.info(f"教师 {teacher_id} 正在获取课程详情: 课程ID={course_id}")
-    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    course = await Course_th.filter(id=course_id, teacher_id=teacher_id).first()
     if not course:
         logger.warning(f"教师{teacher_id}课程详情获取失败: 课程ID={course_id} 不存在或无权限访问")
         raise ValueError("课程不存在或无权限访问")
@@ -116,7 +116,7 @@ async def add_students_to_course(teacher_id: int, course_id: int, file: UploadFi
     logger.info(f"教师 {teacher_id} 正在为课程 {course_id} 导入学生")
 
     # 检查课程是否存在并属于该教师
-    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    course = await Course_th.filter(id=course_id, teacher_id=teacher_id).first()
     if not course:
         logger.warning(f"课程不存在或不属于该教师: 教师ID={teacher_id}, 课程ID={course_id}")
         raise ValueError("课程不存在或无权限访问")
@@ -170,7 +170,7 @@ async def remove_students_from_course(teacher_id: int, course_id: int, student_n
     logger.info(f"教师 {teacher_id} 正在从课程 {course_id} 批量删除学生: {student_numbers}")
 
     # 检查课程是否存在且属于该教师
-    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    course = await Course_th.filter(id=course_id, teacher_id=teacher_id).first()
     if not course:
         logger.warning(f"课程不存在或不属于该教师: 教师ID={teacher_id}, 课程ID={course_id}")
         raise ValueError("课程不存在或无权限访问")

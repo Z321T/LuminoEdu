@@ -5,15 +5,25 @@
         name="fade-page"
         mode="out-in"
       >
-        <component :is="Component" />
+        <component
+            :is="Component"
+            key="getRouteKey(route)"
+        />
       </transition>
     </router-view>
-    <AIChatWidget />
   </div>
 </template>
   
-<script setup lang="ts" name="App">
-import { RouterView, RouterLink } from 'vue-router'
+<script setup lang="ts" >
+import { RouterView } from 'vue-router'
+
+const getRouteKey = (route: any) => {
+  // 如果有时间戳查询参数，使用它来强制重新渲染
+  if (route.query._t) {
+    return route.fullPath
+  }
+  return route.fullPath
+}
 </script>
 
 <style>

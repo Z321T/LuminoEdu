@@ -15,7 +15,7 @@ class CourseNotification(models.Model):
 
     # 关联信息
     course = fields.ForeignKeyField(
-        "models.Course",
+        "models.Course_th",
         related_name="notifications",
         on_delete=fields.CASCADE,
         description="所属课程"

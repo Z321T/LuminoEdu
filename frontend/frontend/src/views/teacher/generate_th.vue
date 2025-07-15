@@ -1,9 +1,9 @@
 <template>
-  <div class="student-layout">
+  <div class="teacher-layout">
     <!-- 侧边栏 -->
     <Sidebar
-        :menuItems="studentMenuItems"
-        :activeItem="'/student/exercise_generate'"
+        :menuItems="teacherMenuItems"
+        :activeItem="'/teacher/exercise_generate'"
     />
 
     <!-- 主体内容 -->
@@ -310,17 +310,18 @@ import {
   getVectorizedDocuments,
   type GenerateRequest,
   type ExerciseFile,
-  type DocumentInfo        // 使用本地定义的类型
-} from '@/api/student/generate_stu'
+  type DocumentInfo
+} from '@/api/teacher/generate_th'
 
 const router = useRouter()
-const username = ref(localStorage.getItem('username') || '学生')
+const username = ref(localStorage.getItem('username') || '教师')
 
-const studentMenuItems = [
-  { path: '/student/course', label: '我的课程' },
-  { path: '/student/chat', label: '学习助手' },
-  { path: '/student/exercise_generate', label: '习题生成' },
-  { path: '/student/profile', label: '个人信息' },
+const teacherMenuItems = [
+  { path: '/teacher/course', label: '课程管理' },
+  { path: '/teacher/chat', label: '教学助手' },
+  { path: '/teacher/exercise_generate', label: '习题生成' },
+  { path: '/teacher/ppt/generate', label: 'PPT生成' },
+  { path: '/teacher/profile', label: '个人信息' },
 ]
 
 // 状态管理
@@ -359,53 +360,29 @@ const currentPreviewFile = ref<ExerciseFile | null>(null)
 
 // 计算属性
 const canGenerate = computed(() => {
-  // 检查所有模式下的通用必填项
-  if (!exerciseTitle.value?.trim() || !customContent.value?.trim()) {
+  if (!exerciseTitle.value?.trim() || !customContent.value?.trim() || !selectedTypes.value?.length || exerciseCount.value < 1 || exerciseCount.value > 50) {
     return false
   }
-
-  if (!selectedTypes.value?.length) {
-    return false
-  }
-
-  if (exerciseCount.value < 1 || exerciseCount.value > 50) {
-    return false
-  }
-
-  // 检查文档模式下的特定必填项
   if (generateMode.value === 'document') {
     return !!selectedDocumentId.value?.trim()
   }
-
-  // 内容模式下，通用检查已足够
   return true
 })
 
 const renderedPreview = computed(() => {
-  if (previewContent.value) {
-    return marked(previewContent.value)
-  }
-  return ''
+  return previewContent.value ? marked(previewContent.value) : ''
 })
 
 // 工具函数
 const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
   })
 }
 
 const getExerciseTitle = (filename: string): string => {
-  // 从文件名中提取标题
   const parts = filename.split('_')
-  if (parts.length >= 4) {
-    return parts.slice(3).join('_').replace('.md', '')
-  }
-  return filename.replace('.md', '')
+  return parts.length >= 4 ? parts.slice(3).join('_').replace('.md', '') : filename.replace('.md', '')
 }
 
 // 题目类型切换
@@ -418,21 +395,12 @@ const toggleType = (type: number) => {
   }
 }
 
-// 修复文档加载方法
+// API 调用
 const loadDocuments = async () => {
+  loading.value = true
   try {
-    loading.value = true
-    console.log('开始加载向量化文档列表')
-    documents.value = await getVectorizedDocuments()  // 使用正确的API
-    console.log('向量化文档列表加载成功，数量:', documents.value.length)
-    console.log('文档详情:', documents.value.map(doc => ({
-      id: doc.document_id,
-      title: doc.title,
-      filename: doc.filename,
-      status: doc.vectorization_status
-    })))
+    documents.value = await getVectorizedDocuments()
   } catch (err: any) {
-    console.error('向量化文档列表加载失败:', err)
     alert(`加载文档列表失败：${err.message}`)
   } finally {
     loading.value = false
@@ -442,12 +410,10 @@ const loadDocuments = async () => {
 const loadExerciseList = async () => {
   loadingList.value = true
   listError.value = ''
-
   try {
     exercises.value = await getExerciseList()
     filterExercises()
   } catch (err: any) {
-    console.error('加载习题列表失败:', err)
     listError.value = err.message
   } finally {
     loadingList.value = false
@@ -456,8 +422,8 @@ const loadExerciseList = async () => {
 
 const filterExercises = () => {
   if (titleFilter.value.trim()) {
-    filteredExercises.value = exercises.value.filter(exercise =>
-        getExerciseTitle(exercise.filename).toLowerCase().includes(titleFilter.value.toLowerCase())
+    filteredExercises.value = exercises.value.filter(ex =>
+        getExerciseTitle(ex.filename).toLowerCase().includes(titleFilter.value.toLowerCase())
     )
   } else {
     filteredExercises.value = [...exercises.value]
@@ -492,11 +458,8 @@ const confirmGenerate = async () => {
     alert('请填写所有必填项！')
     return
   }
-
   generating.value = true
-
   try {
-    // 构建基础请求参数
     const request: GenerateRequest = {
       title: exerciseTitle.value.trim(),
       content: customContent.value.trim(),
@@ -504,22 +467,14 @@ const confirmGenerate = async () => {
       types: selectedTypes.value,
       use_knowledge_matching: useKnowledgeMatching.value
     }
-
-    // 如果是文档模式，额外添加 document_id
     if (generateMode.value === 'document') {
       request.document_id = selectedDocumentId.value.trim()
     }
-
-    console.log('发送请求参数:', request)
-
     const result = await apiGenerateExercise(request)
-    console.log('生成成功:', result)
-
     alert(`生成成功！共生成 ${result.exercise_count} 道题目`)
     hideGenerateForm()
     await loadExerciseList()
   } catch (err: any) {
-    console.error('生成失败:', err)
     alert(`生成失败：${err.message || '未知错误'}`)
   } finally {
     generating.value = false
@@ -528,9 +483,7 @@ const confirmGenerate = async () => {
 
 // 习题操作
 const handleFilter = () => {
-  setTimeout(() => {
-    filterExercises()
-  }, 300)
+  setTimeout(filterExercises, 300)
 }
 
 const clearFilter = () => {
@@ -544,11 +497,9 @@ const previewExercise = async (exercise: ExerciseFile) => {
   showPreview.value = true
   loadingPreview.value = true
   previewError.value = ''
-
   try {
     previewContent.value = await getFileContent(exercise.filename)
   } catch (err: any) {
-    console.error('预览失败:', err)
     previewError.value = err.message
   } finally {
     loadingPreview.value = false
@@ -567,7 +518,6 @@ const downloadExercise = async (exercise: ExerciseFile) => {
     window.URL.revokeObjectURL(url)
     document.body.removeChild(a)
   } catch (err: any) {
-    console.error('下载失败:', err)
     alert('下载失败：' + err.message)
   }
 }
@@ -579,14 +529,12 @@ const downloadCurrentPreview = () => {
 }
 
 const deleteExercise = async (exercise: ExerciseFile) => {
-  if (!confirm(`确定要删除习题 "${getExerciseTitle(exercise.filename)}" 吗？删除后无法恢复。`)) return
-
+  if (!confirm(`确定要删除习题 "${getExerciseTitle(exercise.filename)}" 吗？`)) return
   try {
     await deleteExerciseFile(exercise.filename)
     alert('删除成功')
     await loadExerciseList()
   } catch (err: any) {
-    console.error('删除失败:', err)
     alert('删除失败：' + err.message)
   }
 }
@@ -600,9 +548,10 @@ const closePreview = () => {
 
 // 导航
 const goBack = () => {
-  router.push('/student/exercise_generate')
+  router.push('/teacher/exercise_generate')
 }
 
+// 导航与认证
 const handleLogout = () => {
   if (confirm('确定要退出登录吗？')) {
     localStorage.removeItem('token')
@@ -611,26 +560,16 @@ const handleLogout = () => {
   }
 }
 
-// 监听生成模式变化
+// 监听器
 watch(generateMode, (newMode) => {
-  console.log('生成模式切换到:', newMode)
-  // 清空相关数据
-  if (newMode === 'document') {
-    // 如果还没有加载过文档，则加载
-    if (documents.value.length === 0) {
-      loadDocuments()
-    }
-  } else {
-    selectedDocumentId.value = ''
+  if (newMode === 'document' && documents.value.length === 0) {
+    loadDocuments()
   }
-  // 切换模式时不清空 customContent
 })
 
-// 修改组件挂载逻辑
+// 生命周期钩子
 onMounted(() => {
-  console.log('组件挂载，开始加载数据')
   loadExerciseList()
-  // 如果默认是文档模式，预加载文档列表
   if (generateMode.value === 'document') {
     loadDocuments()
   }
@@ -638,7 +577,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 保持原有样式不变 */
+/* 样式与学生端 generate_stu.vue 保持一致 */
 .header-user {
   position: absolute;
   top: 24px;
@@ -679,7 +618,7 @@ onMounted(() => {
   background: #c0392b;
 }
 
-.student-layout {
+.teacher-layout {
   display: flex;
   height: 100vh;
   width: 100vw;
@@ -744,7 +683,6 @@ onMounted(() => {
   color: #a0aec0;
 }
 
-/* 生成表单样式 */
 .generate-form {
   margin-bottom: 32px;
 }
@@ -858,7 +796,6 @@ onMounted(() => {
   background: #e2e8f0;
 }
 
-/* 习题列表样式 */
 .exercise-section {
   background: #fff;
   border-radius: 8px;
@@ -1021,7 +958,6 @@ onMounted(() => {
   background: #fed7d7;
 }
 
-/* 预览对话框样式 */
 .preview-dialog-overlay {
   position: fixed;
   top: 0;
@@ -1081,31 +1017,31 @@ onMounted(() => {
   line-height: 1.6;
 }
 
-.preview-content h1,
-.preview-content h2,
-.preview-content h3 {
+.preview-content :deep(h1),
+.preview-content :deep(h2),
+.preview-content :deep(h3) {
   color: #2d3748;
   margin-top: 0;
 }
 
-.preview-content p {
+.preview-content :deep(p) {
   margin-bottom: 16px;
 }
 
-.preview-content ul,
-.preview-content ol {
+.preview-content :deep(ul),
+.preview-content :deep(ol) {
   margin-bottom: 16px;
   padding-left: 20px;
 }
 
-.preview-content code {
+.preview-content :deep(code) {
   background: #f7fafc;
   padding: 2px 4px;
   border-radius: 3px;
   font-family: monospace;
 }
 
-.preview-content pre {
+.preview-content :deep(pre) {
   background: #f7fafc;
   padding: 16px;
   border-radius: 6px;
@@ -1155,47 +1091,32 @@ onMounted(() => {
   .main {
     margin-left: 60px;
   }
-
   .content {
     padding: 16px;
   }
-
-  .dashboard-header {
+  .dashboard-header, .section-header {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-
-  .section-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-
   .filter-group {
     width: 100%;
   }
-
   .filter-input {
     flex: 1;
   }
-
-  .radio-group,
-  .checkbox-group {
+  .radio-group, .checkbox-group {
     flex-direction: column;
     gap: 8px;
   }
-
   .exercise-meta {
     flex-direction: column;
     gap: 4px;
   }
-
   .preview-dialog {
     width: 95%;
     margin: 16px;
   }
-
   .form-actions {
     flex-direction: column;
   }

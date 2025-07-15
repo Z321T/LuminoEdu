@@ -1,4 +1,3 @@
-import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
@@ -14,11 +13,6 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/teacher': {
-        target: 'http://localhost:8000', // 你的后端地址
-        changeOrigin: true,
-        secure: false
-      },
       '/api': {
         target: 'http://localhost:8000', // 你的后端地址
         changeOrigin: true,

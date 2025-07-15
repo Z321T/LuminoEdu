@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 from app.config import COURSE_MATERIALS_DIR, MAX_FILE_SIZE, ALLOWED_FILE_EXTENSIONS
 from app.core.logger import setup_logger
-from app.models.course import Course
+from app.models.course import Course_th
 from app.schemas.teacher.course_material_th_sch import MaterialInfo
 from fastapi import UploadFile
 
@@ -33,7 +33,7 @@ async def upload_course_material(
     logger.info(f"教师ID {teacher_id} 正在为课程ID {course_id} 上传资料: {file.filename}")
 
     # 验证课程权限
-    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    course = await Course_th.filter(id=course_id, teacher_id=teacher_id).first()
     if not course:
         logger.warning(f"课程不存在或无权限: 教师ID={teacher_id}, 课程ID={course_id}")
         raise ValueError("课程不存在或无权限访问")
@@ -83,7 +83,7 @@ async def get_course_materials(teacher_id: int, course_id: int) -> List[Material
     logger.info(f"教师ID {teacher_id} 正在获取课程ID {course_id} 的资料列表")
 
     # 验证课程权限
-    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    course = await Course_th.filter(id=course_id, teacher_id=teacher_id).first()
     if not course:
         logger.warning(f"课程不存在或无权限: 教师ID={teacher_id}, 课程ID={course_id}")
         raise ValueError("课程不存在或无权限访问")
@@ -113,7 +113,7 @@ async def delete_course_material(teacher_id: int, course_id: int, filename: str)
     logger.info(f"教师 {teacher_id} 正在删除课程 {course_id} 的资料: {filename}")
 
     # 验证课程权限
-    course = await Course.filter(id=course_id, teacher_id=teacher_id).first()
+    course = await Course_th.filter(id=course_id, teacher_id=teacher_id).first()
     if not course:
         logger.warning(f"课程不存在或无权限: 教师ID={teacher_id}, 课程ID={course_id}")
         raise ValueError("课程不存在或无权限访问")

@@ -18,7 +18,7 @@
                 @click="goBack"
             >
               <span class="back-icon">←</span>
-              返回课程列表
+              返回
             </button>
             <span>欢迎，{{ username }}</span>
             <button class="logout-btn" @click="handleLogout">退出登录</button>
@@ -145,13 +145,20 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import SideBar from '@/components/layout/SideBar.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
-import { createCourse, type CreateCourseRequest } from '@/api/teacher/course_management'
+import {
+  createCourse,
+  type CreateCourseRequest
+} from '@/api/teacher/course_th'
 
 const router = useRouter()
 const username = ref(localStorage.getItem('username') || '教师')
 
 const teacherMenuItems = [
   { path: '/teacher/course', label: '课程管理' },
+  { path: '/teacher/chat', label: '教学助手' },
+  { path: '/teacher/exercise_generate', label: '习题生成' },
+  { path: '/teacher/ppt/generate', label: 'PPT生成' },
+  { path: '/teacher/profile', label: '个人信息' },
 ]
 
 const isSubmitting = ref(false)

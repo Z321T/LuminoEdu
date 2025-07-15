@@ -10,30 +10,24 @@ import document_stu from '@/views/student/document_stu.vue'
 import generate_stu from '@/views/student/generate_stu.vue'
 import profile from '@/views/student/profile.vue'
 // 教师界面
-import home_teacher from '@/views/teacher/home_teacher.vue'
-// import exercise_generate from '@/views/teacher/exercise_gernerate.vue'
-// import exercise_history from '@/views/teacher/exercise_history.vue'
-// import PPT_generate from '@/views/teacher/PPT_generate.vue'
-// import PPT_outline from '@/views/teacher/PPT_outline.vue'
-// import PPT_files from '@/views/teacher/PPT_files.vue' // 新增PPT文件管理界面
 import course_th from '@/views/teacher/course_th.vue'
 import course_create from '@/views/teacher/course_create.vue'
-// import course_addstudent from '@/views/teacher/course_addstudent.vue' // 新增课程添加学生界面
-import course_detail_th from '@/views/teacher/course_detail.vue' // 新增课程详情界面
-// import notification_list from '@/views/teacher/notification_list.vue' // 新增课程通知列表界面
-// import notification_create from '@/views/teacher/notification_create.vue' // 新增课程通知创建界面
-// import notification_detail from '@/views/teacher/notification_detail.vue' // 新增课程通知详情界面
-// import course_material_list from '@/views/teacher/course_material_list.vue'
-// import document_list from '@/views/teacher/document_list.vue'
-// import user_center from '@/views/teacher/user_center.vue'
+import course_detail_th from '@/views/teacher/course_detail.vue'
+import chat_th from '@/views/teacher/chat_th.vue'
+import exercise_generate_th from '@/views/teacher/exercise_generate_th.vue'
+import document_th from '@/views/teacher/document_th.vue'
+import generate_th from '@/views/teacher/generate_th.vue';
+import PPT_generate from "@/views/teacher/PPT_generate.vue";
+import PPT_files from "@/views/teacher/PPT_files.vue";
+import PPT_outline from "@/views/teacher/PPT_outline.vue";
+import profile_th from '@/views/teacher/profile_th.vue'
 // admin界面
 import log_management from '@/views/admin/log_management.vue'
 import CreateTeacher from '@/views/admin/CreateTeacher.vue'
 import CreateStudent from '@/views/admin/CreateStudent.vue'
 import teacher_management from '@/views/admin/teacher_management.vue'
 import student_management from '@/views/admin/student_management.vue'
-import model_management from '@/views/admin/model_management.vue'
-import {c} from "vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf";
+import model_management from '@/views/admin/model_management.vue';
 
 
 const routes: Array<RouteRecordRaw> = [
@@ -91,42 +85,6 @@ const routes: Array<RouteRecordRaw> = [
     },
     // 教师端路由
     {
-        path: '/home_teacher',
-        name: 'home_teacher',
-        component: home_teacher,
-        meta: { requiresAuth: true, role: 'teacher' }
-    },
-    // {
-    //     path: '/exercise_generate',
-    //     name: 'exercise_generate',
-    //     component: exercise_generate,
-    //     meta: { requiresAuth: true, role: 'teacher' }
-    // },
-    // {
-    //     path: '/exercise_history',
-    //     name: 'exercise_history',
-    //     component: exercise_history,
-    //     meta: { requiresAuth: true }
-    // },
-    // {
-    //     path: '/PPT_generate',
-    //     name: 'PPT_generate',
-    //     component: PPT_generate,
-    //     meta: { requiresAuth: true }
-    // },
-    //  {
-    //     path: '/PPT_outline',
-    //     name: 'PPT_outline',
-    //     component: PPT_outline,
-    //     meta: { requiresAuth: true }
-    // },
-    // {
-    //     path: '/PPT_files',
-    //     name: 'PPTFiles',
-    //     component: PPT_files,
-    //     meta: { requiresAuth: true }
-    // },
-    {
         path: '/teacher/course',
         name: 'course_th',
         component: course_th,
@@ -139,68 +97,59 @@ const routes: Array<RouteRecordRaw> = [
         meta: { requiresAuth: true , role: 'teacher' }
     },
     {
-        path: '/teacher/course/:courseId',
+        path: '/teacher/course/detail/:courseId',
         name: 'course_detail_th',
         component: course_detail_th,
         meta: { requiresAuth: true , role: 'teacher' }
     },
-   //   {
-   //      path: '/course_create',
-   //      name: 'course_create',
-   //      component: course_create,
-   //      meta: { requiresAuth: true }
-   //  },
-   //  {
-   //      path: '/course_addstudent/:id',
-   //      name: 'course_addstudent',
-   //      component: course_addstudent,
-   //      meta: { requiresAuth: true }
-   //  },
-
-   //    {
-   //      path: '/notification_list/:courseId',
-   //      name: 'notification_list',
-   //      component:notification_list ,
-   //      meta: { requiresAuth: true }
-   //  },
-   // {
-   //      path: '/notification_create/:courseId',
-   //      name: 'notification_create',
-   //      component:notification_create ,
-   //      meta: { requiresAuth: true }
-   //  },
-   //   {
-   //      path: '/notification_detail/:courseId/:notificationId',
-   //      name: 'notification_detail',
-   //      component: notification_detail,
-   //      meta: { requiresAuth: true }
-   //  },
-   //
-   //  // 添加课程资料列表路由
-   //  {
-   //      path: '/teacher/course/:courseId/materials',
-   //      name: 'course_material_list',
-   //      component: course_material_list,
-   //      meta: { requiresAuth: true, role: 'teacher' }
-   //  },
-   //  {
-   //      path: '/document_list',
-   //      name: 'document_list',
-   //      component:document_list,
-   //      meta: { requiresAuth: true, role: 'teacher' }
-   //  },
-   //  {
-   //      path: '/user_center',
-   //      name: 'user_center',
-   //      component: user_center,
-   //      meta: { requiresAuth: true, role: 'teacher' }
-   //  },
-
-
-
-
-
-
+    {
+        path: '/teacher/chat',
+        name: 'chat_th',
+        component: chat_th,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+    {
+        path: '/teacher/exercise_generate',
+        name: 'exercise_generate_th',
+        component: exercise_generate_th,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+    {
+        path: '/teacher/exercise_generate/document',
+        name: 'document_th',
+        component: document_th,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+    {
+        path: '/teacher/exercise_generate/generate',
+        name: 'generate_th',
+        component: generate_th,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+    {
+        path: '/teacher/ppt/generate',
+        name: 'PPT_generate',
+        component: PPT_generate,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+    {
+        path: '/teacher/ppt/files',
+        name: 'PPT_files',
+        component: PPT_files,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+    {
+        path: '/teacher/ppt/outline',
+        name: 'PPT_outline',
+        component: PPT_outline,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
+    {
+        path: '/teacher/profile',
+        name: 'profile_th',
+        component: profile_th,
+        meta: { requiresAuth: true, role: 'teacher' }
+    },
     // 管理员端路由
     {
         path: '/admin/log_management',
@@ -244,5 +193,6 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 })
+
 
 export default router

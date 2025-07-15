@@ -3,42 +3,19 @@
     <!-- 侧边栏 -->
     <SideBar
       :menuItems="teacherMenuItems"
-      :activeItem="$route.path"
+      :activeItem="'/teacher/ppt/generate'"
       :class="{ 'mobile-open': mobileMenuOpen }"
       @menuClick="handleMenuClick"
     />
 
     <!-- 主要内容区域 -->
-    <div class="main-layout">
-      <!-- 页面头部 -->
-      <PageHeader
-        :title="'教学PPT生成助手'"
-        :showMobileMenu="true"
-        @toggleMobileMenu="toggleMobileMenu"
-      >
+    <div class="main">
+      <!-- 顶部栏 -->
+      <PageHeader title="教学PPT生成助手">
         <template #actions>
-          <!-- 返回按钮 -->
-          <button
-            @click="goBack"
-            class="back-btn"
-          >
-            <span class="back-icon">←</span>
-            <span>返回</span>
-          </button>
-
-          <!-- 用户信息和退出 -->
-          <div class="user-actions">
-            <div class="user-info">
-              <span class="user-avatar">👤</span>
-              <span class="username">{{ username }}</span>
-            </div>
-            <button
-              @click="logout"
-              class="logout-btn"
-            >
-              <span class="logout-icon">🚪</span>
-              <span>退出</span>
-            </button>
+          <div class="header-user">
+            <span>欢迎，{{ username }}</span>
+            <button class="logout-btn" @click="handleLogout">退出登录</button>
           </div>
         </template>
       </PageHeader>
@@ -54,13 +31,13 @@
             <!-- 导航按钮 -->
             <div class="nav-buttons">
               <router-link
-                to="PPT_files"
+                to="/teacher/ppt/files"
                 class="outline-nav-btn"
               >
                 <i class="icon-list"></i> 查看我的PPT文件
               </router-link>
               <router-link
-                to="PPT_outline"
+                to="/teacher/ppt/outline"
                 class="outline-nav-btn"
               >
                 <i class="icon-list"></i> 查看我的大纲
@@ -100,11 +77,10 @@
               <div class="card-header">
                 <div class="header-content">
                   <h2 class="card-title">
-                    <span class="title-icon">📊</span>
-                    填写PPT基本信息
+                    PPT大纲
                   </h2>
                   <p class="card-description">
-                    填写详细的信息将帮助AI生成更有针对性的PPT大纲
+                    填写详细的信息将帮助生成更有针对性的PPT大纲（md格式）
                   </p>
                 </div>
               </div>
@@ -185,7 +161,7 @@
                     maxlength="100"
                     :disabled="isLoading"
                   ></textarea>
-                  <small class="form-hint">明确的教学目标能够生成更有针对性的PPT</small>
+                  <small class="form-hint">明确的教学目标能够生成更有针对性的PPT大纲</small>
                 </div>
 
                 <div class="form-group">
@@ -269,11 +245,10 @@
               <div class="card-header">
                 <div class="header-content">
                   <h2 class="card-title">
-                    <span class="title-icon">📝</span>
                     PPT大纲预览
                   </h2>
                   <p class="card-description">
-                    生成的PPT大纲，可以复制或下载进行进一步编辑
+                    生成的PPT大纲，可以复制或下载进行编辑
                   </p>
                 </div>
               </div>
@@ -286,13 +261,13 @@
                       @click="copyOutline"
                       class="action-btn"
                     >
-                      <i class="icon-copy"></i> 复制大纲
+                      复制大纲
                     </button>
                     <button
                       @click="downloadOutline"
                       class="action-btn"
                     >
-                      <i class="icon-download"></i> 下载 Markdown
+                      下载 Markdown
                     </button>
                     <button
                       @click="generatePPT"
@@ -336,7 +311,6 @@
               <div class="card-header">
                 <div class="header-content">
                   <h2 class="card-title">
-                    <span class="title-icon">🖼️</span>
                     PPT预览
                   </h2>
                   <p class="card-description">
@@ -407,8 +381,7 @@
               <div class="card-header">
                 <div class="header-content">
                   <h2 class="card-title">
-                    <span class="title-icon">📤</span>
-                    上传自定义大纲
+                    自定义大纲
                   </h2>
                   <p class="card-description">
                     上传您自己的Markdown格式大纲文件，直接生成PPT
@@ -500,448 +473,360 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { generatePPTOutline, generatePPTFromOutline, downloadPPTX } from '@/api/teacher/PPT_generate';
 import { marked } from 'marked';
 import PageHeader from '@/components/layout/PageHeader.vue';
 import SideBar from '@/components/layout/SideBar.vue';
 
-export default {
-  name: 'PPTGenerate',
-  components: {
-    PageHeader,
-    SideBar
-  },
+const router = useRouter();
 
-  setup () {
-    // 表单数据
-    const formData = reactive({
-      title: '',
-      subject: '',
-      teaching_target: '',
-      key_points: [''],
-      target_grade: '',
-      slide_count: 10,
-      additional_info: ''
-    });
+// 表单数据
+const formData = reactive({
+  title: '',
+  subject: '',
+  teaching_target: '',
+  key_points: [''],
+  target_grade: '',
+  slide_count: 10,
+  additional_info: ''
+});
 
-    // 状态管理
-    const isLoading = ref(false);
-    const errorMessage = ref('');
-    const showSuccess = ref(false);
-    const successMessage = ref('');
-    const outlineResult = ref(null);
+// 状态管理
+const isLoading = ref(false);
+const errorMessage = ref('');
+const showSuccess = ref(false);
+const successMessage = ref('');
+const outlineResult = ref(null);
 
-    // PPT生成相关状态
-    const isGeneratingPPT = ref(false);
-    const isDownloadingPPT = ref(false);
-    const pptResult = ref(null);
-    const currentSlide = ref(0);
+// PPT生成相关状态
+const isGeneratingPPT = ref(false);
+const isDownloadingPPT = ref(false);
+const pptResult = ref(null);
+const currentSlide = ref(0);
 
-    // 自定义大纲上传相关状态
-    const customOutlineTitle = ref('');
-    const outlineFile = ref(null);
-    const isUploadingOutline = ref(false);
-    const isUploadReady = ref(false);
+// 自定义大纲上传相关状态
+const customOutlineTitle = ref('');
+const outlineFile = ref(null);
+const isUploadingOutline = ref(false);
+const isUploadReady = ref(false);
 
-    // 渲染当前幻灯片内容
-    const renderedSlideContent = computed(() => {
-      if (!pptResult.value || !pptResult.value.slides[currentSlide.value]) {
-        return '';
-      }
-      return marked(pptResult.value.slides[currentSlide.value].content);
-    });
-
-    // 侧边栏相关
-    const mobileMenuOpen = ref(false);
-    const showQuickTip = ref(false);
-    const quickTipMessage = ref('');
-    const teacherMenuItems = [
-      { path: '/teacher/dashboard', icon: '📊', label: '教学看板' },
-      { path: '/teacher/exercises', icon: '📝', label: '练习管理' },
-      { path: '/teacher/assignments', icon: '📚', label: '作业管理' },
-      { path: '/teacher/students', icon: '👨‍🎓', label: '学生管理' },
-      { path: '/teacher/ppt-generate', icon: '🖥️', label: 'PPT生成' },
-    ];
-
-    // 表单验证
-    const isFormValid = computed(() => {
-      const keyPointsValid = formData.key_points.length > 0 &&
-        formData.key_points.filter(point => point.trim() !== '').length > 0;
-
-      return (
-        formData.title.trim().length > 0 &&
-        formData.subject.trim().length > 0 &&
-        formData.teaching_target.trim().length > 0 &&
-        keyPointsValid &&
-        formData.target_grade.trim().length > 0
-      );
-    });
-
-    // Markdown 渲染
-    const renderedOutline = computed(() => {
-      if (!outlineResult.value || !outlineResult.value.outline_md) {
-        return '';
-      }
-      return marked(outlineResult.value.outline_md);
-    });
-
-    // 获取用户名
-    const username = computed(() => {
-      return localStorage.getItem('username') || '教师用户';
-    });
-
-    // 侧边栏相关方法
-    const handleMenuClick = (item) => {
-      console.log('🔄 菜单点击:', item.label);
-      if (item.path !== window.location.pathname) {
-        window.location.href = item.path;
-      }
-      closeMobileMenu();
-      showQuickTipMessage(`已切换到 ${item.label}`);
-    };
-
-    const toggleMobileMenu = () => {
-      mobileMenuOpen.value = !mobileMenuOpen.value;
-      console.log('📱 切换移动端菜单:', mobileMenuOpen.value);
-    };
-
-    const closeMobileMenu = () => {
-      mobileMenuOpen.value = false;
-    };
-
-    const showQuickTipMessage = (message) => {
-      quickTipMessage.value = message;
-      showQuickTip.value = true;
-      setTimeout(() => {
-        showQuickTip.value = false;
-      }, 2000);
-    };
-
-    // 添加教学重点
-    const addKeyPoint = () => {
-      if (formData.key_points.length < 10) {
-        formData.key_points.push('');
-      }
-    };
-
-    // 删除教学重点
-    const removeKeyPoint = (index) => {
-      if (formData.key_points.length > 1) {
-        formData.key_points.splice(index, 1);
-      }
-    };
-
-    // 生成PPT大纲
-    const generateOutline = async () => {
-      if (!isFormValid.value) {
-        errorMessage.value = '请填写所有必填项';
-        return;
-      }
-
-      clearError();
-      isLoading.value = true;
-      outlineResult.value = null;
-
-      try {
-        // 准备请求数据，过滤空字符串
-        const requestData = {
-          title: formData.title.trim(),
-          subject: formData.subject.trim(),
-          teaching_target: formData.teaching_target.trim(),
-          key_points: formData.key_points.filter(point => point.trim() !== ''),
-          target_grade: formData.target_grade.trim(),
-          slide_count: formData.slide_count,
-          additional_info: formData.additional_info.trim() || null
-        };
-
-        console.log('发送PPT生成请求:', requestData);
-        const result = await generatePPTOutline(requestData);
-        outlineResult.value = result;
-
-        // 显示成功消息
-        successMessage.value = 'PPT大纲生成成功！';
-        showSuccess.value = true;
-        setTimeout(() => { showSuccess.value = false; }, 3000);
-
-        // 滚动到结果区域
-        setTimeout(() => {
-          const resultCard = document.querySelector('.result-card');
-          if (resultCard) {
-            resultCard.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-
-      } catch (error) {
-        errorMessage.value = error.message || '生成PPT大纲失败，请稍后重试';
-        console.error('生成PPT大纲错误:', error);
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    // 复制大纲内容
-    const copyOutline = () => {
-      if (!outlineResult.value) return;
-
-      try {
-        navigator.clipboard.writeText(outlineResult.value.outline_md);
-        successMessage.value = '大纲内容已复制到剪贴板';
-        showSuccess.value = true;
-        setTimeout(() => { showSuccess.value = false; }, 2000);
-      } catch (error) {
-        errorMessage.value = '复制失败，请手动复制';
-      }
-    };
-
-    // 下载Markdown文件
-    const downloadOutline = () => {
-      if (!outlineResult.value) return;
-
-      try {
-        const fileName = `${outlineResult.value.title.replace(/[^\w\s]/gi, '')}_大纲.md`;
-        const blob = new Blob([outlineResult.value.outline_md], { type: 'text/markdown;charset=utf-8' });
-
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(link.href);
-
-        successMessage.value = 'Markdown文件下载成功';
-        showSuccess.value = true;
-        setTimeout(() => { showSuccess.value = false; }, 2000);
-      } catch (error) {
-        errorMessage.value = '下载失败，请稍后重试';
-      }
-    };
-
-    // 生成PPT
-    const generatePPT = async () => {
-      if (!outlineResult.value) return;
-
-      clearError();
-      isGeneratingPPT.value = true;
-
-      try {
-        // 创建Blob对象
-        const mdBlob = new Blob([outlineResult.value.outline_md], { type: 'text/markdown' });
-
-        // 创建File对象
-        const mdFile = new File([mdBlob], `${outlineResult.value.title}_大纲.md`, { type: 'text/markdown' });
-
-        // 从大纲生成PPT
-        const result = await generatePPTFromOutline(outlineResult.value.title, mdFile);
-
-        // 设置结果
-        pptResult.value = result;
-        currentSlide.value = 0;
-
-        // 显示成功消息
-        successMessage.value = 'PPT生成成功！';
-        showSuccess.value = true;
-        setTimeout(() => { showSuccess.value = false; }, 3000);
-
-        // 滚动到PPT预览区域
-        setTimeout(() => {
-          const pptPreview = document.querySelector('.ppt-preview');
-          if (pptPreview) {
-            pptPreview.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-
-      } catch (error) {
-        errorMessage.value = error.message || '生成PPT失败，请稍后重试';
-        console.error('生成PPT错误:', error);
-      } finally {
-        isGeneratingPPT.value = false;
-      }
-    };
-
-    // 下载PPT
-    const downloadPPT = async () => {
-      if (!pptResult.value) return;
-
-      try {
-        // 确保文件名有效
-        console.log('@@准备下载PPT文件:', pptResult.value);
-        const filename = pptResult.value.filename || '未命名演示文稿';
-        console.log('@@下载PPT文件:', filename);
-        await downloadPPTX(pptResult.value, filename);
-
-        successMessage.value = 'PPT下载成功！';
-        showSuccess.value = true;
-      } catch (error) {
-        errorMessage.value = error.message;
-      }
-    };
-
-    // 处理文件选择
-    const handleFileChange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        outlineFile.value = file;
-        isUploadReady.value = true;
-      } else {
-        outlineFile.value = null;
-        isUploadReady.value = false;
-      }
-    };
-
-    // 上传大纲文件
-    const uploadOutlineFile = async () => {
-      if (!outlineFile.value || !customOutlineTitle.value.trim()) {
-        errorMessage.value = '请填写标题并选择文件';
-        return;
-      }
-
-      clearError();
-      isUploadingOutline.value = true;
-
-      try {
-        // 创建FormData对象
-        const formData = new FormData();
-        formData.append('file', outlineFile.value);
-        formData.append('title', customOutlineTitle.value.trim());
-
-        // 发送上传请求
-        const result = await generatePPTFromOutline(customOutlineTitle.value.trim(), outlineFile.value);
-
-        // 设置结果
-        pptResult.value = result;
-        currentSlide.value = 0;
-
-        // 显示成功消息
-        successMessage.value = 'PPT生成成功！';
-        showSuccess.value = true;
-        setTimeout(() => { showSuccess.value = false; }, 3000);
-
-        // 滚动到PPT预览区域
-        setTimeout(() => {
-          const pptPreview = document.querySelector('.ppt-preview');
-          if (pptPreview) {
-            pptPreview.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-
-      } catch (error) {
-        errorMessage.value = error.message || '上传大纲文件失败，请稍后重试';
-        console.error('上传大纲文件错误:', error);
-      } finally {
-        isUploadingOutline.value = false;
-      }
-    };
-
-    // 重置表单
-    const resetForm = () => {
-      formData.title = '';
-      formData.subject = '';
-      formData.teaching_target = '';
-      formData.key_points = [''];
-      formData.target_grade = '';
-      formData.slide_count = 10;
-      formData.additional_info = '';
-      outlineResult.value = null;
-      clearError();
-    };
-
-    // 清除错误信息
-    const clearError = () => {
-      errorMessage.value = '';
-    };
-
-    // 返回上一页
-    const goBack = () => {
-      window.history.back();
-    };
-
-    // 退出登录
-    const logout = () => {
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('username');
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
-    };
-
-    // 页面加载
-    onMounted(() => {
-      // 页面加载时无需进行任何操作，确保表单是空的
-      console.log('PPT生成页面已加载');
-    });
-
-    return {
-      formData,
-      isLoading,
-      errorMessage,
-      showSuccess,
-      successMessage,
-      outlineResult,
-      isFormValid,
-      renderedOutline,
-      addKeyPoint,
-      removeKeyPoint,
-      generateOutline,
-      copyOutline,
-      downloadOutline,
-      resetForm,
-      clearError,
-
-      // 新增的返回值
-      isGeneratingPPT,
-      isDownloadingPPT,
-      pptResult,
-      currentSlide,
-      renderedSlideContent,
-      generatePPT,
-      downloadPPT,
-
-      // 自定义大纲相关
-      customOutlineTitle,
-      outlineFile,
-      isUploadingOutline,
-      isUploadReady,
-      handleFileChange,
-      uploadOutlineFile,
-
-      // 侧边栏相关
-      mobileMenuOpen,
-      teacherMenuItems,
-      handleMenuClick,
-      toggleMobileMenu,
-      closeMobileMenu,
-      showQuickTip,
-      quickTipMessage,
-      username,
-      goBack,
-      logout
-    };
+// 渲染当前幻灯片内容
+const renderedSlideContent = computed(() => {
+  if (!pptResult.value || !pptResult.value.slides[currentSlide.value]) {
+    return '';
   }
-}
+  return marked(pptResult.value.slides[currentSlide.value].content);
+});
+
+// 侧边栏相关
+const mobileMenuOpen = ref(false);
+const showQuickTip = ref(false);
+const quickTipMessage = ref('');
+const teacherMenuItems = [
+  { path: '/teacher/course', label: '课程管理' },
+  { path: '/teacher/chat', label: '教学助手' },
+  { path: '/teacher/exercise_generate', label: '习题生成' },
+  { path: '/teacher/ppt/generate', label: 'PPT生成' },
+  { path: '/teacher/profile', label: '个人信息' },
+];
+
+// 表单验证
+const isFormValid = computed(() => {
+  const keyPointsValid = formData.key_points.length > 0 &&
+      formData.key_points.filter(point => point.trim() !== '').length > 0;
+
+  return (
+      formData.title.trim().length > 0 &&
+      formData.subject.trim().length > 0 &&
+      formData.teaching_target.trim().length > 0 &&
+      keyPointsValid &&
+      formData.target_grade.trim().length > 0
+  );
+});
+
+// Markdown 渲染
+const renderedOutline = computed(() => {
+  if (!outlineResult.value || !outlineResult.value.outline_md) {
+    return '';
+  }
+  return marked(outlineResult.value.outline_md);
+});
+
+// 获取用户名
+const username = computed(() => {
+  return localStorage.getItem('username') || '教师用户';
+});
+
+// 侧边栏相关方法
+const handleMenuClick = (item) => {
+  router.push(item.path);
+  closeMobileMenu();
+};
+
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false;
+};
+
+const showQuickTipMessage = (message) => {
+  quickTipMessage.value = message;
+  showQuickTip.value = true;
+  setTimeout(() => {
+    showQuickTip.value = false;
+  }, 2000);
+};
+
+// 添加教学重点
+const addKeyPoint = () => {
+  if (formData.key_points.length < 10) {
+    formData.key_points.push('');
+  }
+};
+
+// 删除教学重点
+const removeKeyPoint = (index) => {
+  if (formData.key_points.length > 1) {
+    formData.key_points.splice(index, 1);
+  }
+};
+
+// 生成PPT大纲
+const generateOutline = async () => {
+  if (!isFormValid.value) {
+    errorMessage.value = '请填写所有必填项';
+    return;
+  }
+
+  clearError();
+  isLoading.value = true;
+  outlineResult.value = null;
+
+  try {
+    const requestData = {
+      title: formData.title.trim(),
+      subject: formData.subject.trim(),
+      teaching_target: formData.teaching_target.trim(),
+      key_points: formData.key_points.filter(point => point.trim() !== ''),
+      target_grade: formData.target_grade.trim(),
+      slide_count: formData.slide_count,
+      additional_info: formData.additional_info.trim() || null
+    };
+
+    const result = await generatePPTOutline(requestData);
+    outlineResult.value = result;
+    successMessage.value = 'PPT大纲生成成功！';
+    showSuccess.value = true;
+    setTimeout(() => { showSuccess.value = false; }, 3000);
+
+    setTimeout(() => {
+      const resultCard = document.querySelector('.result-card');
+      if (resultCard) {
+        resultCard.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+
+  } catch (error) {
+    errorMessage.value = error.message || '生成PPT大纲失败，请稍后重试';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// 复制大纲内容
+const copyOutline = () => {
+  if (!outlineResult.value) return;
+  try {
+    navigator.clipboard.writeText(outlineResult.value.outline_md);
+    showQuickTipMessage('大纲内容已复制到剪贴板');
+  } catch (error) {
+    errorMessage.value = '复制失败，请手动复制';
+  }
+};
+
+// 下载Markdown文件
+const downloadOutline = () => {
+  if (!outlineResult.value) return;
+  try {
+    const fileName = `${outlineResult.value.title.replace(/[^\w\s]/gi, '')}_大纲.md`;
+    const blob = new Blob([outlineResult.value.outline_md], { type: 'text/markdown;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    showQuickTipMessage('Markdown文件下载成功');
+  } catch (error) {
+    errorMessage.value = '下载失败，请稍后重试';
+  }
+};
+
+// 生成PPT
+const generatePPT = async () => {
+  if (!outlineResult.value) return;
+  clearError();
+  isGeneratingPPT.value = true;
+  try {
+    const mdBlob = new Blob([outlineResult.value.outline_md], { type: 'text/markdown' });
+    const mdFile = new File([mdBlob], `${outlineResult.value.title}_大纲.md`, { type: 'text/markdown' });
+    const result = await generatePPTFromOutline(outlineResult.value.title, mdFile);
+    pptResult.value = result;
+    currentSlide.value = 0;
+    successMessage.value = 'PPT生成成功！';
+    showSuccess.value = true;
+    setTimeout(() => { showSuccess.value = false; }, 3000);
+    setTimeout(() => {
+      const pptPreview = document.querySelector('.ppt-preview');
+      if (pptPreview) {
+        pptPreview.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  } catch (error) {
+    errorMessage.value = error.message || '生成PPT失败，请稍后重试';
+  } finally {
+    isGeneratingPPT.value = false;
+  }
+};
+
+// 下载PPT
+const downloadPPT = async () => {
+  if (!pptResult.value) return;
+  try {
+    const filename = pptResult.value.filename || '未命名演示文稿';
+    await downloadPPTX(pptResult.value, filename);
+    showQuickTipMessage('PPT下载成功！');
+  } catch (error) {
+    errorMessage.value = error.message;
+  }
+};
+
+// 处理文件选择
+const handleFileChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    outlineFile.value = file;
+    isUploadReady.value = true;
+  } else {
+    outlineFile.value = null;
+    isUploadReady.value = false;
+  }
+};
+
+// 上传大纲文件
+const uploadOutlineFile = async () => {
+  if (!outlineFile.value || !customOutlineTitle.value.trim()) {
+    errorMessage.value = '请填写标题并选择文件';
+    return;
+  }
+  clearError();
+  isUploadingOutline.value = true;
+  try {
+    const result = await generatePPTFromOutline(customOutlineTitle.value.trim(), outlineFile.value);
+    pptResult.value = result;
+    currentSlide.value = 0;
+    successMessage.value = 'PPT生成成功！';
+    showSuccess.value = true;
+    setTimeout(() => { showSuccess.value = false; }, 3000);
+    setTimeout(() => {
+      const pptPreview = document.querySelector('.ppt-preview');
+      if (pptPreview) {
+        pptPreview.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  } catch (error) {
+    errorMessage.value = error.message || '上传大纲文件失败，请稍后重试';
+  } finally {
+    isUploadingOutline.value = false;
+  }
+};
+
+// 重置表单
+const resetForm = () => {
+  formData.title = '';
+  formData.subject = '';
+  formData.teaching_target = '';
+  formData.key_points = [''];
+  formData.target_grade = '';
+  formData.slide_count = 10;
+  formData.additional_info = '';
+  outlineResult.value = null;
+  clearError();
+};
+
+// 清除错误信息
+const clearError = () => {
+  errorMessage.value = '';
+};
+
+// 返回上一页
+const goBack = () => {
+  router.go(-1);
+};
+
+// 退出登录
+const handleLogout = () => {
+  if (confirm('确定要退出登录吗？')) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('role');
+    router.push('/login');
+  }
+};
+
+onMounted(() => {
+  console.log('PPT生成页面已加载');
+});
 </script>
 
 <style scoped>
 /* 基础布局样式 */
 .teacher-layout {
-  width: 100vw;
+  display: flex;
   height: 100vh;
-  margin: 0;
-  padding: 0;
-  background: #f8fafc;
+  width: 100vw;
+  background: #f5f6fa;
   overflow: hidden;
-  position: relative;
 }
 
-.main-layout {
-  margin-left: 280px;
-  width: calc(100vw - 280px);
-  height: 100vh;
+.main {
+  position: relative;
+  flex: 1;
+  margin-left: 240px;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
-  position: relative;
+  overflow: hidden;
 }
+
+.header-user {
+  position: absolute;
+  top: 24px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
+}
+
+.logout-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-weight: 500;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
 
 .content-area {
   flex: 1;
@@ -966,81 +851,6 @@ export default {
 }
 
 /* 返回按钮样式 */
-.back-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #667eea;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  margin-right: 15px;
-}
-
-.back-btn:hover {
-  background: #5a67d8;
-  transform: translateY(-2px);
-}
-
-.back-icon {
-  font-size: 16px;
-}
-
-/* 用户操作样式 */
-.user-actions {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  padding: 8px 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.user-avatar {
-  font-size: 16px;
-}
-
-.username {
-  font-weight: 500;
-  color: #2d3748;
-  font-size: 14px;
-}
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #e53e3e;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3);
-}
-
-.logout-btn:hover {
-  background: #c53030;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.4);
-}
-
-.logout-icon {
-  font-size: 14px;
-}
 
 .subtitle {
   font-size: 16px;
@@ -1567,31 +1377,8 @@ label {
   font-size: 18px;
 }
 
-/* 过渡动画 */
-.tip-fade-enter-active,
-.tip-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.tip-fade-enter-from,
-.tip-fade-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-/* 响应式设计 */
-@media (max-width: 1200px) {
-  .main-layout {
-    margin-left: 260px;
-    width: calc(100vw - 260px);
-  }
-}
 
 @media (max-width: 768px) {
-  .main-layout {
-    margin-left: 0;
-    width: 100vw;
-  }
 
   .mobile-overlay {
     display: block;
@@ -1622,10 +1409,6 @@ label {
     justify-content: center;
   }
 
-  .username {
-    display: none;
-  }
-
   .logout-btn span:last-child {
     display: none;
   }
@@ -1640,15 +1423,9 @@ label {
     padding: 20px;
   }
 
-  .user-actions {
-    gap: 10px;
-  }
 }
 
 /* 图标 */
-.icon-presentation:before {
-  content: '🖥️';
-}
 
 .icon-delete:before {
   content: '🗑️';
@@ -1705,18 +1482,6 @@ label {
   text-decoration: none;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(66, 153, 225, 0.3);
-}
-
-.files-btn {
-  background: #319795;
-}
-
-.files-btn:hover {
-  background: #2c7a7b;
-}
-
-.icon-files:before {
-  content: '📁';
 }
 
 /* 响应式调整 */

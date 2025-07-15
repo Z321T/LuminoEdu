@@ -3,7 +3,7 @@
     <!-- 侧边栏 -->
     <SideBar
         :menuItems="teacherMenuItems"
-        :activeItem="$route.path"
+        :activeItem="'/teacher/course'"
         @menuClick="handleMenuClick"
     />
 
@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed} from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import SideBar from '@/components/layout/SideBar.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
@@ -115,24 +115,30 @@ import {
   getAllCourses,
   deleteCourse,
   formatDateTime,
-  type Course
-} from '@/api/teacher/course_management'
+  type Course_th
+} from '@/api/teacher/course_th'
+import PPT_generate from "@/views/teacher/PPT_generate.vue";
 
 const router = useRouter()
+
 const username = ref(localStorage.getItem('username') || '教师')
 
 const teacherMenuItems = [
   { path: '/teacher/course', label: '课程管理' },
+  { path: '/teacher/chat', label: '教学助手' },
+  { path: '/teacher/exercise_generate', label: '习题生成' },
+  { path: '/teacher/ppt/generate', label: 'PPT生成' },
+  { path: '/teacher/profile', label: '个人信息' },
 ]
 
 const loading = ref(false)
 const error = ref('')
-const courses = ref<Course[]>([])
+const courses = ref<Course_th[]>([])
 const searchQuery = ref('')
 const statusFilter = ref('')
 
 // 根据日期判断课程状态
-const getCourseStatus = (course: Course): string => {
+const getCourseStatus = (course: Course_th): string => {
   const today = new Date()
   const startDate = new Date(course.start_date)
   const endDate = new Date(course.end_date)
@@ -157,7 +163,7 @@ const getStatusText = (status: string): string => {
 }
 
 // 获取状态样式类名
-const getStatusClass = (course: Course): string => {
+const getStatusClass = (course: Course_th): string => {
   return getCourseStatus(course)
 }
 
@@ -222,7 +228,7 @@ const navigateToCreate = () => {
   router.push('/teacher/course/create')
 }
 const navigateToCourseDetail = (courseId: number) => {
-  router.push(`/teacher/course/${courseId}`)
+  router.push(`/teacher/course/detail/${courseId}`)
 }
 
 const handleLogout = () => {
@@ -234,12 +240,13 @@ const handleLogout = () => {
 }
 
 const handleMenuClick = (item: any) => {
-  router.push(item.path)
+  router.push(item.path)  // 使用传入的路径，而不是固定路径
 }
 
 onMounted(() => {
   loadCourses()
 })
+
 </script>
 
 <style scoped>
@@ -436,21 +443,6 @@ onMounted(() => {
 .credit-badge {
   background: #f0fff4;
   color: #38a169;
-}
-
-.status-badge.active {
-  background: #d1ecf1;
-  color: #0c5460;
-}
-
-.status-badge.completed {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.status-badge.upcoming {
-  background: #fff3cd;
-  color: #856404;
 }
 
 .course-info {
