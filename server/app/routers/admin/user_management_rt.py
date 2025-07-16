@@ -180,7 +180,7 @@ async def update_teacher(staff_id: str, teacher_data: TeacherUpdateFields):
 
 
 @router.post("/reset_teacher_password/{staff_id}", response_model=UserUpdateResponse)
-async def reset_teacher_password(staff_id: str, password_data: UserPasswordResetRequest):
+async def reset_teacher_password_endpoint(staff_id: str, password_data: UserPasswordResetRequest):
     """
     重置教师密码
     """
