@@ -260,11 +260,6 @@
     </el-dialog>
 
     <!-- 移动端遮罩 -->
-    <div
-        v-if="mobileMenuOpen"
-        class="mobile-overlay"
-        @click="closeMobileMenu"
-    />
 
     <!-- 快速提示 -->
     <transition name="tip-fade">
@@ -285,7 +280,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHeader from '@/components/layout/PageHeader.vue'
-import SideBar from '@/components/layout/Sidebar.vue'
+import SideBar from '@/components/layout/SideBar.vue'
 import { getTeacherList, deleteTeachers, updateTeacherInfo, resetTeacherPassword, getTeacherDetail } from '@/api/admin/user_management'
 
 const router = useRouter()

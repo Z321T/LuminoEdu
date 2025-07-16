@@ -172,7 +172,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHeader from '@/components/layout/PageHeader.vue'
-import SideBar from '@/components/layout/Sidebar.vue'
+import SideBar from '@/components/layout/SideBar.vue'
 import { createTeachers, downloadTeacherTemplate } from '@/api/admin/user_management'
 
 const router = useRouter()

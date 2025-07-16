@@ -99,7 +99,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import Sidebar from '@/components/layout/Sidebar.vue'
+import Sidebar from '@/components/layout/SideBar.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
 import { downloadModelApi, getModelStatusApi, deleteModelApi } from '@/api/admin/model_management'
 

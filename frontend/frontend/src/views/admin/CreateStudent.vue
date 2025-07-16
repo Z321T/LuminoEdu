@@ -175,7 +175,7 @@
 import { ref, reactive, computed, onMounted, toRefs } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import PageHeader from '@/components/layout/PageHeader.vue'
-import SideBar from '@/components/layout/Sidebar.vue'
+import SideBar from '@/components/layout/SideBar.vue'
 import { downloadStudentTemplate, createStudents } from '@/api/admin/user_management'
 
 const props = defineProps(['data'])
