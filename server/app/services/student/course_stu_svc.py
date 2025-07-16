@@ -5,7 +5,7 @@ from tortoise.exceptions import DoesNotExist
 
 from app.config import COURSE_MATERIALS_DIR
 from app.core.logger import setup_logger
-from app.models.course import Course_th, CourseStudent
+from app.models.course import Course, CourseStudent
 from app.models.student import Student
 from app.schemas.student.course_stu_sch import (
     CourseResponse, StudentCoursesResponse,
@@ -28,7 +28,7 @@ async def get_student_courses(student_id: str) -> StudentCoursesResponse:
         raise ValueError("学生不存在")
 
     # 获取学生选修的所有课程
-    courses = await Course_th.filter(
+    courses = await Course.filter(
         students__student_id=student_id
     ).select_related('teacher').all()
 
@@ -68,7 +68,7 @@ async def get_course_detail(student_id: str, course_id: int) -> CourseResponse:
     logger.info(f"学生 {student_id} 正在获取课程详情: 课程ID={course_id}")
     try:
         # 验证学生是否选修了该课程
-        course = await Course_th.get(
+        course = await Course.get(
             id=course_id,
             students__student_id=student_id
         ).select_related('teacher')
@@ -101,7 +101,7 @@ async def get_course_materials(student_id: str, course_id: int) -> CourseMateria
 
     try:
         # 验证学生是否选修了该课程
-        course = await Course_th.filter(
+        course = await Course.filter(
             id=course_id,
             students__student_id=student_id
         ).select_related('teacher').first()
@@ -151,7 +151,7 @@ async def download_course_material(student_id: str, course_id: int, filename: st
 
     try:
         # 验证学生是否选修了该课程
-        course = await Course_th.filter(
+        course = await Course.filter(
             id=course_id,
             students__student_id=student_id
         ).select_related('teacher').first()

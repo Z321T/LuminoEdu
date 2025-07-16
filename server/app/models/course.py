@@ -1,7 +1,7 @@
 from tortoise import fields, models
 
 
-class Course_th(models.Model):
+class Course(models.Model):
     """课程模型"""
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=100, description="课程名称")
@@ -37,7 +37,7 @@ class Course_th(models.Model):
 class CourseStudent(models.Model):
     """课程-学生关联表"""
     id = fields.IntField(pk=True)
-    course = fields.ForeignKeyField("models.Course_th", on_delete=fields.CASCADE)
+    course = fields.ForeignKeyField("models.Course", on_delete=fields.CASCADE)
     student = fields.ForeignKeyField("models.Student", on_delete=fields.CASCADE)
 
     class Meta:
