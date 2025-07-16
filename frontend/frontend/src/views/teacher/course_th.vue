@@ -93,7 +93,7 @@
               <div class="course-actions">
                 <button
                     class="delete-btn"
-                    @click="confirmDelete(course.id)"
+                    @click.stop="confirmDelete(course.id)"
                 >
                   删除课程
                 </button>
@@ -117,7 +117,6 @@ import {
   formatDateTime,
   type Course_th
 } from '@/api/teacher/course_th'
-import PPT_generate from "@/views/teacher/PPT_generate.vue";
 
 const router = useRouter()
 

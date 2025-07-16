@@ -71,8 +71,9 @@
                   id="credit"
                   v-model.number="formData.credit"
                   type="number"
-                  min="1"
+                  min="0.5"
                   max="10"
+                  step="0.5"
                   placeholder="请输入学分数"
                   required
               />
@@ -167,7 +168,7 @@ const formData = reactive<CreateCourseRequest>({
   name: '',
   description: '',
   semester: '',
-  credit: 1,
+  credit: 0.5,
   start_date: '',
   end_date: ''
 })
