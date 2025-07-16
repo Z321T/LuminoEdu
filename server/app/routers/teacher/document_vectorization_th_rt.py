@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, Query, UploadFile, File, Form
 
 from app.core.dependencies import auth_teacher_user
 from app.core.logger import setup_logger
@@ -22,7 +22,7 @@ router = APIRouter(tags=["教师端-文档向量化"])
 @router.post("/upload")
 async def upload_document(
     file: UploadFile = File(...),
-    title: str = Query(..., description="文档标题"),
+    title: str = Form(...),
     current_user: Teacher = Depends(auth_teacher_user)
 ):
     """
@@ -53,7 +53,11 @@ async def upload_document(
     logger.info(f"教师{current_user.staff_id}上传文档: {title}")
 
     try:
-        result = await process_and_store_document(file, current_user.staff_id, title)
+        result = await process_and_store_document(
+            file,
+            current_user.staff_id,
+            title
+        )
         logger.info(f"文档处理完成: {result}")
         return result
     except HTTPException:

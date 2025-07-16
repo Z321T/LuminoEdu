@@ -57,14 +57,11 @@ export interface UploadResponse {
 // 定义列表响应类型
 export interface DocumentListResponse {
     documents: DocumentInfo[]
-    count: number
 }
 
 // 定义搜索响应类型
 export interface SearchResponse {
     documents: DocumentInfo[]
-    count: number
-    keyword: string
 }
 
 // 定义删除响应类型
