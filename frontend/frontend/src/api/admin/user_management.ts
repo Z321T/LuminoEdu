@@ -806,7 +806,7 @@ export const deleteStudents = async (studentIds: string[]): Promise<DeleteStuden
 
 // 批量删除教师请求接口
 export interface DeleteTeachersRequest {
-  teacher_ids: string[]
+  staff_ids: string[]
 }
 
 // 批量删除教师响应接口
@@ -821,14 +821,14 @@ export interface DeleteTeachersResponse {
  */
 export const deleteTeachers = async (teacherIds: string[]): Promise<DeleteTeachersResponse> => {
   try {
-    console.log('📤 开始批量删除教师:', { teacherIds })
+    console.log('开始批量删除教师:', { teacherIds })
 
     if (!teacherIds || teacherIds.length === 0) {
       throw new Error('请选择要删除的教师')
     }
 
     const data: DeleteTeachersRequest = {
-      teacher_ids: teacherIds
+      staff_ids: teacherIds
     }
 
     const response = await api.delete('/admin/user_management/batch_delete_teachers', {

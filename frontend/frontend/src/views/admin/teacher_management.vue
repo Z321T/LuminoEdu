@@ -351,15 +351,6 @@ const loadTeachers = async () => {
     loading.value = false
   }
 }
-
-const handleSearch = () => {
-  if (searchTimer) clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    currentPage.value = 1
-    loadTeachers()
-  }, 300)
-}
-
 const handlePageChange = (page: number) => {
   currentPage.value = page
   loadTeachers()
