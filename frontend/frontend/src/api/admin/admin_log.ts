@@ -404,7 +404,7 @@ export const exportServiceLogs = async (
     endDate?: string
 ): Promise<Blob> => {
   try {
-    console.log('📤 开始导出服务日志:', { serviceName, startDate, endDate })
+    console.log('开始导出服务日志:', { serviceName, startDate, endDate })
 
     if (!serviceName) {
       throw new Error('服务名称不能为空')
@@ -423,12 +423,14 @@ export const exportServiceLogs = async (
       queryParams.append('end_date', endDate)
     }
 
-    const response = await api.get(`/admin/log_management/export_service_logs?${queryParams}`, {
+    // 修改：直接将 queryParams 对象传给 params 选项，而不是手动拼接URL
+    const response = await api.get('/admin/log_management/export', {
+      params: queryParams, // 让 axios 处理参数
       responseType: 'blob',
       timeout: 120000 // 导出可能需要较长时间
     })
 
-    console.log('📥 导出服务日志成功')
+    console.log('导出服务日志成功')
 
     const blob = new Blob([response.data], {
       type: response.headers['content-type'] || 'text/plain;charset=utf-8'
@@ -445,21 +447,30 @@ export const exportServiceLogs = async (
     }
 
     const status = error.response.status
-    const errorData = error.response.data
+    // 注意：Blob 类型的错误响应需要特殊处理才能读取JSON内容
+    let errorDetail = `导出日志文件失败(${status})`
+    if (error.response.data instanceof Blob && error.response.data.type.includes('application/json')) {
+      try {
+        const errorJson = JSON.parse(await error.response.data.text());
+        errorDetail = errorJson.detail || JSON.stringify(errorJson);
+      } catch (e) {
+        // 解析失败则使用默认错误信息
+      }
+    }
 
     switch (status) {
       case 400:
-        throw new Error(`参数验证失败: ${errorData?.detail || '请检查服务名称和日期格式'}`)
+        throw new Error(`参数验证失败: ${errorDetail}`)
       case 401:
         throw new Error('认证失败，请重新登录')
       case 403:
         throw new Error('权限不足，无法导出该服务的日志')
       case 404:
-        throw new Error(`未找到服务 ${serviceName} 的日志文件`)
+        throw new Error(`未找到服务 ${serviceName} 的日志文件或导出接口不存在`)
       case 500:
-        throw new Error(`服务器错误: ${errorData?.detail || '导出日志失败'}`)
+        throw new Error(`服务器错误: ${errorDetail}`)
       default:
-        throw new Error(errorData?.message || `导出日志文件失败(${status})`)
+        throw new Error(errorDetail)
     }
   }
 }
