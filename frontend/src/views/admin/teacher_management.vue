@@ -21,38 +21,96 @@
       <!-- 内容区域 -->
       <main class="content-area">
         <div class="teachers-table-card">
+          <!-- 表格头部 -->
           <div class="table-header">
-            <h3 class="table-title">
-              教师列表
-            </h3>
-
+            <h2 class="table-title">
+              <span class="title-icon">👥</span>
+              <span>教师列表</span>
+            </h2>
             <div class="header-actions">
-              <!-- 批量操作按钮 -->
-              <div
-                  v-if="selectedTeachers.length > 0"
-                  class="batch-actions"
-              >
-                <span class="selected-count">已选择 {{selectedTeachers.length}}
-                  个教师</span>
-                <button
-                    @click="showDeleteConfirm"
-                    class="delete-btn"
-                >
-                  <span>批量删除</span>
-                </button>
-              </div>
-
-              <!-- 搜索框 -->
-              <button
-                  class="import-btn"
-                  @click="goToCreateTeacher"
-              >
-                导入教师
+              <button class="import-btn" @click="goToCreateTeacher">
+                <span>➕</span>
+                <span>批量导入教师</span>
               </button>
             </div>
           </div>
 
-          <!-- 教师列表表格 -->
+          <!-- 筛选区域 -->
+          <div class="filter-section">
+            <div class="filter-group">
+              <label for="nameSearch">姓名</label>
+              <input
+                  id="nameSearch"
+                  v-model="searchForm.name"
+                  @input="handleSearch"
+                  type="text"
+                  placeholder="请输入教师姓名"
+                  class="filter-input"
+              />
+            </div>
+
+            <div class="filter-group">
+              <label for="staffIdSearch">教工号</label>
+              <input
+                  id="staffIdSearch"
+                  v-model="searchForm.staff_id"
+                  @input="handleSearch"
+                  type="text"
+                  placeholder="请输入教工号"
+                  class="filter-input"
+              />
+            </div>
+
+            <div class="filter-group">
+              <label for="departmentSearch">所属院系</label>
+              <input
+                  id="departmentSearch"
+                  v-model="searchForm.department"
+                  @input="handleSearch"
+                  type="text"
+                  placeholder="请输入院系名称"
+                  class="filter-input"
+              />
+            </div>
+
+            <div class="filter-group">
+              <button
+                  v-if="hasSearchConditions"
+                  @click="clearAllSearch"
+                  class="clear-btn"
+              >
+                清空筛选
+              </button>
+            </div>
+          </div>
+
+          <!-- 搜索结果提示 -->
+          <div v-if="hasSearchConditions" class="search-results-info">
+            找到 {{ filteredTeachers.length }} 位教师
+          </div>
+
+          <!-- 批量操作栏 -->
+          <div v-if="selectedTeachers.length > 0" class="batch-actions">
+            <div class="batch-info">
+              <label class="batch-checkbox">
+                <input
+                    type="checkbox"
+                    @change="toggleAllSelection"
+                    :checked="isAllSelected"
+                    :indeterminate="isIndeterminate"
+                />
+                <span class="checkmark"></span>
+              </label>
+              <span class="batch-text">已选择 {{ selectedTeachers.length }} 名教师</span>
+            </div>
+            <div class="batch-buttons">
+              <button class="batch-delete-btn" @click="showDeleteConfirm">
+                批量删除
+              </button>
+            </div>
+          </div>
+
+          <!-- 表格容器 -->
           <div class="table-container">
             <table class="teachers-table">
               <thead>
@@ -73,18 +131,24 @@
               </thead>
               <tbody>
               <tr v-if="loading">
-                <td
-                    colspan="6"
-                    class="loading-row"
-                >加载中...</td>
+                <td colspan="5" class="loading-row">加载中...</td>
               </tr>
               <tr v-else-if="teachers.length === 0">
-                <td
-                    colspan="6"
-                    class="no-data"
-                >暂无教师数据</td>
+                <td colspan="5" class="no-data">
+                  <div v-if="hasSearchConditions" class="no-search-results">
+                    <div class="empty-icon">🔍</div>
+                    <div class="empty-text">未找到匹配的教师</div>
+                    <div class="empty-suggestion">
+                      尝试调整搜索条件或
+                      <button @click="clearAllSearch" class="clear-link">
+                        清空搜索条件
+                      </button>
+                    </div>
+                  </div>
+                  <div v-else>暂无教师数据</div>
+                </td>
               </tr>
-              <tr v-for="teacher in teachers" :key="teacher.id">
+              <tr v-else v-for="teacher in teachers" :key="teacher.id">
                 <td>
                   <input
                       type="checkbox"
@@ -93,9 +157,9 @@
                       :checked="selectedTeachers.includes(teacher.staff_id)"
                   />
                 </td>
-                <td>{{teacher.username}}</td>
-                <td>{{teacher.staff_id}}</td>
-                <td>{{teacher.department}}</td>
+                <td>{{ teacher.username }}</td>
+                <td>{{ teacher.staff_id }}</td>
+                <td>{{ teacher.department }}</td>
                 <td>
                   <button
                       @click="showTeacherDetail(teacher.staff_id)"
@@ -111,17 +175,31 @@
 
           <!-- 分页控件 -->
           <div class="pagination">
-            <button
-                :disabled="currentPage <= 1"
-                @click="handlePageChange(currentPage - 1)"
-            >上一页</button>
-            <span class="page-info">
-              第 {{currentPage}} 页 / 共 {{totalPages}} 页
-            </span>
-            <button
-                :disabled="currentPage >= totalPages"
-                @click="handlePageChange(currentPage + 1)"
-            >下一页</button>
+            <div class="pagination-info">
+              <span>共 {{ filteredTeachers.length }} 条记录，当前第 {{ currentPage }} / {{ totalPages }} 页</span>
+            </div>
+            <div class="pagination-controls">
+              <button
+                  class="page-btn"
+                  :disabled="currentPage === 1"
+                  @click="handlePageChange(1)"
+              >首页</button>
+              <button
+                  class="page-btn"
+                  :disabled="currentPage === 1"
+                  @click="handlePageChange(currentPage - 1)"
+              >上一页</button>
+              <button
+                  class="page-btn"
+                  :disabled="currentPage === totalPages || totalPages === 0"
+                  @click="handlePageChange(currentPage + 1)"
+              >下一页</button>
+              <button
+                  class="page-btn"
+                  :disabled="currentPage === totalPages || totalPages === 0"
+                  @click="handlePageChange(totalPages)"
+              >末页</button>
+            </div>
           </div>
         </div>
       </main>
@@ -142,7 +220,7 @@
             :key="index"
             class="detail-item"
         >
-          <label>{{field.label}}：</label>
+          <label>{{ field.label }}：</label>
           <template v-if="isEditing">
             <input
                 v-if="field.type === 'text'"
@@ -156,7 +234,7 @@
                 class="edit-textarea"
             ></textarea>
           </template>
-          <span v-else>{{formatFieldValue(field.key)}}</span>
+          <span v-else>{{ formatFieldValue(field.key) }}</span>
         </div>
       </div>
       <template #footer>
@@ -229,7 +307,7 @@
       <div class="delete-confirm">
         <div class="warning-icon">⚠️</div>
         <div class="confirm-text">
-          <p>您确定要删除以下 <strong>{{selectedTeachers.length}}</strong> 个教师吗？</p>
+          <p>您确定要删除以下 <strong>{{ selectedTeachers.length }}</strong> 个教师吗？</p>
           <p class="warning-text">此操作不可撤销，请谨慎操作！</p>
           <div class="teacher-list">
             <div
@@ -237,13 +315,13 @@
                 :key="teacherId"
                 class="teacher-item"
             >
-              {{getTeacherName(teacherId)}} ({{teacherId}})
+              {{ getTeacherName(teacherId) }} ({{ teacherId }})
             </div>
             <div
                 v-if="selectedTeachers.length > 5"
                 class="more-text"
             >
-              还有 {{selectedTeachers.length - 5}} 个教师...
+              还有 {{ selectedTeachers.length - 5 }} 个教师...
             </div>
           </div>
         </div>
@@ -258,8 +336,6 @@
         </span>
       </template>
     </el-dialog>
-
-    <!-- 移动端遮罩 -->
 
     <!-- 快速提示 -->
     <transition name="tip-fade">
@@ -294,16 +370,26 @@ const adminMenuItems = [
 ]
 
 // 列表相关
-const teachers = ref<any[]>([])
+const allTeachers = ref<any[]>([]) // 存储完整的教师列表
+const filteredTeachers = ref<any[]>([]) // 存储过滤后的教师列表
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
 const loading = ref(false)
-const searchKeyword = ref('')
+
+// 搜索表单
+const searchForm = ref({
+  name: '',
+  staff_id: '',
+  department: ''
+})
+
 let searchTimer: any = null
 
-// 侧边栏
-const mobileMenuOpen = ref(false)
+// 选择相关
+const selectedTeachers = ref<string[]>([])
+
+// 快速提示
 const showQuickTip = ref(false)
 const quickTipMessage = ref('')
 
@@ -330,32 +416,157 @@ const newPassword = ref('')
 const confirmPassword = ref('')
 
 // 批量操作
-const selectedTeachers = ref<string[]>([])
 const showDeleteDialog = ref(false)
 
-const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
-const isAllSelected = computed(() => teachers.value.length > 0 && selectedTeachers.value.length === teachers.value.length)
-const isIndeterminate = computed(() => selectedTeachers.value.length > 0 && selectedTeachers.value.length < teachers.value.length)
+// 计算属性
+const hasSearchConditions = computed(() => {
+  return searchForm.value.name || searchForm.value.staff_id || searchForm.value.department
+})
 
+// 修改 teachers 计算属性，使用过滤后的数据进行分页
+const teachers = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredTeachers.value.slice(start, end)
+})
+
+// 重新计算总页数，基于过滤后的数据
+const totalPages = computed(() => Math.ceil(filteredTeachers.value.length / pageSize.value))
+
+// 全选状态
+const isAllSelected = computed(() => {
+  return teachers.value.length > 0 && teachers.value.every(teacher =>
+      selectedTeachers.value.includes(teacher.staff_id)
+  )
+})
+
+const isIndeterminate = computed(() => {
+  return selectedTeachers.value.length > 0 && selectedTeachers.value.length < teachers.value.length
+})
+
+// 前端搜索过滤函数
+const applyLocalSearch = () => {
+  if (!hasSearchConditions.value) {
+    filteredTeachers.value = [...allTeachers.value]
+  } else {
+    filteredTeachers.value = allTeachers.value.filter(teacher => {
+      const nameMatch = !searchForm.value.name ||
+          teacher.username.toLowerCase().includes(searchForm.value.name.toLowerCase())
+
+      const staffIdMatch = !searchForm.value.staff_id ||
+          teacher.staff_id.toLowerCase().includes(searchForm.value.staff_id.toLowerCase())
+
+      const departmentMatch = !searchForm.value.department ||
+          teacher.department.toLowerCase().includes(searchForm.value.department.toLowerCase())
+
+      return nameMatch && staffIdMatch && departmentMatch
+    })
+  }
+
+  // 搜索后重置到第一页
+  if (hasSearchConditions.value && currentPage.value > 1) {
+    currentPage.value = 1
+  }
+
+  // 清空选择
+  selectedTeachers.value = []
+}
+
+// 搜索处理函数
+const handleSearch = () => {
+  // 清除之前的定时器
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+  }
+
+  // 设置防抖延迟
+  searchTimer = setTimeout(() => {
+    applyLocalSearch()
+  }, 300)
+}
+
+// 清空所有搜索条件
+const clearAllSearch = () => {
+  searchForm.value = {
+    name: '',
+    staff_id: '',
+    department: ''
+  }
+  applyLocalSearch()
+}
+
+// 修改分页处理函数
+const handlePageChange = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+// 修改 loadTeachers 函数
 const loadTeachers = async () => {
   try {
     loading.value = true
-    const response = await getTeacherList(currentPage.value, pageSize.value, searchKeyword.value)
-    teachers.value = response.teachers
+
+    // 获取所有教师数据用于前端搜索
+    const response = await getTeacherList(1, 1000)
+
+    // 存储完整的教师列表用于前端搜索
+    allTeachers.value = response.teachers
     total.value = response.total
-    currentPage.value = response.page
-    pageSize.value = response.page_size
-  } catch (error) {
+
+    // 应用前端搜索过滤
+    applyLocalSearch()
+  } catch (error: any) {
     console.error('加载教师列表失败:', error)
+    showQuickTipMessage(error.message || '加载教师列表失败')
   } finally {
     loading.value = false
   }
 }
-const handlePageChange = (page: number) => {
-  currentPage.value = page
-  loadTeachers()
+
+// 切换全选
+const toggleAllSelection = () => {
+  if (isAllSelected.value) {
+    selectedTeachers.value = []
+  } else {
+    selectedTeachers.value = teachers.value.map(teacher => teacher.staff_id)
+  }
 }
 
+// 选择单个教师
+const toggleTeacherSelection = (teacherId: string) => {
+  const idx = selectedTeachers.value.indexOf(teacherId)
+  if (idx === -1) {
+    selectedTeachers.value.push(teacherId)
+  } else {
+    selectedTeachers.value.splice(idx, 1)
+  }
+}
+
+// 批量删除教师
+const showDeleteConfirm = () => {
+  if (selectedTeachers.value.length === 0) {
+    showQuickTipMessage('请先选择要删除的教师')
+    return
+  }
+  showDeleteDialog.value = true
+}
+
+const confirmDelete = async () => {
+  try {
+    const result = await deleteTeachers(selectedTeachers.value)
+    if (result.success) {
+      showQuickTipMessage(`成功删除 ${result.deleted} 个教师`)
+      selectedTeachers.value = []
+      showDeleteDialog.value = false
+      await loadTeachers()
+    }
+  } catch (error: any) {
+    showQuickTipMessage(error.message)
+  }
+}
+
+// 查看教师详情
 const showTeacherDetail = async (staff_id: string) => {
   try {
     currentTeacher.value = await getTeacherDetail(staff_id)
@@ -365,27 +576,7 @@ const showTeacherDetail = async (staff_id: string) => {
   }
 }
 
-const goToCreateTeacher = () => {
-  router.push('/admin/create_teacher')
-}
-
-const handleLogout = () => {
-  if (confirm('确定要退出登录吗？')) {
-    localStorage.removeItem('isLoggedIn')
-    localStorage.removeItem('token')
-    localStorage.removeItem('username')
-    router.push('/login')
-  }
-}
-
-const showQuickTipMessage = (message: string) => {
-  quickTipMessage.value = message
-  showQuickTip.value = true
-  setTimeout(() => {
-    showQuickTip.value = false
-  }, 2000)
-}
-
+// 编辑相关函数
 const startEdit = () => {
   editForm.value = { ...currentTeacher.value }
   isEditing.value = true
@@ -425,6 +616,7 @@ const formatFieldValue = (key: string) => {
   return value
 }
 
+// 重置密码相关函数
 const showResetPasswordDialog = () => {
   newPassword.value = ''
   confirmPassword.value = ''
@@ -461,54 +653,34 @@ const resetPassword = async () => {
   }
 }
 
-const toggleTeacherSelection = (teacherId: string) => {
-  const idx = selectedTeachers.value.indexOf(teacherId)
-  if (idx === -1) {
-    selectedTeachers.value.push(teacherId)
-  } else {
-    selectedTeachers.value.splice(idx, 1)
+// 其他函数
+const goToCreateTeacher = () => {
+  router.push('/admin/create_teacher')
+}
+
+const handleLogout = () => {
+  if (confirm('确定要退出登录吗？')) {
+    localStorage.removeItem('isLoggedIn')
+    localStorage.removeItem('token')
+    localStorage.removeItem('username')
+    router.push('/login')
   }
 }
 
-const toggleAllSelection = () => {
-  if (isAllSelected.value) {
-    selectedTeachers.value = []
-  } else {
-    selectedTeachers.value = teachers.value.map(t => t.staff_id)
-  }
-}
-
-const showDeleteConfirm = () => {
-  if (selectedTeachers.value.length === 0) {
-    showQuickTipMessage('请先选择要删除的教师')
-    return
-  }
-  showDeleteDialog.value = true
-}
-
-const closeDeleteConfirm = () => {
-  showDeleteDialog.value = false
-}
-
-const confirmDelete = async () => {
-  try {
-    const result = await deleteTeachers(selectedTeachers.value)
-    if (result.success) {
-      showQuickTipMessage(`成功删除 ${result.deleted} 个教师`)
-      selectedTeachers.value = []
-      showDeleteDialog.value = false
-      await loadTeachers()
-    }
-  } catch (error: any) {
-    showQuickTipMessage(error.message)
-  }
+const showQuickTipMessage = (message: string) => {
+  quickTipMessage.value = message
+  showQuickTip.value = true
+  setTimeout(() => {
+    showQuickTip.value = false
+  }, 2000)
 }
 
 const getTeacherName = (teacherId: string) => {
-  const teacher = teachers.value.find(t => t.staff_id === teacherId)
+  const teacher = allTeachers.value.find(t => t.staff_id === teacherId)
   return teacher ? teacher.username : teacherId
 }
 
+// 初始化时应用搜索
 onMounted(() => {
   loadTeachers()
 })
@@ -891,5 +1063,231 @@ onMounted(() => {
   color: #a0aec0;
   font-size: 12px;
   text-align: center;
+}
+
+/* 筛选区域样式 - 参考教师课程页面 */
+.filter-section {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+}
+
+.filter-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.filter-group input,
+.filter-group select {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-input::placeholder {
+  color: #9ca3af;
+}
+
+.clear-btn {
+  padding: 10px 20px;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  align-self: flex-end;
+}
+
+.clear-btn:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+/* 搜索结果提示 */
+.search-results-info {
+  margin-bottom: 16px;
+  padding: 8px 16px;
+  background: rgba(34, 197, 94, 0.1);
+  color: #059669;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* 空搜索结果样式 */
+.no-search-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.no-search-results .empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.no-search-results .empty-text {
+  font-size: 16px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.no-search-results .empty-suggestion {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.clear-link {
+  color: #667eea;
+  text-decoration: underline;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.clear-link:hover {
+  color: #5a67d8;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .filter-section {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .filter-group {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .clear-btn {
+    align-self: stretch;
+  }
+}
+
+/* 批量操作栏优化 */
+.batch-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: 8px;
+}
+
+.batch-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.batch-text {
+  color: #92400e;
+  font-weight: 500;
+}
+
+.batch-delete-btn {
+  padding: 8px 16px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.batch-delete-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* 分页控件优化 */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.pagination-info {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .pagination-controls {
+    justify-content: center;
+  }
 }
 </style>

@@ -21,7 +21,7 @@ TEACHERS_LIST_URL = "http://127.0.0.1:8000/admin/user_management/list_teachers"
 TEACHER_DETAIL_URL = "http://127.0.0.1:8000/admin/user_management/teacher_detail/{}"
 
 ADMIN_USER = {"user_id": "A2025001", "password": "mmmm123"}
-CONCURRENCY = 10
+CONCURRENCY = 500
 
 async def get_admin_token():
     async with httpx.AsyncClient(timeout=30.0) as client:
