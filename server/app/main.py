@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="LuminoEdu",
     description="--基于多模态大模型的数字化教学资源制作系统",
-    version="1.1.0",
+    version="1.1.8",
     lifespan=lifespan
 )
 
@@ -63,6 +63,13 @@ register_tortoise(
     app=app,
     config=TORTOISE_ORM,
 )
+
+@app.get("/")
+async def root():
+    return {
+        "message": "LuminoEdu API Server is running",
+        "status": "healthy"
+    }
 
 if __name__ == "__main__":
     import uvicorn
