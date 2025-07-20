@@ -188,7 +188,7 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
-    const result = await createCourse(formData)
+    await createCourse(formData)
     alert('课程创建成功！')
     router.push('/teacher/course')
   } catch (error: any) {

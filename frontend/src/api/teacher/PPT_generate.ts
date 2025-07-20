@@ -192,44 +192,33 @@ export const generatePPTFromOutline = async (title: string, file: File): Promise
  * @param pptData PPT数据
  * @param filename 文件名
  */
-export const downloadPPTX = async (pptData: PPTCompleteResponse, filename: string): Promise<void> => {
+export const downloadPPTX = async (filename: string): Promise<void> => {
   try {
-    // 记录API调用开始
     console.log('开始下载PPTX文件:', filename);
 
-
-
-    // 发送API请求并获取二进制数据
     const response = await api.get(`/teacher/ppt/download_ppt/${filename}`, {
       responseType: 'blob'
     });
 
-    // 创建Blob对象
-    const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    });
 
-    // 创建下载链接
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${filename
+    link.download = `${filename}.pptx`;
 
-    }.pptx`;
-
-    // 触发下载
     document.body.appendChild(link);
     link.click();
-
-    // 清理
     document.body.removeChild(link);
     URL.revokeObjectURL(link.href);
 
     console.log('PPTX文件下载成功');
-
   } catch (error: any) {
     console.error('下载PPTX文件失败:', error);
     throw new Error('下载PPTX文件失败，请稍后重试');
   }
 };
-
 
 
 /**

@@ -65,7 +65,7 @@
                       @dragover.prevent="handleDragOver"
                       @dragleave="handleDragLeave"
                       @dragenter.prevent="handleDragEnter"
-                      @click="$refs.fileInput.click()"
+                      @click="fileInput?.click()"
                   >
                     <input
                         ref="fileInput"
@@ -581,17 +581,6 @@ const handleImport = async () => {
   background: #edf2f7;
 }
 
-.upload-area.drag-over {
-  border-color: #667eea;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  transform: scale(1.02);
-}
-
-.upload-area.has-file {
-  border-color: #38a169;
-  background: #f0fff4;
-}
-
 .upload-placeholder {
   display: flex;
   flex-direction: column;
@@ -660,14 +649,6 @@ const handleImport = async () => {
 .file-status {
   font-size: 14px;
   font-weight: 500;
-}
-
-.file-status.valid {
-  color: #38a169;
-}
-
-.file-status.invalid {
-  color: #e53e3e;
 }
 
 .remove-file-btn {
@@ -767,35 +748,11 @@ const handleImport = async () => {
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-.action-btn.secondary {
-  background: #f7fafc;
-  color: #4a5568;
-  border: 2px solid #e2e8f0;
-}
-
-.action-btn.secondary:hover {
-  background: #edf2f7;
-  border-color: #cbd5e0;
-  transform: translateY(-2px);
-}
-
 .action-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-
-.stat-item.total .stat-number {
-  color: #667eea;
-}
-
-.stat-item.success .stat-number {
-  color: #38a169;
-}
-
-.stat-item.failed .stat-number {
-  color: #e53e3e;
-}
 
 .mobile-overlay {
   position: fixed;

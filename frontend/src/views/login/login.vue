@@ -122,7 +122,9 @@ const router = useRouter()
 const http = inject<AxiosInstance>('axios')
 
 const loading = ref(false)
-const loginFormRef = ref(null)
+import type { FormInstance } from 'element-plus'
+
+const loginFormRef = ref<FormInstance>()
 
 const loginForm = reactive({
   user_id: '',
@@ -147,6 +149,10 @@ const submitForm = async () => {
     if (valid) {
       loading.value = true
       try {
+        if (!http) {
+          ElMessage.error('网络未初始化')
+          return
+        }
         const data = await login(loginForm, http)
 
         console.log('登录响应数据:', data)

@@ -70,7 +70,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { getPPTFileList, deletePPTFile, downloadPPTXfile, PPTFile } from '@/api/teacher/PPT_generate'
+import { getPPTFileList, deletePPTFile, downloadPPTXfile} from '@/api/teacher/PPT_generate'
 import PageHeader from '@/components/layout/PageHeader.vue'
 import SideBar from '@/components/layout/SideBar.vue'
 

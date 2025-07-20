@@ -121,24 +121,17 @@ export const createTeachers = async (file: File): Promise<CreateTeachersResponse
  * 下载教师Excel导入模板 - 根据后端要求修复格式
  */
 export const downloadTeacherTemplate = async (): Promise<Blob> => {
-  try {
-    console.log('请求下载教师Excel模板')
+  console.log('请求下载教师Excel模板')
 
-    const response = await api.get('/admin/user_management/download_teacher_template', {
-      responseType: 'blob'
-    })
+  const response = await api.get('/admin/user_management/download_teacher_template', {
+    responseType: 'blob'
+  })
 
-    console.log('教师Excel模板下载成功')
+  console.log('教师Excel模板下载成功')
 
-    const blob = new Blob([response.data], {
-      type: response.headers['content-type'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    })
-
-    return blob
-
-  } catch (error: any) {
-    console.error('下载教师Excel模板失败:', error)
-  }
+  return new Blob([response.data], {
+    type: response.headers['content-type'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  })
 }
 
 
@@ -300,24 +293,17 @@ export const updateTeacher = async (teacherId: string, updateData: Partial<Teach
  * 下载学生Excel导入模板
  */
 export const downloadStudentTemplate = async (): Promise<Blob> => {
-  try {
-    console.log('请求下载学生Excel模板')
+  console.log('请求下载学生Excel模板')
 
-    const response = await api.get('/admin/user_management/download_student_template', {
-      responseType: 'blob'
-    })
+  const response = await api.get('/admin/user_management/download_student_template', {
+    responseType: 'blob'
+  })
 
-    console.log('学生Excel模板下载成功')
+  console.log('学生Excel模板下载成功')
 
-    const blob = new Blob([response.data], {
-      type: response.headers['content-type'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    })
-
-    return blob
-
-  } catch (error: any) {
-    console.error('下载学生Excel模板失败:', error)
-  }
+  return new Blob([response.data], {
+    type: response.headers['content-type'] || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  })
 }
 
 
@@ -483,44 +469,6 @@ export interface StudentDetail {
   intro: string
   contact_email: string
 }
-
-/**
- * 获取单个学生详细信息
- */
-export const getStudentDetail = async (studentId: string): Promise<StudentDetail> => {
-  try {
-    const id = String(studentId)
-    console.log('📤 开始获取学生详情, ID:', id)
-
-    const response = await api.get(`/admin/user_management/student_detail/${id}`)
-    console.log('📥 获取学生详情成功:', response.data)
-    return response.data
-
-  } catch (error: any) {
-    if (!error.response) {
-      throw new Error(`网络错误: ${error.message}`)
-    }
-
-    const status = error.response.status
-    const errorData = error.response.data
-
-    switch (status) {
-      case 400:
-        throw new Error('请求参数无效')
-      case 401:
-        throw new Error('认证失败，请重新登录')
-      case 403:
-        throw new Error('权限不足，无法访问该学生信息')
-      case 404:
-        throw new Error(`未找到ID为 ${studentId} 的学生记录`)
-      case 500:
-        throw new Error(`服务器错误: ${errorData?.detail || '获取学生信息失败'}`)
-      default:
-        throw new Error(errorData?.message || `获取学生信息失败(${status})`)
-    }
-  }
-}
-
 // 更新学生请求接口
 export interface UpdateStudentRequest {
   username: string
@@ -865,127 +813,7 @@ export const deleteTeachers = async (teacherIds: string[]): Promise<DeleteTeache
 
 
 // 获取日志文件内容请求参数接口
-export interface GetLogFileContentRequest {
-  service_name: string
-  file_name: string
-}
-
 // 获取日志文件内容响应接口
-export interface GetLogFileContentResponse {
-  content: string[]
-  file_name: string
-  service_name: string
-}
-
-/**
- * 获取指定日志文件的内容
- */
-export const getLogFileContent = async (params: GetLogFileContentRequest): Promise<GetLogFileContentResponse> => {
-  try {
-    console.log('📤 开始获取日志文件内容:', params)
-
-    if (!params.service_name) {
-      throw new Error('服务名称不能为空')
-    }
-
-    if (!params.file_name) {
-      throw new Error('文件名称不能为空')
-    }
-
-    // 构建查询参数
-    const queryParams = new URLSearchParams({
-      service_name: params.service_name,
-      file_name: params.file_name
-    })
-
-    const response = await api.get(`/admin/log_management/file_content?${queryParams}`, {
-      timeout: 30000 // 读取文件内容可能需要较长时间
-    })
-
-    console.log('📥 获取日志文件内容成功:', {
-      fileName: response.data.file_name,
-      serviceName: response.data.service_name,
-      lineCount: response.data.content?.length || 0
-    })
-
-    return response.data
-
-  } catch (error: any) {
-    if (!error.response) {
-      if (error.code === 'ECONNABORTED') {
-        throw new Error('读取文件超时，文件较大，请稍后重试')
-      }
-      throw new Error(`网络错误: ${error.message}`)
-    }
-
-    const status = error.response.status
-    const errorData = error.response.data
-
-    switch (status) {
-      case 400:
-        throw new Error(`参数验证失败: ${errorData?.detail || '请检查服务名称和文件名'}`)
-      case 401:
-        throw new Error('认证失败，请重新登录')
-      case 403:
-        throw new Error('权限不足，无法访问该日志文件')
-      case 404:
-        throw new Error(`未找到文件: ${params.file_name}`)
-      case 413:
-        throw new Error('文件过大，无法直接查看，请下载后查看')
-      case 500:
-        throw new Error(`服务器错误: ${errorData?.detail || '读取文件内容失败'}`)
-      default:
-        throw new Error(errorData?.message || `获取日志文件内容失败(${status})`)
-    }
-  }
-}
-
-/**
- * 搜索日志文件内容
- */
-export const searchLogFileContent = async (
-    serviceName: string,
-    fileName: string,
-    keyword: string,
-    caseSensitive: boolean = false
-): Promise<{ lines: Array<{lineNumber: number, content: string, matches: number}>, totalMatches: number }> => {
-  try {
-    console.log('📤 开始搜索日志文件内容:', { serviceName, fileName, keyword, caseSensitive })
-
-    const response = await getLogFileContent({ service_name: serviceName, file_name: fileName })
-    const content = response.content
-
-    const searchKeyword = caseSensitive ? keyword : keyword.toLowerCase()
-    const results: Array<{lineNumber: number, content: string, matches: number}> = []
-    let totalMatches = 0
-
-    content.forEach((line, index) => {
-      const searchLine = caseSensitive ? line : line.toLowerCase()
-      const matches = (searchLine.match(new RegExp(searchKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length
-
-      if (matches > 0) {
-        results.push({
-          lineNumber: index + 1,
-          content: line,
-          matches: matches
-        })
-        totalMatches += matches
-      }
-    })
-
-    console.log('📥 搜索日志文件内容完成:', {
-      lineCount: results.length,
-      totalMatches
-    })
-
-    return { lines: results, totalMatches }
-
-  } catch (error: any) {
-    console.error('❌ 搜索日志文件内容失败:', error)
-    throw error
-  }
-}
-
 // 工具函数：解析日志行
 export const parseLogLine = (line: string): {
   timestamp?: string,
@@ -1037,101 +865,5 @@ export const filterLogContentByLevel = (content: string[], level: string): strin
 }
 
 // 工具函数：按时间范围过滤内容
-export const filterLogContentByTime = (
-    content: string[],
-    startTime?: string,
-    endTime?: string
-): string[] => {
-  if (!startTime && !endTime) return content
-
-  const start = startTime ? new Date(startTime) : null
-  const end = endTime ? new Date(endTime) : null
-
-  return content.filter(line => {
-    const parsed = parseLogLine(line)
-    if (!parsed.timestamp) return true // 保留无时间戳的行
-
-    try {
-      const lineTime = new Date(parsed.timestamp)
-
-      if (start && lineTime < start) return false
-      if (end && lineTime > end) return false
-
-      return true
-    } catch (error) {
-      return true // 时间解析失败时保留该行
-    }
-  })
-}
-
 // 工具函数：高亮关键词
-export const highlightKeywords = (
-    text: string,
-    keywords: string[],
-    caseSensitive: boolean = false
-): string => {
-  if (!keywords.length) return text
-
-  let result = text
-
-  keywords.forEach(keyword => {
-    if (!keyword.trim()) return
-
-    const flags = caseSensitive ? 'g' : 'gi'
-    const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const regex = new RegExp(`(${escapedKeyword})`, flags)
-
-    result = result.replace(regex, '<mark class="log-highlight">$1</mark>')
-  })
-
-  return result
-}
-
 // 工具函数：统计日志级别分布
-export const analyzeLogContent = (content: string[]): {
-  totalLines: number,
-  levelStats: Record<string, number>,
-  timeRange: { start?: string, end?: string },
-  moduleStats: Record<string, number>
-} => {
-  const levelStats: Record<string, number> = {}
-  const moduleStats: Record<string, number> = {}
-  let earliest: Date | null = null
-  let latest: Date | null = null
-
-  content.forEach(line => {
-    const parsed = parseLogLine(line)
-
-    // 统计级别
-    if (parsed.level) {
-      const level = parsed.level.toUpperCase()
-      levelStats[level] = (levelStats[level] || 0) + 1
-    }
-
-    // 统计模块
-    if (parsed.module) {
-      moduleStats[parsed.module] = (moduleStats[parsed.module] || 0) + 1
-    }
-
-    // 统计时间范围
-    if (parsed.timestamp) {
-      try {
-        const time = new Date(parsed.timestamp)
-        if (!earliest || time < earliest) earliest = time
-        if (!latest || time > latest) latest = time
-      } catch (error) {
-        // 忽略时间解析错误
-      }
-    }
-  })
-
-  return {
-    totalLines: content.length,
-    levelStats,
-    timeRange: {
-      start: earliest?.toISOString(),
-      end: latest?.toISOString()
-    },
-    moduleStats
-  }
-}

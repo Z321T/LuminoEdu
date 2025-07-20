@@ -244,7 +244,6 @@ const sendMessage = async () => {
   scrollToBottom()
 
   let isNewChat = activeChatId.value === null
-  let hasReceivedContent = false
 
   try {
     await streamChat(
@@ -258,7 +257,6 @@ const sendMessage = async () => {
         (chunk, chatId) => {
           // 将接收到的文本块添加到打字队列
           if (chunk) {
-            hasReceivedContent = true
             addToTypewriterQueue(chunk)
           }
 
@@ -356,8 +354,7 @@ onUnmounted(() => {
 .welcome-icon { font-size: 48px; margin-bottom: 16px; }
 .welcome-message h2 { color: #2d3748; }
 .message-wrapper { display: flex; max-width: 80%; }
-.message-wrapper.user { align-self: flex-end; flex-direction: row-reverse; }
-.message-wrapper.assistant { align-self: flex-start; }
+
 .message-bubble { padding: 12px 16px; border-radius: 18px; line-height: 1.6; position: relative; }
 .message-wrapper.user .message-bubble { background-color: #3182ce; color: white; border-bottom-right-radius: 4px; }
 .message-wrapper.assistant .message-bubble { background-color: #edf2f7; color: #2d3748; border-bottom-left-radius: 4px; }

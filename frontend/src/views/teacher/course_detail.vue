@@ -392,8 +392,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter, useRoute, onBeforeRouteLeave} from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute} from 'vue-router'
 import SideBar from '@/components/layout/SideBar.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
 import {
@@ -422,11 +422,8 @@ import {
   type TeacherNotification,
   type TeacherNotificationResponse,
   type CourseMaterial,
-  type CourseMaterialResponse,
   type CreateNotificationRequest,
   type NotificationDetail,
-  type UpdateNotificationResponse,
-  type ImportStudentsResponse
 } from '@/api/teacher/course_detail_th'
 
 const router = useRouter()

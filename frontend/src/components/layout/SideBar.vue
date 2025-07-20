@@ -11,7 +11,6 @@
         @click="handleMenuClick(item)"
         :data-path="item.path"
       >
-        <i class="icon">{{ item.icon }}</i>
         <span>{{ item.label }}</span>
       </li>
     </ul>

@@ -46,7 +46,11 @@ app = FastAPI(
 # 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Vue开发服务器地址
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://60.204.202.205"
+    ],  # Vue开发服务器地址
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,7 +60,7 @@ app.add_middleware(
 app.middleware("http")(log_request_middleware)
 
 # 注册路由
-app.include_router(api_router)
+app.include_router(api_router, prefix="/api")
 
 # 注册tortoise-orm
 register_tortoise(
@@ -64,7 +68,7 @@ register_tortoise(
     config=TORTOISE_ORM,
 )
 
-@app.get("/")
+@app.get("/api")
 async def root():
     return {
         "message": "LuminoEdu API Server is running",
