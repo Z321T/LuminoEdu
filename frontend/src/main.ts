@@ -13,7 +13,7 @@ axios.defaults.withCredentials=true;
 
 // 创建Axios实例
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000', // 根据后端实际地址进行修改
+  baseURL: 'http://60.204.202.205', // 根据后端实际地址进行修改
 });
 
 // 请求拦截器

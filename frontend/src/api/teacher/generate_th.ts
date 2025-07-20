@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // 创建 axios 实例
 const api = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: 'http://60.204.202.205',
     timeout: 60000, // 生成习题可能需要较长时间
 })
 
