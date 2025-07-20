@@ -7,13 +7,14 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import axios from 'axios'
 import './style.css'; // 导入全局样式文件
+import { BASE_URL} from "@/api/config.ts";
 
 
 axios.defaults.withCredentials=true;
 
 // 创建Axios实例
 const axiosInstance = axios.create({
-  baseURL: 'http://60.204.202.205', // 根据后端实际地址进行修改
+  baseURL: BASE_URL,
 });
 
 // 请求拦截器

@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="LuminoEdu",
     description="--基于多模态大模型的数字化教学资源制作系统",
-    version="1.2.0",
+    version="1.2.1",
     lifespan=lifespan
 )
 
