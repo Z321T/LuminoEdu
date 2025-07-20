@@ -1,4 +1,5 @@
 import api from '@/api/request.ts'
+import { BASE_URL } from '@/api/config.ts'
 
 // 定义消息类型
 export interface ChatMessage {
@@ -74,7 +75,7 @@ export const streamChat = async (
                 stream: true
             }
 
-            const response = await fetch('http://localhost:8000/chat/stream', {
+            const response = await fetch(`${BASE_URL}/chat/stream`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
